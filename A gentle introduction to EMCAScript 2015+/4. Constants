@@ -1,0 +1,26 @@
+Constants:
+
+- ES2015 introduces const to declare… constants!
+- When you declare a variable with const, it has to be initialized and you can’t assign another
+    value later.
+
+🔦
+you can initialize a constant with an object and later modify the object content. But you can't
+assign another object.
+
+        const PONY = {};    // declare and initialize empty object(PONY)
+        PONY.color = 'blue';    // modify the object content ✅ works
+
+        const PONY = {}; 
+        PONY = {color: 'blue'};    // assign another object ❌ TypeError: Assignment to constant variable.
+
+Same with the Array:
+
+        const PC = [];  // declare and initialize empty Array(PC)
+        PC.push('Monitor'); // modify the array content ✅ works
+        PC.push({price: '70000'});  // modify the array content ✅ works
+
+        const PC = [];  
+        PC = [];    // ❌ TypeError: Assignment to constant variable.
+
+

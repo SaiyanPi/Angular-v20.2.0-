@@ -1,0 +1,100 @@
+let:
+
+- let is a new way to declare variables in JavaScript (ES2015+).
+- One of the classic JS bug with var comes from a function scope, which often breaks loops and
+    closures
+
+            for (var i = 0; i < 3; i++) {
+                setTimeout(function() {
+                    console.log(i);
+                }, 100);
+            }
+
+    * what we expect: 0 1 2
+    * what actually happens: 3 3 3
+    * explanation: 
+        step 1) start of loop
+            -> i = 0
+            -> setTimeout is called → schedules a function to run after 100ms.
+            -> Important: the function does not run yet; it just remembers to run later.
+
+        step 2) second iteration
+            -> i is incremented → i = 1
+            -> Another setTimeout is called → schedules another function.
+        
+        step 3) third iteration
+            -> i is incremented → i = 2
+            -> Another setTimeout is called → schedules another function.
+        
+        step 4) loop ends
+            -> i is incremented → i = 3
+            -> Loop condition i < 3 is now false → loop stops.
+            -> Key point: all scheduled functions share the same i because var is function-scoped.
+                There’s only one i in the function scope.
+        
+        step 5) setTimeout functions execute (after 100ms)
+            -> First function runs → prints i = 3
+            -> Second function runs → prints i = 3
+            -> Third function runs → prints i = 3
+
+- bug fix using let
+
+            for (let i = 0; i < 3; i++) {
+                setTimeout(function() {
+                    console.log(i);
+                }, 100);
+            }
+
+    * output: 0 1 2
+    * explanation:
+        -> let is a block scoped, so each iteration gets a new i
+        -> When the setTimeout functions run, each one remembers its own copy of i: 0, 1, 2
+
+________________________________________________________________________________________________________
+
+var VS let:
+
+1. Scope (we will discuss more in 11. Arrow functions)
+    - var is function scoped
+    - let is block({}) scoped
+    
+            if(true){
+                var x = 10;
+                let y = 20;
+            }
+            console.log(x); // ✅ 10 (function/global scoped)
+            console.log(y); // ❌ ReferenceError (block scoped)
+
+2. Hoisting
+    - Both var and let are hoisted(moved to the top of their scope during compilation)
+    - difference:
+        -> var is initialized as undefined = we can use it before declaration(not recommended)
+        -> let is in Temporal Dead Zone(TDZ) until it is declared = using it before declaration throws
+            error.
+    
+            console.log(a); // ✅ undefined
+            var a = 5;
+
+            console.log(b); // ❌ ReferenceError (TDZ)
+            let b = 10;
+
+3. Re-declaration 
+    - var can be redeclared in the same scope (may cause bugs)
+    - let cannot be redeclared in the same scope
+
+            var name = "Alice"
+            var name = "Bob"    // ✅ Allowed
+
+            let age = 20;
+            let age = 21;   // ❌ SyntaxError: Identifier 'age' has already been declared
+
+4. Global Object Property
+    - if declared in global scope
+        -> var becomes a property of a window(browser) or global(Node.js)
+        -> let does not attach to the global Object
+
+            var a = 1;
+            let b = 2;
+
+            console.log(window.a)   // ✅ 1
+            console.log(window.b)   // ❌ undefined

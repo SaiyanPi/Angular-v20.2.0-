@@ -1,0 +1,14 @@
+Transpilers:
+
+- Transpilers are tools that convert code from one version of a language to another.
+    In JavaScript, a transpiler like Babel takes modern ES2015+ code and converts it into older ES5
+    code so it can run in older browsers.
+
+- Back in 2015, there were two main alternatives to transpile ES2015+ code:
+    • Traceur, a Google project, historically the first one but now unmaintained.
+    • Babeljs, a project started by a young developer, Sebastian McKenzie (17 years old at the time),
+        with a lot of diverse contributions.
+
+- The source code of Angular itself was at first transpiled with Traceur, before switching to
+    TypeScript. TypeScript is an open source language developed by Microsoft. It’s a typed superset
+    of JavaScript that compiles to plain JavaScript, but we’ll dive into it very soon.

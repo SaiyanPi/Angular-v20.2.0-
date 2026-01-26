@@ -1,0 +1,14 @@
+Introcution:
+
+- What we call JS is oneimplementation of a standard specification, called ECMAScript.
+- ECMAScript 2015+ (also called ES6 and later) is the modern version of JavaScript. 
+    It added new features that make coding cleaner, faster, and more organized.
+    These include 
+    - let/const for variables
+    - arrow functions
+    - classes
+    - modules
+    - template literals
+    - destructuring
+    - promises for async code
+    - and new collections like Map and Set.
