@@ -1,0 +1,75 @@
+Destructuring assignment:
+
+- This new feature can also catch your attention when reading ES2015 code. There is now a shortcut
+    for assigning variables from objects or arrays.
+
+    In ES5:
+
+            var httpOptions = { timeout: 2000, isCache: true }; // object with properties: timeout, isCache
+            // later
+            var httpTimeout = httpOptions.timeout;  // assigning to a variable httpTimeout
+            var httpCache = httpOptions.isCache;
+    
+    Now in ES2015, we can do:
+
+            const httpOptions = { timeout: 2000, isCache: true };
+            // later
+            const { timeout: httpTimeout, isCache: httpCache } = httpOptions;
+        
+        -> The key is to look for property in the object and the value is the varaiable to assign.
+        -> we now have variable named 'httpTimeout' and 'httpCache'
+    
+    Even better: if the variable we want to assign has the same name as the property, we can simply
+    write:
+
+            const httpOptions = { timeout: 2000, isCache: true };
+            // later
+            const { timeout, isCache } = httpOptions
+        
+        -> we now have variable named 'timeout' and 'isCache'
+
+- The cool thing is that it also works with nested objects ✅:
+
+            const httpOptions = { timeout: 2000, cache: { age: 2 } };
+            // later
+            const { timeout: httpTimeout, cache: { age } } = httpOptions;
+        
+        -> we now have variables named 'httpTimeout' and 'age'
+        -> values: httpTimeout = 2000 and cache = 2
+
+- And the same is possible with Arrays ✅:
+
+            const timeouts = [1000, 2000, 3000];
+            // later
+            const [shortTimeout, mediumTimeout] = timeouts;   
+            console.log(shortTimeout, mediumTimeout); 
+        
+        -> we now have variables 'shortTimeout' and 'mediumTimeout'
+        -> values: shortTimeout = 1000 and mediumTimeout = 2000
+
+- Of course it also works for arrays in arrays, or arrays in objects, etc ✅
+
+- One interesting use of this can be for multiple return values. Imagine a function
+    randomPonyInRace that returns a pony and its position in a race:
+
+            function randomPonyInRace() {
+                const pony = { name: 'Rainbow Dash' };
+                const position = 2;
+                // ...
+                return { pony, position };
+            }
+            const { position, pony } = randomPonyInRace();
+
+        -> The new destructuring feature assigns the position returned by the method to the position variable,
+            and the pony to the pony variable! And if you don’t care about the position, you can
+            write:
+
+            function randomPonyInRace() {
+                const pony = { name: 'Rainbow Dash' };
+                const position = 2;
+                // ...
+                return { pony, position };
+            }
+            const { pony } = randomPonyInRace();
+        
+        -> and you will only have the pony!

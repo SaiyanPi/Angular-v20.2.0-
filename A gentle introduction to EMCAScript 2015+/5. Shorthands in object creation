@@ -1,0 +1,39 @@
+Shorthands in object creation:
+
+- Not a new keyword, but it can also catch your attention when reading ES2015 code. There is now a
+    shortcut for creating objects.
+- when the object property you want to create has the same name as the variable used as the value.
+
+            function createPony() {
+                const name = 'Rainbow Dash';        // variable
+                const color = 'blue';
+                return { name: name, color: color }; // return object(object property has the same name as variable)
+            }
+    
+    can be simplified to:
+
+            function createPony() {
+                const name = 'Rainbow Dash';
+                const color = 'blue';
+                return { name, color };
+            }
+
+- Similarly, when you want to define a method in the object:
+
+            function createPony() {
+                return {                            // return object
+                    run: () => {                    // method
+                        console.log('Run!');
+                    }
+                };
+            }
+    
+    can be simplified to:
+
+            function createPony() {
+                return {
+                    run() {
+                        console.log('Run!');
+                    }
+                };
+            }

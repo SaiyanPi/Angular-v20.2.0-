@@ -1,0 +1,57 @@
+Default parameters and values:
+
+- One of the characteristics of JavaScript is that it allows developers to call a function with any
+    number of arguments:
+    -> if you pass more arguments than the number of the parameters, the extra arguments are
+        ignored (well, you can still use them with the special arguments variable, to be accurate).
+    -> if you pass fewer arguments than the number of the parameters, the missing parameter will be
+        set to undefined.
+
+- The last case is the one that is the most relevant to us. Usually, we pass fewer arguments when
+    the parameters are optional, like in the following example:
+
+            function getMeta(device, ip, duration) {
+                device = device || 'pc';        // default value 'pc'
+                ip = ip || 01;
+                duration = duration || 2000;
+                // ....
+                server.get(device, ip, duration);
+            }
+
+            getMeta('phone', 02, 5000);   
+            getMeta();                      // same as getMeta('pc', 01, 2000);
+            getMeta(03);                    // same as getMeta('pc', 03, 2000);
+
+- This worked alright, but it was not really obvious that the parameters were optional ones with
+    default values, without reading the function body. ES2015 introduces a more precise way to have
+    default parameters, directly in the function definition:
+
+            function getMeta(device = 'pc', ip = 01, duration = 2000) {
+                // ....
+                server.get(device, ip);
+            }
+        
+- The default value can also be a function call:
+
+            function getPonies(size = defaultSize(), page = 1) {
+                // the defaultSize method will be called if size is not provided
+                // ...
+                server.get(size, page);
+            }
+
+- The default value can be even other variables, either global variables, or other parameters of
+    the function:
+
+            function getPonies(size = defaultSize(), page = size - 1) {
+                // if page is not provided, it will be set to the value of the size parameter minus 1.
+                // ...
+                server.get(size, page);
+            }
+
+- This mechanism for parameters can also be applied to values, for example when using adestructuring
+    assignment:
+
+            const { timeout = 1000 } = httpOptions
+        
+        -> we now have a variable named 'timeout' with the value of 'httpOptions.timeout'
+        -> But if the value does not exist, the default value is 1000.

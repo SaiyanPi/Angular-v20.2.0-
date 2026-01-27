@@ -1,0 +1,95 @@
+Rest operator:
+
+- ES2015 introduces a new syntax to define variable parameters in functions. As said in the previous
+    section, you could always pass extra arguments to a function and get them with the special
+    arguments variable. So you could have done something like this:
+
+            function addPonies(ponies) {
+                for (var i = 0; i < arguments.length; i++) {
+                    poniesInRace.push(arguments[i]);
+                }
+            }
+            addPonies('Rainbow Dash', 'Pinkie Pie');
+        
+    -> But we can agree that it’s neither pretty nor obvious: since the ponies parameter is never
+        used, how do we know that we can pass several ponies?
+    -> ES2015 gives us a way better syntax, using the rest operator …:
+
+            function addPonies(...ponies) {
+                for (let pony of ponies) {
+                    poniesInRace.push(pony);
+                }
+            }
+    
+    -> ponies is now a true array on which we can iterate.
+    -> The for … of loop used for iteration is also a new feature in ES2015. It makes sure that you
+        iterate over the collection values, and not also over its properties as for … in would do.
+
+- The rest operator can also work when destructuring data:
+
+            const [winner, ...losers] = poniesInRace;
+    
+    -> assuming 'poniesInRace' is an array containing several ponies 'winner' will have the first
+        pony, and 'losers' will be an array of the other ones
+
+
+⚠️ THE REST OPERATOR IS NOT TO BE CONFUSED WITH THE SPREAD OPERATOR WHICH LOOKS AWFULLY SIMILAR!
+    BUT THE SPREAD OPERATOR IS THE OPPOSITE: IT TAKES AN ARRAY AND SPREADS IT IN VARIABLE
+    ARGUMENTS. 
+    (Spread operator)
+
+            const category = 'Computing';
+            const categories = ['Gaming', 'Multimedia'];
+            const productCategories = [...categories, category]; 
+
+    -> const productCategories = ['Gaming', 'Multimedia', 'Computing']
+    -> The current behavior: NOT CHANGING A VARIABLE, INSTEAD CREATE A NEW VERSION THAT COMES FROM
+        THE ORIGINAL
+    
+    (Spread operator on objects)
+
+            const product = {
+                name: 'Keyboard',
+                price: 75
+            };
+            const newProduct = {
+                ...product,
+                price: 100,
+                category: 'Computing'
+            };
+
+    ->  const newProduct = {
+            name: 'Keyboard',
+            price: 100,
+            category: 'Computing'
+        }
+    -> The newProduct object takes the properties from the product object, adds new values on top
+        of it, and replaces the existing ones. That's why 'price: 100'.
+
+
+⚠️ (For...of vs For...in)
+
+            const expenses = [100, 200, 300];
+
+    1) For...in:
+
+            for (let e in expenses) {
+                console.log(e);
+            }
+        -> Iterates over Indexes/Keys, not values.
+        -> best used for objects
+        -> Output:  0
+                    1
+                    2
+    
+    2) For...of:
+
+            for (let e of expenses) {
+                console.log(e);
+            }
+        
+        -> Iterates over values.
+        -> best used for arrays and iterables
+        -> Output:  100
+                    200
+                    300
