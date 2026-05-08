@@ -1,0 +1,18 @@
+Enters TypeScript:
+
+- TypeScript team announced that they had worked closely with the Google team, and the new version of the
+    language (1.5) would have all the shiny new things AtScript had. And the Google team announced that
+    AtScript was officially dropped, and that TypeScript was the new top-notch way to write Angular apps!
+
+- TypeScript was already there, with an active community and ecosystem. 
+    TypeScript is a Microsoft project. But it’s not the Microsoft you have in mind, from the Ballmer and
+    Gates years. It’s the Microsoft of the Nadella era, the one opening up to its community, and, well,
+    open-source. Google knows this, and it’s far better for them to contribute to an existing project,
+    rather than to have to bear the burden of maintaining their own. And the TypeScript framework
+    will gain a huge popularity boost: win-win, as your manager would say
+
+- 🔥But the main reason to bet on TypeScript is the type system it offers. It’s an optional type system
+    that helps without getting in the way. In fact, after coding some time with it, you’ll probably want to
+    code every application with it. I do like what they have done, and we will have a look at what
+    TypeScript offers in the next section. At the end, you’ll have enough understanding to read any
+    Angular code, and you’ll be able to choose whether you want to use it or not, in your apps.
