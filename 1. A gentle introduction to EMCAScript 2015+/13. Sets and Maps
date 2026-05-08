@@ -1,0 +1,20 @@
+Sets and Maps:
+
+- We used to have dictionaries filling the role of a map, but we can now use the class Map:
+
+    const cedric = { id: 1, name: 'Cedric' };
+    const users = new Map();    // create Map
+    users.set(cedric.id, cedric); // adds a user
+    console.log(users.has(cedric.id)); // true
+    console.log(users.size); // 1
+    users.delete(cedric.id); // removes the user
+
+
+- You can iterate over a collection, with the new syntax for … of:
+
+    for (let user of users) {
+        console.log(user.name);
+    }
+
+- 💡You’ll see that the for … of syntax is the one the Angular team chose in order to iterate over a
+`collection in a template.

@@ -1,0 +1,57 @@
+Async/await:
+
+- This is a feature introduced in ECMAScript 2017.
+- to use await, your function must be marked as async. 
+- When you use the await keyword in front of a Promise, you pause the execution of your async function,
+    wait for the Promise to resolve, and then resume the execution of the async function. The returned
+    value will be the resolved value.
+
+    (Before)
+
+        with callbacks:
+
+            getUser(login, function (user) {
+                getRights(user, function (rights) {
+                    updateMenu(rights);
+                });
+            });
+
+        with promises:
+
+                getUser(login)
+                    .then(function (user) {
+                        return getRights(user);
+                    })
+                    .then(function (rights) {
+                        updateMenu(rights);
+                    })
+
+    (💡Now with async/await)
+
+        async function getUserRightsAndUpdateMenu() {
+            // getUser is a promise
+            const user = await getUser(login);
+            // getRights is a promise
+            const rights = await getRights(user);
+            updateMenu(rights);
+        }
+        await getUserRightsAndUpdateMenu();
+
+- Another cool feature of async/await is that you can use a simple try/catch to handle errors:
+
+    async function getUserRightsAndUpdateMenu() {
+        try {
+            // getUser is a promise
+            const user = await getUser(login);
+            // getRights is a promise
+            const rights = await getRights(user);
+            updateMenu(rights);
+        } catch (e) {
+            // will be called if getUser, getRights or updateMenu fails
+            console.log(e);
+        }
+    }
+    await getUserRightsAndUpdateMenu();
+
+- 💡just like with callbacks, this doesn’t block the thread: other JavaScript events can be handled while
+    the execution is paused.

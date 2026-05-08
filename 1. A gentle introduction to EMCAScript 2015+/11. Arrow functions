@@ -1,0 +1,131 @@
+Arrow functions:
+
+- Before jumping into arrow function, first, let's see a few ways of writing function.
+    
+    1) Function declaration(classic):
+            
+                function square(a) {
+                    return a * a;
+                }
+        -> Hoisted (can be used before definition)
+        -> Has its own this
+    
+    2) Function expression:
+
+                const square = function (a) {               // anonymous function expression
+                    return a * a;
+                };
+        -> Not hoisted like declarations
+        -> Function is stored in a variable
+        -> Can be anonymous or named
+
+                const square = function squareNumbers(a) {     // named function expression
+                    return a * a;
+                };
+
+    3) Arrow funtion:
+        -> remove the function keyword by adding fat arrow
+                const square = (a) => {
+                    return a * a;
+                }
+
+        -> Omit the parentheses in the function parameters when the signature contains one parameter
+            only.
+                const square = a => {
+                    return a * a;
+                }
+
+        -> Omit the curly braces in the function body and the return keyword if the function has
+            only one statement
+                const square = a => a * a;
+           
+
+- Let's take our previous example with promises:
+            
+            getUser(login)
+                .then(function (user) {
+                    return getRights(user);             // getRights is returning a promise
+                })
+                .then(function (rights) {
+                    return updateMenu(rights);
+                })
+    
+    now, this can be written with arrow functions like:
+
+            getUser(login)
+                .then(user => getRights(user))
+                .then(rights => updateMenu(rights))
+
+- Arrow function has a special trick, a great power over normal functions: the this stays lexically
+    bounded, which means that these functions don’t have a new this as other functions do. 
+
+            var maxFinder = {
+                max: 0,
+                find: function (numbers) {
+                    // let's iterate
+                    numbers.forEach(function (element) {
+                        // if the element is greater, set it as the max
+                        if (element > this.max) {
+                            this.max = element;
+                        }
+                    });
+                }
+            };
+            maxFinder.find([2, 3, 4]);
+            console.log(maxFinder.max);
+
+    ⚠️You would expect this to work, but it doesn’t. WHY THIS DOESN'T WORK?
+    => There is a forEach callback function inside a find function. Each regular function will have
+        its own this and notice that the forEach in the find function uses this, but the this is
+        not bound to an object. So this.max is not the max of the maxFinder object… Of course you can fix
+        it easily, 
+        ✅ using an alias:
+
+            var maxFinder = {
+                max: 0,
+                find: function (numbers) {
+                    var self = this;
+                    numbers.forEach(function (element) {
+                        if (element > self.max) {
+                            self.max = element;
+                        }
+                    });
+                }
+            };
+            maxFinder.find([2, 3, 4]);
+            // log the result
+            console.log(maxFinder.max);
+        
+
+        ✅ or binding the this:
+
+            var maxFinder = {
+                max: 0,
+                find: function (numbers) {
+                    numbers.forEach(function (element) {
+                        if (element > this.max) {
+                            this.max = element;
+                        }
+                    }.bind(this));
+                }
+            };
+            maxFinder.find([2, 3, 4]);
+            // log the result
+            console.log(maxFinder.max);
+
+
+        ✅ But there is now an even more elegant solution with the arrow function syntax:
+
+            var maxFinder = {
+                max: 0,
+                find: function (numbers) {
+                    numbers.forEach(element => {
+                        if (element > this.max) {
+                            this.max = element;
+                        }
+                    });
+                }
+            };
+            maxFinder.find([2, 3, 4]);
+            // log the result
+            console.log(maxFinder.max);

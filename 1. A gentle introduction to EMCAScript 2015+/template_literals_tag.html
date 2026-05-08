@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p id="demo1"></p>
+    <p id="demo2"></p>
+    <script>
+        const askQuestion = strings => strings + '?';
+        const statement = askQuestion`How are you`;
+        document.getElementById('demo1').innerHTML = statement; // How are you?
+
+        //------------------------------------------------------------------------------------------
+
+        const person1 = 'Cedric';
+        const person2 = 'Agnes';
+        // const template = `Hello ${person1}! Where is ${person2}?`;
+
+        const uppercaseNames = (strings, ...values) => {
+            // `strings` is an array with the static parts ['Hello ', '! Where is ', '?']
+            // `values` is an array with the evaluated expressions ['Cedric', 'Agnes']
+
+            const names = values.map(name => name.toUpperCase());
+            // `names` now has ['CEDRIC', 'AGNES']
+
+            // let's merge the `strings` and `names` arrays
+            return strings.map((string, i) => `${string}${names[i] ? names[i] : ''}`).join('');
+        };
+        const result = uppercaseNames`Hello ${person1}! Where is ${person2}?`;
+        // returns 'Hello CEDRIC! Where is AGNES?'
+
+        document.getElementById("demo2").innerHTML = result;
+    </script>
+</body>
+</html>
+
+<!-- 
+    uppercaseNames`Hello Cedric! Where is Agnes?`;
+
+is internally transformed into:
+
+    uppercaseNames(
+        ['Hello ', '! Where is ', '?'],
+        'Cedric',
+        'Agnes'
+    ); -->
+
+
+<!-- Cleaner and easy to understand version of uppercaseNames function:
+
+    const uppercaseNames = (strings, ...values) => {
+        const upper = values.map(v => v.toUpperCase());
+
+        let result = '';
+
+        for (let i = 0; i < strings.length; i++) {
+            result += strings[i];
+
+            if (upper[i]) {
+                result += upper[i];
+            }
+        }
+
+        return result;
+    }; -->

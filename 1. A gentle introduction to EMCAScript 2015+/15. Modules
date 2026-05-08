@@ -1,0 +1,62 @@
+Modules:
+
+- A standard way to organize functions in namespaces and to dynamically load code in JS has always
+    been lacking. Node.js has been one of the leaders in this, with a thriving ecosystem of modules
+    using the CommonJS convention. On the browser side, there is also the AMD (Asynchronous Module
+    Definition) API, used by RequireJS. But none of these were a real standard, thus leading to endless
+    discussions on what’s best.
+- This module thing is really important in Angular, as pretty much everything is defined in modules,
+    which you have to import when you want to use them. Let’s say I want to expose a function to bet
+    on a specific pony in a race and a function to start the race
+
+    In races-service.js:
+
+        export function bet(race, pony) {
+            // ...
+        }
+        export function start(race) {
+            // ...
+        }
+    
+
+    Now, let’s say one of our application components needs to call these functions.
+    In another file:
+
+        import { bet, start } from './races-service';
+        // later
+        bet(race, pony1);
+        start(race);
+
+- That’s what is called a named export. Here we are importing the two functions, and we have to
+    specify the filename containing these functions - here 'races-service'. Of course, you can import
+    only one method if you need, and you can even give it an alias:
+        
+        import { start as startRace } from './races-service';
+        // later
+        startRace(race);
+
+- And if you want to use all the exported symbols (functions, constants, classes etc.) from the module,
+    you can use a wildcard '*'.
+
+        import * as racesService from './races-service';
+        // later
+        racesService.bet(race, pony1);
+        racesService.start(race);
+
+- If your module exposes only one function or value or class, you don’t have to use named export,
+    and you can leverage the default keyword. It works great for classes for example:
+        
+        // pony.js
+        export default class Pony {}
+        // races-service.js
+        import Pony from './pony';
+
+    Notice the lack of curly braces to import a default. You can import it with the alias you want, but to
+    be consistent, it’s better to call the import with the module name (except if you have multiple
+    modules with the same name of course, then you can choose an alias that allows you to distinguish
+    them). And of course, you can mix default export with named ones, but obviously with only one
+    default per module.
+
+- In Angular, you’re going to use a lot of these imports in your app. Each component and service will
+    be a class, generally isolated in their own file and exported, and then imported when needed in
+    other components.

@@ -1,0 +1,154 @@
+Promises:
+
+- Promises aim to simplify asynchronous programming. 
+- Our JS code is full of async stuff, like AJAX requests, and usually we use callbacks to handle
+    the result and the error. But it can get messy, with callbacks inside callbacks, and it makes
+    the code hard to read and to maintain.
+- Promises are much nicer than callbacks, as they flatten the code, and thus make it easier to
+    understand. 
+- Let’s consider a simple use case, where we need to fetch a user, then their rights, then update
+    a menu when we have these.
+
+    with callbacks:
+
+            getUser(login, function (user) {
+                getRights(user, function (rights) {
+                    updateMenu(rights);
+                });
+            });
+
+    with promises:
+
+            getUser(login)
+                .then(function (user) {
+                    return getRights(user);
+                })
+                .then(function (rights) {
+                    updateMenu(rights);
+                })
+
+    -> This version is much cleaner, because it executes as you read it: I want to fetch a user,
+        then get their rights, then update the menu.
+    -> as we can see, a promise is a 'thenable' object, which simply means it has a then method.
+    -> then METHOD TAKES 2 ARGUMENTS: SUCCESS CALLBACK AND REJECT CALLBACK.
+
+            getUser(login)
+                .then(onFullfilled, onRejected)
+        
+        BUT why there is no 2 arguments in the example above?
+        There is only success callback. No rejection callback is provided and this is totally valid
+        ⚠️ BUT IF ANY PROMISE REJECTS, THE REJECTION SKIPS ALL FOLLOWING .then() SUCCESS HANDLERS
+        (KEEPS BUBBLING DOWN THE CHAIN) UNTIL IT FINDS A .catch(). so the recommended pattern is:
+
+            getUser(login)
+                .then(function (user) {
+                    return getRights(user);
+                })
+                .then(function (rights) {
+                    updateMenu(rights);
+                })
+                .catch(functon(error) {
+                    console.error(error);
+                })
+
+    -> The promise has three states:
+        1) pending:
+        - while the promise is not done, for example, our server call is not completed yet.
+
+        2) fulfilled:
+        - when the promise is completed with success, for example, the server call returns an 
+            OK HTTP status.
+        - When the promise is fulfilled, then the success callback is called, with the result
+            as an argument.
+
+        3) rejected:
+        - when the promise has failed, for example, the server returns a 404 status.
+        - If the promise is rejected, then the reject callback is called, with a rejected value
+            or an error as the argument.
+
+- So how do we create Promise? Pretty simple, there is a new class called Promise, whose
+    constructor expects a function with two parameters, resolve and reject.
+            
+            (Creating promise)
+            const getUser = function (login) {
+                return new Promise(function (resolve, reject) {
+                    // async stuff, like fetching users from server, returning a response
+
+                    if (response.status === 200) {
+                        resolve(response.data);
+                    } else {
+                        reject('No user');
+                    }
+                });
+            };
+
+    -> Once you have created the promise, you can register callbacks, using the then method.
+        Here we only pass a success callback, ignoring the potential error:
+            
+            (interacting with promise)
+            getUser(login)
+                .then(function (user) {
+                    console.log(user);
+                })
+
+        Once the promise is resolved, the success callback (here simply logging the user on the
+        console) will be called.
+
+- The cool part is that it flattens the code. For example, if your resolve callback is also
+    returning a promise, you can write:
+
+            getUser(login)
+                .then(function (user) {
+                    return getRights(user)              // assuming getRights is returning a promise
+                        .then(function (rights) {
+                            return updateMenu(rights);
+                        });
+                })
+
+    but more beautifully
+
+            getUser(login)
+                .then(function (user) {
+                    return getRights(user);             // getRights is returning a promise
+                })
+                .then(function (rights) {
+                    return updateMenu(rights);
+                })
+
+- Another interesting thing is the error handling, as you can use one handler per promise, or one
+    for all the chain.
+
+    1) One per promise:
+
+            getUser(login)
+                .then(
+                    function (user) {        
+                        return getRights(user);
+                    }, 
+                    function (error) {
+                        console.log(error);             // will be called if getUser fails
+                        return Promise.reject(error);
+                    }
+                )
+                .then(
+                    function (rights) {
+                        return updateMenu(rights);
+                    },
+                    function (error) {
+                        console.log(error);             // will be called if getRights fails
+                        return Promise.reject(error);
+                    }
+                )
+
+    2) One for the chain:
+
+            getUser(login)
+                .then(function (user) {
+                    return getRights(user);
+                })
+                .then(function (rights) {
+                    return updateMenu(rights);
+                })
+                .catch(function (error) {
+                    console.log(error); // will be called if getUser or getRights fails
+                })

@@ -44,7 +44,8 @@ Rest operator:
 
     -> const productCategories = ['Gaming', 'Multimedia', 'Computing']
     -> The current behavior: NOT CHANGING A VARIABLE, INSTEAD CREATE A NEW VERSION THAT COMES FROM
-        THE ORIGINAL
+        THE ORIGINAL IS CALLED IMMUTABILITY(once a value is created, it is not changed. If you want
+        a different value, you create a new one)
     
     (Spread operator on objects)
 

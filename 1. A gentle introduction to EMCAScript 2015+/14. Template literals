@@ -1,0 +1,58 @@
+Template literals:
+
+- Composing strings has always been painful in JavaScript, as we usually have to use concatenation:
+    
+        const fullname = 'Miss ' + firstname + ' ' + lastname;
+
+
+- Template literals are a new small feature, where you have to use backticks (`) instead of quotes or
+    simple quotes, and you have a basic templating system, with multiline support:
+
+        const fullname = `Miss ${firstname} ${lastname}`;
+
+
+- The multiline support is especially great when your are writing HTML strings, as we will do for our
+    Angular components:
+
+        const template = `<div>
+                            <h1>Hello</h1>
+                         </div>`;
+
+
+- 🔥One last feature is the ability to tag them. You can define a function, and apply it to a template
+    string. Here askQuestion adds an interrogation point at the end of the string:
+
+        const askQuestion = strings => strings + '?';
+        const template = askQuestion`How are you`;
+        document.getElementById('demo1').innerHTML = template; // How are you?
+
+- 🔥The tag function in fact receives several arguments:
+    • an array of the static parts of the string
+    • the values resulting from the evaluation of the expressions
+
+    for eg, if we have a template string containing expressions:
+        const person1 = 'Cedric';
+        const person2 = 'Agnes';
+        const template = `Hello ${person1}! Where is ${person2}?`;
+
+    then the tag function will receive the various static and dynamic parts. Here we have a tag function
+    to uppercase the names of the protagonists:(see template_literals_tag.html)
+
+        const uppercaseNames = (strings, ...values) => {
+            // 👉 `strings` is an array with the static parts of the template ['Hello ', '! Where is ', '?']
+            // 👉 `values` is an array with the evaluated expressions ['Cedric', 'Agnes']
+
+            const names = values.map(name => name.toUpperCase());
+            // `names` now has ['CEDRIC', 'AGNES']
+
+            // let's merge the `strings` and `names` arrays
+            return strings.map((string, i) => `${string}${names[i] ? names[i] : ''}`).join('');
+        };
+
+        const result = uppercaseNames`Hello ${person1}! Where is ${person2}?`;
+        // returns 'Hello CEDRIC! Where is AGNES?'
+        // 👉internally transforms into: uppercaseNames(
+            //                                            ['Hello ', '! Where is ', '?'],
+            //                                            'Cedric',
+            //                                            'Agnes'
+            //                                          );

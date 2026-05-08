@@ -1,0 +1,118 @@
+Classes:
+
+- One of the most emblematic new features, and one that we will vastly use when writing an Angular
+    app: ES2015 introduces classes to JavaScript! we can now easily use classes and inheritance in
+    JavaScript. 
+    You always could, using prototypal inheritance, but that was not an easy task, especially
+    for beginners. Now it's very easy:
+
+            class Pony {
+                constructor(color) {
+                this.color = color;
+                }
+                
+                toString() {
+                    return `${this.color} pony`;
+                    // see that? It is another cool feature of ES2015, called template literals
+                    // we'll talk about these quickly!
+                }
+            }
+
+            const bluePony = new Pony('blue');
+            console.log(bluePony.toString()); // blue pony
+
+    -> noticed the special function constructor. It is the function being called when we create a
+        new pony instance, with the new operator wityh the color set to 'blue'.
+    -> A class can also have methods, callable on an instance, as the method toString() here.
+
+- Class declarations, unlike function declarations, are not hoisted, so you need to declare a class
+    before using it. for eg,
+
+            sayHi();    // ✅ works
+
+            function sayHi() {
+                console.log("Hi!");
+            }
+    but
+            const user = new User(); // ❌ Error
+
+            class User {
+                constructor(name) {
+                    this.name = name;
+                }
+            }
+
+- ✅ static: A class can also have static attributes and methods:
+
+            class Pony {
+                static defaultSpeed() {
+                    return 10;
+                }
+            }
+
+            const speed = Pony.defaultSpeed();
+    
+    -> static methods can be called only on the class directly.
+
+- ✅ getters and setters: A class can have getters and setters, if you want to hook onto these operations:
+
+            class Pony {
+                get color() {
+                    console.log('get color');
+                    return this._color;
+                }
+                set color(newColor) {
+                    console.log(`set color ${newColor}`);
+                    this._color = newColor;
+                }
+            }
+
+            const pony = new Pony();
+            pony.color = 'red'; // 'set color red'
+            console.log(pony.color);// 'get color red'
+
+- ✅ inheritance: of course, if you have classes, you also have inheritance out of the box in ES2015.
+
+            class Animal {
+                speed() {
+                    return 10;
+                }
+            }
+            class Pony extends Animal {}
+            const pony = new Pony();
+            console.log(pony.speed()); // 10, as Pony inherits the parent method
+    
+    -> Animal is called the base class, and Pony the derived class. As you can see, the derived
+        class has the methods of the base class. It can also override them:
+
+            class Animal {
+                speed() {
+                    return 10;
+                }
+            }
+            class Pony extends Animal {
+                speed() {
+                    return super.speed() + 10;
+                }
+            }
+            const pony = new Pony();
+            console.log(pony.speed()); // 20, as Pony overrides the parent method
+
+    -> As you can see, the keyword super allows calling the method of the base class, with
+        super.speed().
+
+- The super keyword can also be used in constructors, to call the base class constructor:
+
+            class Animal {
+                constructor(speed) {
+                    this.speed = speed;
+                }
+            }
+            class Pony extends Animal {
+                constructor(speed, color) {
+                    super(speed);
+                    this.color = color;
+                }
+            }
+            const pony = new Pony(20, 'blue');
+            console.log(pony.speed); // 20
