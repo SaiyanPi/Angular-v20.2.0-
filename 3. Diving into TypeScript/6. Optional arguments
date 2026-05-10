@@ -1,0 +1,17 @@
+Optional arguments:
+
+- 🔥Another treat of JavaScript is that arguments are optional. You can omit them, and they will become
+    undefined. But if you define a function with typed parameter in TypeScript, the compiler will shout
+    at you if you forget them:
+
+        addPointsToScore(player); // error TS2346
+        // Supplied parameters do not match any signature of call target.
+
+
+- 🔥To show that a parameter is optional in a function (or a property in an interface), you can add ?
+    after the parameter. Here, the points parameter could be optional:
+
+        function addPointsToScore(player: HasScore, points?: number): void {
+            points = points || 0;
+            player.score += points;
+        }

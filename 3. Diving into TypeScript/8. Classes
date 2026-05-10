@@ -1,0 +1,108 @@
+Classes:
+
+- 🔥A class can implement an interface. For us, the Pony class should be able to run, so we can write:
+
+        interface CanRun {
+            run(meters: number): void;
+        }
+
+        class Pony implements CanRun {
+            run(meters: number): void {
+                logger.log(`pony runs ${meters}m`);
+            }
+        }
+    
+    The compiler will force us to implement a run method in the class. If we implement it badly, by
+    expecting a string instead of a number for example, the compiler will yell:
+
+        ❌
+        class IllegalPony implements CanRun {
+            run(meters: string) {
+                console.log(`pony runs ${meters}m`);
+            }
+        }
+        // error TS2420: Class 'IllegalPony' incorrectly implements interface 'CanRun'.
+        // Types of property 'run' are incompatible.
+
+
+- 🔥You can also implement several interfaces if you want:
+        
+        class HungryPony implements CanRun, CanEat {
+            run(meters: number): void {
+                logger.log(`pony runs ${meters}m`);
+            }
+            eat(): void {
+                logger.log(`pony eats`);
+            }
+        }
+
+
+- 🔥And an interface can extend one or several others:
+        
+        interface Animal extends CanRun, CanEat {}
+
+        class Pony implements Animal {
+            // ...
+        }
+
+    simpler example:
+
+        interface Rectangle {
+            height: number,
+            width: number
+        }
+
+        // extending interface
+        interface ColoredRectangle extends Rectangle{
+            color: string
+        }
+
+        let rectangle3: ColoredRectangle = {
+            height: 4,
+            width: 6,
+            color: 'yellow'
+        };
+
+
+- When you’re defining a class in TypeScript, you can have properties and methods in your class. You
+    may realize that properties in classes are not a standard ES2015+ feature. It is only possible in
+    TypeScript.
+
+        class SpeedyPony {
+            speed = 10;
+            run(): void {
+                logger.log(`pony runs at ${this.speed}m/s`);
+            }
+        }
+
+
+- 🔥Everything is public by default, but you can use the private keyword to hide a property or a
+    method. If you add private or public to a constructor parameter, it is a shortcut to create and
+    initialize a private or public member:
+
+        class NamedPony {
+            constructor(public name: string, private speed: number) {}
+            run(): void {
+                logger.log(`pony runs at ${this.speed}m/s`);
+            }
+        }
+
+        const pony = new NamedPony('Rainbow Dash', 10);
+        // defines a public property name with 'Rainbow Dash'
+        // and a private one speed with 10
+
+    This is the same as the more verbose:
+
+        class NamedPonyWithoutShortcut {
+            public name: string;
+            private speed: number;
+            constructor(name: string, speed: number) {
+                this.name = name;
+                this.speed = speed;
+            }
+            run(): void {
+                logger.log(`pony runs at ${this.speed}m/s`);
+            }
+        }
+
+    These shortcuts are really useful and we’ll rely on them a lot in Angular!

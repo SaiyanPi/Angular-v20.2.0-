@@ -58,10 +58,12 @@ A practical example with DI:
     like:
 
         class RaceList {
+            // 💡class property declaration with a type annotation (raceService must hold an instance of RaceService.)
             raceService: RaceService;
             races: Array<string> = [];
-            constructor(raceService: RaceService) {
-                // the interesting part is `: RaceService`
+
+            //💡`: RaceService` is a type annotation it says raceService should be a RaceService
+            constructor(raceService: RaceService) {     
                 this.raceService = raceService;
                 this.raceService.list().then(races => (this.races = races));
             }

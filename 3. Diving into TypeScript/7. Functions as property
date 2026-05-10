@@ -1,0 +1,23 @@
+Functions as property:
+
+- You may also be interested in describing a 🔥parameter that must have a specific function instead of a
+    property. The interface definition will be:
+
+        // interface
+        interface CanRun {
+            run(meters: number): void;
+        }
+
+        // function
+        function startRunning(pony: CanRun): void {
+            pony.run(10);
+        }
+
+        // object
+        const ponyOne = {
+            // function as an object property
+            run: (meters: number) => logger.log(`pony runs ${meters}m`)
+        };
+
+        // passing object(that has a function) as an argument to the function startRunning
+        startRunning(ponyOne);

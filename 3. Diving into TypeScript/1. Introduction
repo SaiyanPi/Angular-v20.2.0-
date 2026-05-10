@@ -1,0 +1,11 @@
+TypeScript Introduction:
+
+- 🔥TypeScript has been around since 2012. It’s a superset of JavaScript, adding a few things to ES5. The
+    most important one is the type system, giving TypeScript its name
+
+- Writing TypeScript feels very much like writing JavaScript. By convention, TypeScript files are named
+    with a .ts extension, and they will need to be compiled to standard JavaScript, usually at build time,
+    using the TypeScript compiler. The generated code is very readable.
+
+        npm install -g typescript
+        tsc test.ts

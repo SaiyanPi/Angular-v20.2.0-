@@ -1,0 +1,46 @@
+Types as in TypeScript:
+
+- The general syntax to add type info in TypeScript is rather straightforward:
+
+        let variable: type;
+
+- The types are easy to remember:
+
+        const ponyNumber: number = 0;
+        const ponyName: string = 'Rainbow Dash';
+
+- 💡the types are optional because the TS compiler can guess them (it’s called "type inference") from the
+    values.
+
+
+- 🔥The type can also come from your app, as with the following class Pony:
+
+        const pony: Pony = new Pony();            
+
+
+- 🔥TypeScript also supports what some languages call "generics", for example for an array:
+
+        const ponies: Array<Pony> = [new Pony()];
+
+    The array can only contain ponies, and the generic notation, using <>, indicates this. You may be
+    wondering what the point of doing this is. Adding types information will help the compiler catch
+    possible mistakes:
+
+        ponies.push('hello'); // error TS2345
+        // Argument of type 'string' is not assignable to parameter of type 'Pony'.
+
+
+- ⁉️So, if you need a variable to have multiple types, does it mean you’re screwed? No, because TS has a
+    special type, called any.
+
+        let changing: any = 2;
+        changing = true; // no problem
+    
+    It’s really useful when you don’t know the type of a value, either because it’s from a dynamic
+    content or from a library you’re using.
+
+
+- 🔥f your variable can only be of type number or boolean, you can use a union type:
+        
+        let changing: number | boolean = 2;
+        changing = true; // no problem

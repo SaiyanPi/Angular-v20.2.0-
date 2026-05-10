@@ -1,0 +1,44 @@
+Enums:
+
+- TypeScript also offers enum. For example, a race in our app can be either ready, started or done.
+
+        enum RaceStatus {
+            Ready,
+            Started,
+            Done
+        }
+
+        const race = new Race();
+        race.status = RaceStatus.Ready;
+
+
+- The enum is in fact a numeric value, starting at 0. You can set the value you want, though:
+        
+        enum Medal {
+            Gold = 1,
+            Silver,
+            Bronze
+        }
+
+
+- 🔥Since TypeScript 2.4, you can even specify a string value:
+        
+        enum Position {
+            First = 'First',
+            Second = 'Second',
+            Other = 'Other'
+        }
+
+
+- 🔥To be honest though, we don’t use enums a lot in our projects: we use union types. They are simpler
+    and cover roughly the same use-cases:
+
+        let color: 'blue' | 'red' | 'green';
+        // we can only give one of these values to `color`
+        color = 'blue';
+    
+
+- 🔥TypeScript even allows you to create your own types, so you could do something like:
+        
+        type Color = 'blue' | 'red' | 'green';
+        const ponyColor: Color = 'blue';

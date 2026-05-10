@@ -1,0 +1,15 @@
+Return types:
+
+- 🔥You can also set the return type of a function:
+
+        function startRace(race: Race): 👉Race {
+            race.status = RaceStatus.Started;
+            return race;
+        }
+
+
+- 🔥If the function returns nothing, you can show it using void:
+        
+        function startRace(race: Race): 👉void {
+            race.status = RaceStatus.Started;
+        }

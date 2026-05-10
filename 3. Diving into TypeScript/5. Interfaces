@@ -1,0 +1,44 @@
+Interfaces:
+
+- JavaScript is great for its dynamic nature. A function will work if it receives an object with the
+    correct property:
+
+        function addPointsToScore(player, points) {
+            player.score += points;
+        }
+
+
+- Above function can be applied to any object with a score property. How do you translate this in
+    TypeScript? It’s easy: you define an interface, which is like the "shape" of the object.
+        
+        function addPointsToScore(player: { score: number }, points: number): void {
+            player.score += points;
+        }
+    
+    It means that the parameter must have a property called score of the type number. score: number
+    is called inline annotation
+
+
+- 🔥 You can ommit the inline annotation part in code above with interface.
+
+        interface HasScore {
+            score: number;
+        }
+
+        function addPointsToScore(player: HasScore, points: number): void {
+            player.score += points;
+        }
+
+
+- You’ll see that we often use interfaces throughout the book to represent our entities. We use
+    interfaces for our models in our other projects as well.💡We usually append a Model suffix to make it
+    clear. It’s then very easy to create a new entity:
+
+        interface PonyModel {
+            name: string;
+            speed: number;
+        }
+        const pony: PonyModel = { 
+            name: 'Light Shoe',
+            speed: 56 
+        };

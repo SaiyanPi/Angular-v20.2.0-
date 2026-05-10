@@ -1,0 +1,33 @@
+Working with other libraries:
+
+- When working with external libraries written in JS, you may think we are doomed because we
+    don’t know what types of parameter the function in that library will expect. That’s one of the cool
+    things with the TypeScript community: its members have defined interfaces for the types and
+    functions exposed by the popular JavaScript libraries!
+
+
+- The files containing these interfaces have a special .d.ts extension. They contain a list of the
+    library’s public functions. A good place to look for these files is DefinitelyTyped. For example, if you
+    want to use TS in your AngularJS 1.x apps, you can download the proper file from the repo directly
+    with NPM:
+        
+        npm install --save-dev @types/angular
+
+    or download it manually. Then include the file at the top of your code, and enjoy the compilation
+    checks:
+
+        /// <reference path="angular.d.ts" />
+        angular.module(10, []); // the module name should be a string
+        // so when I compile, I get:
+        // Argument of type 'number' is not assignable to parameter of type 'string'.
+    
+    /// <reference path="angular.d.ts" /> is a special comment recognized by TS, telling the compiler
+    to look for the interface angular.d.ts. Now, if you misuse an AngularJS method, the compiler will
+    complain, and you can fix it on the spot, without having to manually run your app!
+
+
+- 🔥Even cooler, since TypeScript 1.6, the compiler will auto-discover the type definitions of an NPM
+    library if they are packaged with the library itself. More and more projects are adopting this
+    approach, and so is Angular. So you don’t even have to worry about including the interfaces in your
+    Angular project: the TS compiler will figure it out by itself if you are using NPM to manage your
+    dependencies!
