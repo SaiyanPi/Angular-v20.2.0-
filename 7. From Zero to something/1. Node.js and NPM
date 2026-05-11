@@ -1,0 +1,6 @@
+Node.js and NPM:
+
+- Pretty much all the modern JavaScript tools are built for Node.js and NPM these days. You’ll have to
+    install Node.js and NPM on your system. The best way to do that depends on your operating system
+    - you can find more information on the official website https://nodejs.org/en. Make sure you have a
+    recent enough version of Node.js (by executing node --version).

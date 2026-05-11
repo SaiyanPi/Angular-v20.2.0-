@@ -1,0 +1,56 @@
+Angular CLI:
+
+- You could setup everything by yourself, starting with a TypeScript project, then install every
+    dependency needed, etc.
+    But in a real project, you’ll probably have to set up several other things too, like:
+        • some tests to check if we’re not breaking things
+        • maybe a linter to check your code
+        • maybe a CSS preprocessor
+        • a build tool, to orchestrate the various tasks (compile, test, package, etc.)
+    But it’s a bit cumbersome to setup everything yourself, especially when there are sooooo many
+    tools to learn first.
+
+- These past few years, a lot of small project generators have seen the light, pretty much all using the
+    great Yeoman. It used to be the case for AngularJS 1.x, and there were a few attempts for Angular
+    from the community
+
+- But this time, the Google team has been working on this issue, and they have come up with
+    something: Angular CLI.
+    🔥Angular CLI is a command line utility to easily quick start a project, already configured with
+    Webpack as a build tool (the popular kid these years), tests, packaging, etc.
+    The idea is not new, and is in fact borrowed from another popular framework: EmberJS and its popularly
+    acclaimed ember-cli.
+    🔥The tool is under continuous development, with a dedicated Google team working on it and making
+    it better and better. It is now the recommended and de facto standard way of creating and building
+    Angular apps. So let’s give it a try, and discover the ton of cool stuff packed into it!
+
+- First let’s install Angular CLI, and generate a new application with the ng new command. I am using the 
+    CLI version21.2.10. But If you want to use exactly the CLI version 20.2.2, you can use npm install -g 
+    @angular/cli@20.2.2 instead.
+
+        npm install -g @angular/cli
+        or
+        npm install -g @angular/cli@20.2.2
+    
+    🔥To create a project skeleton in a new directory called ponyracer:
+
+        ng new ponyracer --defaults --no-routing --prefix ns
+    
+    🔥From the directory ponyracer, you can start your app with:
+
+        ng serve
+    
+    This will start a small HTTP server locally, with a hot reload configuration. It means that every time
+    you modify and save a file, the server will rebuild the app, and the browser will reload it
+    immediately.
+
+- 🔥⚠️ In Angular 15, the framework introduced a new feature called standalone
+    components, which is now the default since Angular v17. Until then, components
+    had to be declared in Angular modules, which are quite a complex concept to
+    grasp and use correctly, especially when starting with Angular. Using standalone
+    components allows us to avoid having to create Angular modules and makes many
+    things simpler, especially for beginners. Standalone components are the way of the
+    future, so we chose to use that option. We will explain Angular modules in a later
+    chapter though, because you will still have to understand their purpose and use
+    existing modules in your day-to-day work, but for now, you don’t need to worry
+    too much about them.
