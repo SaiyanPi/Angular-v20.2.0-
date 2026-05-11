@@ -1,0 +1,41 @@
+Frameworks on top of Web Components:
+
+- 🔥As Web Components are not fully supported by every browser, there is a polyfill you can include in
+    your app to make sure it will work. The polyfill is called web-component.js, and it’s worth noting
+    that it is a joint effort from Google, Mozilla and Microsoft among others.
+
+
+- On top of this polyfill, a few libraries have seen the light. All aim to facilitate working with Web
+    Components, and often come with some ready-to-use Web Components.
+    Among the most notable initiatives, you find:
+    • Polymer, the first attempt from Google
+    • LitElement, a more recent project from the Polymer team ;
+    • X-tag from Mozilla and Microsoft
+    • Stencil.
+
+    you can easily use an already existing component. Let’s say you want a Google Map in your app:
+
+        <!-- Polyfill Web Components support for older browsers -->
+        <script src="webcomponents.js"></script>
+
+        <!-- Import element -->
+        <script src="google-map.js"></script>
+
+        <!-- Use element -->
+        <body>
+            <google-map latitude="45.780" longitude="4.842"></google-map>
+        </body>
+
+
+- There are a LOT of components out there. You can have an overview on https://www.webcomponents.org/.
+
+
+- You can do a lot of cool things with LitElement and other similar frameworks, like two-way data
+    binding, default values for attributes, emit custom events, react to attribute changes, repeat
+    elements if we give a collection to a component, etc.
+
+
+- You’ll see that some of the concepts are going to pop out along your read. And you’ll definitely
+    see that the Google team designed Angular to make it easy to use Web Components with our Angular
+    components. It is even possible to export our own Angular components as Web Components, with the help
+    of Angular Elements.

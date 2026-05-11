@@ -1,0 +1,27 @@
+Template:
+
+- 🔥A template specified in a <template> element is not displayed in your browser. Its main goal is to be
+    cloned in an element at some point. What you declare inside will be inert: scripts don’t run, images
+    don’t load, etc. Its content can’t be queried by the rest of the page using usual methods like
+    getElementById() and it can be safely placed anywhere in your page.
+
+    To use a template, it needs to be cloned:
+
+        <template id="pony-template">
+            <style>
+                h1 {
+                    color: orange;
+                }
+            </style>
+            <h1>General Soda</h1>
+        </template>
+
+        class Pony extends HTMLElement {
+            constructor() {
+                super();
+                const template = document.querySelector('#pony-template');
+                const clonedTemplate = document.importNode(template.content, true);
+                const shadow = this.attachShadow({ mode: 'open' });
+                shadow.appendChild(clonedTemplate);
+            }
+        }

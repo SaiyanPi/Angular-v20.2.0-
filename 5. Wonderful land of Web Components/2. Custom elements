@@ -1,0 +1,43 @@
+Custom elements:
+
+- 🔥Custom elements are a new standard allowing developers to create their own DOM elements,
+    making something like <ns-pony></ns-pony> a perfectly valid HTML element. The specification
+    defines how to declare such elements, how to make them extend existing elements, how to define
+    your API, etc
+    Declaring a custom element is done using customElements.define:
+        
+        class Pony extends HTMLElement {
+            constructor() {
+                super();
+                console.log("I'm a pony!");
+            }
+        }
+        customElements.define('ns-pony', Pony);
+
+    And you can then use it:
+        
+        <ns-pony></ns-pony>
+    
+    ⚠️Note that the name must contain a dash, so that the browser knows it is a custom element. Of
+    course, your custom element can have properties and methods, and it also has lifecycle callbacks, to
+    be able to execute code when the component is inserted or removed, or when one of its attributes
+    changes. It can also have a template of its own. Maybe the ns-pony displays an image of the pony or
+    just its name:
+
+        class Pony extends HTMLElement {
+            constructor() {
+                super();
+                console.log("I'm a pony!");
+            }
+            /**
+            * This is called when the component is inserted
+            */
+            connectedCallback() {
+                this.innerHTML = '<h1>General Soda</h1>';
+            }
+        }
+    
+    If you try to look at the DOM, you’ll see <ns-pony><h1>General Soda</h1></ns-pony>. But that means
+    the CSS and JavaScript logic of your app can have undesired effects on your component. So, usually,
+    the template is hidden and encapsulated in something called Shadow DOM, and you’ll only see
+    <nspony></ns-pony> if you inspect the DOM, despite the fact that the browser displays the pony’s name.

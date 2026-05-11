@@ -1,0 +1,30 @@
+Shadow DOM:
+
+- Shadow DOM is a way to encapsulate the DOM of our component. This encapsulation means that
+    the stylesheet and JavaScript logic of your app will not apply on the component and ruin it
+    inadvertently. It gives us the perfect tool to hide the internals of a component, and be sure nothing
+    leaks from the component to the app, or vice-versa.
+
+        class Pony extends HTMLElement {
+            constructor() {
+                super();
+                const shadow = this.attachShadow({ mode: 'open' });
+                const title = document.createElement('h1');
+                title.textContent = 'General Soda';
+                shadow.appendChild(title);
+            }
+        }
+
+    If you try to inspect it now you should see:
+        
+        <ns-pony>
+            #shadow-root (open)
+            <h1>General Soda</h1>
+        </ns-pony>
+
+    Now, even if you try to add some style to the h1 elements, the visual aspect of the component won’t
+    change at all: that’s because the Shadow DOM acts like a barrier.
+
+
+- Until now, we just used a string as a template of our web component. But that’s usually not the way
+    you do that. Instead, the best practice is to use the <template> element.

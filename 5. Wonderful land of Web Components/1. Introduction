@@ -1,0 +1,28 @@
+The wonderful land of Web Components:
+
+- You don’t have to know about Web Components to write Angular code. But It’s a good thing to have an
+    overview of what they are, because some choices in Angular have been made to facilitate the
+    integration with Web Components, or to make the components we will build similar to Web
+    Components.
+    Feel free to skip this part if you have no interest in this topic; however, believe you’ll learn a
+    thing or two that will be useful for the rest of the road.
+
+
+- 🔥Components are an old fantasy in development. Something you can grab off the shelves and drop
+    into your app, something that would work right away and bring a needed functionality to your
+    users
+
+
+- 🔥We have had components in web development for quite some time, but they usually require some kind of
+    dependency, like jQuery, Dojo, Prototype, AngularJS, etc. Not necessarily libraries you wanted to
+    add to your app. Web Components attempt to solve this problem: let’s have reusable and encapsulated
+    components.
+
+
+- They rely on a set of emerging standards that browsers don’t perfectly support yet. But, still, it’s an
+    interesting topic, even if there’s a chance we’ll have to wait a few years to use them fully, or even if
+    the concept never takes off.
+    This emerging standard is defined in 3 specifications:
+        • Custom elements
+        • Shadow DOM
+        • Template
