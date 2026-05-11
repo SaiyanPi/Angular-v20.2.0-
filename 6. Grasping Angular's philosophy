@@ -1,0 +1,101 @@
+Grasping Angular’s philosophy:
+
+- To write an Angular application, you have to grasp a few things on the framework’s philosophy.
+
+- 🔥First and foremost, Angular is component-oriented. You will write tiny components and, together,
+    they will constitute a whole application. A component is a group of HTML elements in a template,
+    dedicated to a particular task. For this, you will usually also need to have some logic linked to that
+    template, to populate data, and react to events for example
+
+- This component orientation is something that is becoming widely shared across front-end
+    frameworks: React, the cool kid from Facebook, has been doing it that way from the beginning;
+    Ember has its own way of doing something similar; and others like Svelte or Vue.js are betting on
+    building small components too.
+
+- Angular is not alone in this, but it is among the first (it might actually be the first?) to really care
+    about the integration of Web Components (the standard ones). But let’s forget about this for now, as
+    it is a more advanced topic.
+
+- 🔥Your components will be arranged in a hierarchical way, like the DOM is. A root component will
+    have child components, each of them will also have children, etc. If you want to display a pony race,
+    you’ll have something like an app (Ponyracer), displaying a menu (Menu) with the logged in user (User)
+    and a child view (Race), displaying, of course, the ponies (Pony) in the races:
+
+                                    Ponyracer
+                                        |
+                -----------------------------------------------------
+                |                                                   |
+                V                                                   V
+              Menu                                                 Race
+                |                                                   |
+                |                                   ---------------------------------
+                |                                   |               |               |
+                V                                   V               V               V
+               User                                Pony            Pony           Pony  
+
+- Writing components will be your everyday work, so let’s see what it looks like. The Angular team
+    wanted to harness another goodness of today’s web development: ES2015+. So you can write your
+    components in ES5 (but that’s not very cool) or in ES2015+ (way cooler!). But that was not enough
+    for them. 🔥They wanted to use a feature that is not a standard (yet): decorators. So they worked
+    closely with the transpiler teams (Traceur and Babel) and the TypeScript team at Microsoft, to
+    enable us to use decorators in our Angular apps. A few decorators are available, allowing us to
+    easily declare a component for example. 
+    For example, if we simplify, the Race component could look like this:
+
+        import { Component, inject, Signal, signal } from '@angular/core';
+        import { RaceModel, RaceService } from './services';
+        import { Pony } from './components';
+
+        @Component({
+            selector: 'ns-race',
+            templateUrl: './race.html',
+            imports: [Pony]
+        })
+
+        export class Race {
+            private readonly raceService = inject(RaceService);
+            protected readonly race = signal(this.raceService.get());
+        }
+    
+    And the template looks like this:
+
+        <div>
+            <h2>{{ race().name }}</h2>
+            <div>{{ race().status }}</div>
+            @for (pony of race().ponies; track pony.id) {
+                <div>
+                    <ns-pony [ponyModel]="pony" />
+                </div>
+            }
+        </div>
+    
+    The template shouldn’t be too hard to understand. It’s HTML with expressions in curly braces {{ }},
+    which will be evaluated and replaced by the corresponding value. Let's not go too deep for
+    now, merely just give you a feel of what the code looks like.
+
+- A component is a very isolated piece of your app. Your app is a component like the others.
+
+- 🔥You will group components in one or several coherent entities, called modules (Angular Modules,
+    not ES2015 Modules), or learn how to avoid them by making your components standalone.
+
+- 🔥You can also take available libraries of components from the community and just use them in your
+    app, and be able to enjoy their features.
+    Such libraries can offer UI components, or drag and drop capability, or validation for your forms, or
+    whatever you can think of.
+
+- In the next chapters, we are going to explore how to get started, how to build a small component,
+    your first application and the templating syntax.
+
+- 🔥There is another concept that is at the core, and that is Dependency injection (often called by its
+    little name, DI). It is a very powerful pattern, and you will quickly get used to it after reading the
+    dedicated chapter. It is especially useful to test your application, and I love doing tests, watching the
+    progress bar go all green in my IDE. It makes me feel I’m doing a good job. So there will be an entire
+    chapter on testing everything: your components, your services, your UI...
+
+- Angular still has the magic feeling it had in v1, where changes were automatically detected by the
+    framework and applied to the model and the views. 🔥But it is done in a very different way than it
+    was then: the change detection now uses a concept called zones. We will look into this, of course.
+
+- Angular is also a complete framework which provides a lot of help for performing common tasks in
+    web development. Writing forms, calling a HTTP backend, routing, interacting with other libraries,
+    animations, you name it: you’re covered.
