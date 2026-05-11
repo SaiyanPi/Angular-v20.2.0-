@@ -1,0 +1,63 @@
+keyof:
+
+- 🔥The keyof keyword can be used to get a type representing the union of the names of the properties
+    of another type.
+    For example, you have a PonyModel interface:
+
+        interface PonyModel {
+            name: string;
+            color: string;
+            speed: number;
+        }
+    
+    You want to build a function that returns the value of a property. You could implement a naive
+    version:
+
+        function getProperty(obj: any, key: string): any {
+            return obj[key];
+        }
+
+        const pony: PonyModel = {
+            name: 'Rainbow Dash',
+            color: 'blue',
+            speed: 45
+        };
+        const nameValue = getProperty(pony, 'name');
+
+    ⚠️Two problems here:
+        • you can give any value to the key parameter, even keys that don’t exist on PonyModel.
+        • the return type being any, you are losing a lot of type information.
+
+
+- 🔥This is where keyof can shine. keyof allows you to list all the keys of a type: 
+
+        type PonyModelKey = keyof PonyModel;
+        // this is the same as `'name'|'speed'|'color'`
+        let property: PonyModelKey = 'name'; // works
+        property = 'speed'; // works
+        // key = 'other' would not compile
+
+    So we can use this type to make getProperty safer, by declaring that:
+        👉 the first parameter is of type T
+        👉 the second parameter is of type K, which is a key of T
+
+        function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+            return obj[key];
+        }
+        const pony: PonyModel = {
+            name: 'Rainbow Dash',
+            color: 'blue',
+            speed: 45
+        };
+        // 🔥TypeScript infers that `nameValue` is of type `string`!
+        const nameValue = getProperty(pony, 'name');
+
+
+- see keyof.ts or run the keyof.js
+
+
+- We killed two birds with one stone here:
+    • key can now only be an existing property of PonyModel
+    • the return value will be inferred by TypeScript (which is pretty awesome!)
+    
+    Now let’s see how we can leverage keyof to do even more

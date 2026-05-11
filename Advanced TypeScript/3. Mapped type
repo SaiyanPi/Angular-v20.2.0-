@@ -1,0 +1,81 @@
+Mapped type:
+
+- Let’s say you want to create a type that has exactly the same properties as PonyModel, but you want
+    every property to be optional. You can of course define it manually:
+
+        interface PartialPonyModel {
+            name?: string;
+            color?: string;
+            speed?: number;
+        }
+
+        const pony: PartialPonyModel = {
+            name: "Rainbow Dash"
+        };
+    
+    But you can do something more generic with a mapped type:
+
+        type Partial<T> = {
+            [P in keyof T]?: T[P];
+        };
+
+        const pony: Partial<PonyModel> = {
+            name: 'Rainbow Dash'
+        };
+    
+    🔥The Partial type is a transformation that applies the ? modifier to every property of a type!
+    🔥In fact, you don’t have to define the type Partial yourself, because since version 2.1, it’s part of
+        the language itself, and it’s declared exactly like in the above example.
+
+        interface PonyModel {
+            name: string;
+            color: string;
+            speed: number;
+        }
+
+        const pony: Partial<PonyModel> = {
+            name: "Blue Bird"
+        }
+
+    TypeScript offers other mapped types out of the box. 💡see keyof.ts or run keyof.js file to get get clear
+    image about the following mapped types
+
+
+#) Readonly:
+    - 🔥Readonly makes all the properties of an object readonly:
+
+        const pony: Readonly<PonyModel> = {
+            name: 'Rainbow Dash',
+            color: 'blue',
+            speed: 45
+        };
+        // all properties are `readonly`
+
+
+#) Pick:
+    - 🔥Pick helps you build a type with only some of the original properties:
+
+        const pony: Pick<PonyModel, 'name' | 'color'> = {
+            name: 'Rainbow Dash',
+            color: 'blue'
+        };
+        // `pony` can't have a `speed` property
+
+
+#) Record:
+    - 🔥Record helps you build a type with the same properties as another type, but with a different type:
+
+        interface FormValue {
+            value: string;
+            valid: boolean;
+        }
+
+        const pony: Record<keyof PonyModel, FormValue> = {
+            name: { value: 'Rainbow Dash', valid: true },
+            color: { value: 'blue', valid: true },
+            speed: { value: '45', valid: true }
+        };
+
+
+- There are even more than this, but these are the most useful.
+    https://www.typescriptlang.org/docs/handbook/utility-types.html

@@ -1,0 +1,10 @@
+readonly:
+
+- You can use the readonly keyword to mark the property of a class or interface as… read only! That
+    way, the compiler will refuse to compile any code trying to assign a new value to the property:
+
+        interface Config {
+            readonly timeout: number;
+        }
+        const config: Config = { timeout: 2000 };
+        // `config.timeout` is now readonly and can't be reassigned

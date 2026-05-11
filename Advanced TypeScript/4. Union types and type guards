@@ -1,0 +1,123 @@
+Union types and type guards:
+
+- 🔥Union types are really handy. Let’s say your application has authenticated users and anonymous
+    users, and sometimes you need to do a different action depending on that. You can model this as:
+
+        interface User {
+            type: 'authenticated' | 'anonymous';
+            name: string;
+            // other fields
+        }
+
+        interface AuthenticatedUser extends User {
+            type: 'authenticated';
+            loggedSince: number;
+        }
+
+        interface AnonymousUser extends User {
+            type: 'anonymous';
+            visitingSince: number;
+        }
+
+        function onWebsiteSince(user: User): number {
+            if (user.type === 'authenticated') {
+                // this is a LoggedUser
+                return (user as AuthenticatedUser).loggedSince;
+            } else if (user.type === 'anonymous') {
+                // this is an AnonymousUser
+                return (user as AnonymousUser).visitingSince;
+            }
+            // TS doesn't know every possibility was covered
+            // so we have to return something here
+            return 0;
+        }
+
+    🔥using as … explicit casts is good but Maybe we can do better?
+
+
+- 🔥One possibility is to use a type guard, a special function whose sole purpose is to help the TypeScript
+    compiler.
+
+        function isAuthenticated(user: User): user is AuthenticatedUser {
+            return user.type === 'authenticated';
+        }
+
+        function isAnonymous(user: User): user is AnonymousUser {
+            return user.type === 'anonymous';
+        }
+
+        function onWebsiteSince(user: User): number {
+            if (isAuthenticated(user)) {
+                // this is inferred as a LoggedUser
+                return user.loggedSince;
+            } else if (isAnonymous(user)) {
+                // this is inferred as an AnonymousUser
+                return user.visitingSince;
+            }
+            // TS still doesn't know every possibility was covered
+            // so we have to return something here
+            return 0;
+        }
+
+    This is better! But we still need to return a default value, even if we covered all the possibilities.
+    We can slightly improve the situation if we drop the type guards and use a union type instead.
+
+        interface BaseUser {
+            name: string;
+            // other fields
+        }
+
+        interface AuthenticatedUser extends BaseUser {
+            type: 'authenticated';
+            loggedSince: number
+            ;
+        }
+        interface AnonymousUser extends BaseUser {
+            type: 'anonymous';
+            visitingSince: number;
+        }
+
+        type User = AuthenticatedUser | AnonymousUser;
+
+        function onWebsiteSince(user: User): number {
+            if (user.type === 'authenticated') {
+                // this is inferred as a LoggedUser
+                return user.loggedSince;
+            } else {
+                // this is narrowed as an AnonymousUser
+                // without even testing the type!
+                return user.visitingSince;
+            }
+            // no need to return a default value
+            // as TS knows that we covered every possibility!
+        }
+
+    ✅This is even better, as TypeScript automatically narrows the type in the else branch.
+
+
+- Sometimes you know that the model will grow in the future, and that more cases will need to be
+    handled. For example if you introduce an AdminUser. 🔥In that case, you can use a switch. A switch
+    statement will break if one of the cases is not handled. So introducing our AdminUser, or another
+    type of user later, would automatically add compilation errors in every place you need to handle it!
+
+        interface AdminUser extends BaseUser {
+            type: 'admin';
+            adminSince: number;
+        }
+
+        type User = AuthenticatedUser | AnonymousUser | AdminUser;
+
+        function onWebsiteSince(user: User): number {
+            switch (user.type) {
+                case 'authenticated':
+                    return user.loggedSince;
+
+                case 'anonymous':
+                    return user.visitingSince;
+                    
+                case 'admin':
+                // without this case, we could not even compile the code
+                // as TS would complain that all possible paths are not returning a value
+                    return user.adminSince;
+            }
+        }

@@ -40,7 +40,7 @@ Types as in TypeScript:
     content or from a library you’re using.
 
 
-- 🔥f your variable can only be of type number or boolean, you can use a union type:
+- 🔥If your variable can only be of type number or boolean, you can use a union type:
         
         let changing: number | boolean = 2;
         changing = true; // no problem
