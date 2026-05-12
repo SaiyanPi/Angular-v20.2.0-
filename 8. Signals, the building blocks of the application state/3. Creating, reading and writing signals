@@ -1,0 +1,90 @@
+Creating, reading and writing signals:
+
+- 🔥Let’s now start by showing how you can create a writable signal, read its value, and update it. 🔥We’ll
+    talk about the other kinds of signals and about their other capabilities in later chapters of the book,
+    when we will need them.
+
+
+- 🔥To create a writable signal, call the signal() function (from @angular/core) with the value that it
+    must contain initially. All the following examples create instances of WritableSignal which, as you
+    can see, is a generic type specifying the type of the value contained in the signal.
+
+        // 💡this signal can contain a number, and initially contains 42
+        const count = signal(42);
+
+        // 💡this signal can contain a PonyModel, and initially contains Rainbow Dash
+        const rainbowDash = signal<PonyModel>({
+            name: 'Rainbow Dash',
+            color: 'blue',
+            speed: 45
+        });
+
+        // 💡this signal can contain a PonyModel, and initially contains Pinkie Pie
+        const pinkiePie: WritableSignal<PonyModel> = signal({
+            name: 'Pinkie Pie',
+            color: 'red',
+            speed: 30
+        });
+
+        // 💡this signal can contain a PonyModel or undefined, and initially contains undefined
+        const unknownPony = signal<PonyModel | undefined>(undefined);
+
+
+- 🔥A signal is both an object and a function. To get the value contained in the signal, you call the signal.
+        
+        // 💡let's read the value of the rainbowDash signal
+        const value: PonyModel = rainbowDash();
+        // 💡and print it in the console as JSON
+        console.log(JSON.stringify(value));
+
+
+- 🔥To change the value of the signal (and thus notify Angular that this signal has a new value), you call
+    its set() method:
+
+        rainbowDash.set({
+            name: 'Rainbow Dash',
+            color: 'yellow'
+        });
+
+    ⚠️⚠️ Note that this creates a brand new object with only 2 properties. Anything not included is gone.
+    So speed disappear.
+
+
+- 🔥Now let’s say you only want to change the color of Rainbow Dash. 💀You might be tempted to read the
+    value of the signal and then mutate it. 💀Or even to mutate it and then set it back into the signal
+    again. That’s something you should never do :
+
+        // ❌ Don't do this!
+        rainbowDash().color = 'yellow';
+        // ❌ Don't do this!
+        const pony = rainbowDash();
+        pony.color = 'yellow';
+        rainbowDash.set(pony);
+
+    ⚠️If you mutate the object contained in a signal, or if you set a signal with the same object it already
+    contains, then Angular will consider that the value has not changed, which will lead to bugs.
+
+    ✅🔥Instead, treat the value as immutable, and replace the old value with a new one. The update()
+    method, along with the destructuring operator, can be used to create a new value from the existing
+    one:
+
+        // ✅ Do this!
+        rainbowDash.update(pony => ({ ...pony, color: 'yellow' }));
+    
+    But it’s just a different way of doing:
+        
+        rainbowDash.set({ ...rainbowDash(), color: 'yellow' });
+    
+    ⚠️⚠️ Note that this take all existing properties, copy them and override the color property only.
+    Everything else is preserved. So name and speed is still there.
+
+
+- Let’s now see how we can display the state of our components in a template!
+
+
+
+- Angular is not the first framework to use signals. Knockout.js, for example, already
+    used signals a long time ago. More recently, Solid.js, Vue and Svelte also adopted
+    signals as the building blocks of their state management. Signals are getting so
+    popular, that the teams of these frameworks are even trying to standardize them
+    into the JavaScript language itself!

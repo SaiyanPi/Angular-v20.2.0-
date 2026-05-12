@@ -1,0 +1,20 @@
+Signals: the building blocks of the application state:
+
+- 🔥Traditional web applications use JavaScript to modify what the HTML page displays by modifying
+    the DOM.
+    An Angular application does the same thing, but the framework is designed so that you almost
+    never have to query or modify the DOM in your code. Instead, you write HTML templates which
+    display data contained in the component properties. The magic of Angular is that modifying the
+    data in the components is sufficient to update the DOM. Angular detects the changes and applies
+    the modifications to the DOM for you. This mechanism is called Change Detection. We’ll explore it
+    in more detail later in the book.
+
+- ⚠️Angular has always allowed developers to use plain old JavaScript objects and arrays to store the
+    data that the templates display. Angular is able to detect the modifications or replacements done to
+    these plain old JavaScript objects. This mechanism, however, is quite brute-force, has a nonnegligible
+    cost in terms of performance, and comes with many drawbacks.
+
+- 🔥Since Angular 16, a revolution has started. While still supporting this mechanism, Angular now
+    promotes a new way of handling the state. This new way eliminates the drawbacks of the bruteforce
+    approach. It makes things more efficient. But it requires the developers to use a special type
+    of objects to store the data of their application: signals
