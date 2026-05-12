@@ -1,0 +1,116 @@
+Our first standalone component:
+
+- As we saw in the previous section, a component is a combination of a view (the template) and some
+    logic (our TS class). The CLI has already created one for us: src/app/app.ts. Let’s check it out:
+
+    app.ts:
+
+        import { Component, signal } from '@angular/core';
+
+        @Component({
+            selector: 'ns-root',
+            imports: [],
+            templateUrl: './app.html',
+            styleUrl: './app.css'
+        })
+        export class App {
+            protected readonly title = signal('ponyracer');
+        }
+
+    👉 Our application itself is a simple component. To tell Angular that it is a component, we use the
+    @Component decorator. And to be able to use this decorator, we have to import it as you can see at the
+    top of the file. When you write new components, don’t forget to import the Component decorator. You may
+    forget to do so at the beginning, but it won’t last, as the compiler will yell at you! 
+
+- You’ll see that most of the things we need are in the @angular/core module, but that’s not always the
+    case. 🔥For example, when dealing with HTTP, we’ll use imports from @angular/common/http; or, 🔥if we
+    use the router, we’ll import from @angular/router, etc.
+
+
+
+#) @Component decorator:
+
+- The @Component decorator is expecting a configuration object. We’ll see later in detail what you can
+    configure here, but for now 🔥let’s start with the selector property. It will tell Angular what to look
+    for in our HTML pages. Every time Angular finds an element in our HTML which matches the
+    selector of the component, it will create an instance of the component, and replace the content of
+    the element by the template of the component.
+
+        import { Component, signal } from '@angular/core';
+
+        @Component({
+            selector: 'ns-root',
+        })
+        export class App {
+            protected readonly title = signal('ponyracer');
+        }
+    
+    👉🔥 every time our HTML contains an element like <ns-root />, Angular will instantiate a new
+        instance of our App class.
+    
+        |   NOTE:
+        |    There is a clear naming convention established, and applied by Angular CLI.
+        |    Angular recommends using a prefix in component selectors, to avoid name clashes
+        |    with external components. For example, since this course is named Ninja Squad,
+        |    we chose to use the prefix ns. Our pony component selector is thus named ns-pony.
+        |    You can configure Angular CLI so that it prepends this prefix to every generated
+        |    component. If you remember, when we created the project with ng new, we passed
+        |    the option --prefix ns. That’s what this option does: it configures the project to
+        |    have components generated with the ns prefix.
+
+
+- A component must also have a template. We can have an inline template or externalize it in another file,
+    like the CLI does:
+
+        import { Component, signal } from '@angular/core';
+
+        @Component({
+            selector: 'ns-root',
+            templateUrl: './app.html',
+            styleUrl: './app.css'
+        })
+        export class App {
+            protected readonly title = signal('ponyracer');
+        }
+    
+    👉 The corresponding HTML is defined in app.html, with a bunch of static elements, except the first h1:
+        
+        app.html:
+
+        <h1>Hello, {{ title() }}</h1>
+        <p>Congratulations! Your app is running. Ἰ</p>
+
+
+- Finally, you can see that the component has an additional option: imports.
+
+        import { Component, signal } from '@angular/core';
+
+        @Component({
+            selector: 'ns-root',
+            imports: [],
+            templateUrl: './app.html',
+            styleUrl: './app.css'
+        })
+        export class App {
+            protected readonly title = signal('ponyracer');
+        }
+    
+    👉 Our component is standalone (the standalone: true property is by default since Angular v19). This
+    means that the component doesn’t need to be declared in an Angular module in order to be usable.
+
+    👉🔥The property imports: [] is not always strictly required. Its goal is to tell Angular which other
+    components, pipes and directives can be used inside the template of our component. Most of the
+    components that we create use pipes and directives provided by Angular. These very commonly
+    used pipes and directives are declared in an Angular module named CommonModule. Using imports:
+    [CommonModule] in the configuration of our component thus makes it possible to use them all in its
+    template, or you can explicitly import only the ones you need.
+
+    👉We were talking about ES2015+ and TS modules in the chapter 1 section 14, which define imports and
+    exports. The TypeScript compiler, when it sees an interface such as Race being used in the
+    TypeScript source code, must know where to find the definition of this interface Race. That’s why
+    you need to import it.
+
+    🔥The imports property of the @Component decorator serves a similar purpose: if Angular were to find
+    an element <ns-race> in the template of App, it would need to know where and how the corresponding Race
+    is defined. To let it know where it can find its definition, you would need to add the Race to the
+    imports of the App decorator.

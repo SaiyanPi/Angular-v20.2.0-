@@ -1,0 +1,23 @@
+Bootstrapping the app:
+
+- Finally, we need to start our app, using the bootstrapApplication function. 🔥Angular CLI will by
+    default generate a separate file containing this bootstrap logic: main.ts:
+
+    main.ts:
+
+        import { bootstrapApplication } from '@angular/platform-browser';
+        import { appConfig } from './app/app.config';
+        import { App } from './app/app';
+
+        bootstrapApplication(App, appConfig)
+            .catch((err) => console.error(err));
+
+    👉 As you can see, what it expects is the root component of the application: App.
+    👉 But wait a second. We need an HTML file to serve to our users, right?
+        The CLI created an index.html file for us, which is the single page of our application. You might
+        wonder how it could possibly work, since it doesn’t contain any script element.
+        🔥When you run ng serve, the CLI calls the TypeScript compiler. The compiler outputs JavaScript
+        files. The CLI then bundles them and adds the necessary script elements to the index.html file
+        (using Vite behind the scenes).
+
+    let’s jump to the next sections, and learn all about signals and templating.

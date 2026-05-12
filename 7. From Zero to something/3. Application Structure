@@ -1,0 +1,43 @@
+Application structure:
+
+- Let’s dive for a few seconds into the generated code.
+    Open the project in your preferred IDE. You can use pretty much anything you want, but you
+    should activate the TypeScript support for maximum comfort. Pick your favorite: Webstorm, Visual
+    Studio Code… All of them have great support for TypeScript. You should see a bunch of
+    configuration files in the root directory: welcome to Modern JavaScript!
+
+- 🔥The first one you may recognize is the package.json file: that’s where the dependencies of the
+    application are defined. You can have a look inside, it should now contain the following
+    dependencies:
+    • the different @angular packages.
+    • rxjs, a really cool library for reactive programming. We have a dedicated chapter on this topic
+        and about RxJS in particular.
+    • zone.js, doing the heavy lifting for detecting the changes (we’ll dive into this later also).
+    • some dependencies for developing the application, like the CLI, TypeScript, some test librairies,
+        some typings…
+
+- 🔥TypeScript itself has a configuration file tsconfig.json (and another one called tsconfig.app.json),
+    which stores the compilation options. As we saw in the previous chapters, we are using TypeScript
+    with decorators (hence the two options about decorators). 
+
+- 🔥The sourceMap option allows you to generate source maps, i.e. files that contain a mapping between
+    the generated JavaScript code and the original TypeScript code. Those source maps are used by the
+    browser to let you debug the JavaScript code it executes by stepping through the original TypeScript
+    code that you have written.
+
+- 🔥TypeScript projects often also use ESLint a linter used to check your code against the best
+    practices. ESLint has its own options, stored in eslint.config.js, where you add/remove some of its
+    rules.
+    To add ESLint in your Angular project root, run:
+
+        ng add @angular-eslint/schematics
+    
+    Then verify it works:
+
+        ng lint
+    
+    If you use VS Code, install the official ESLint extension: ESLint VS Code Extension
+    Without the extension, you lose real-time lint feedback, which defeats half the point of ESLint.
+
+- 🔥Angular CLI itself has a configuration file angular.json if you want to override some of its defaults.
+    Now that we have been over the configuration, let’s see the application code.
