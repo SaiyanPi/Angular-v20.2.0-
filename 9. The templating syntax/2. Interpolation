@@ -1,0 +1,124 @@
+Interpolation:
+
+- Interpolation is a big word for a simple concept. A quick example:
+
+        @Component({
+            selector: 'ns-root',
+            template: `
+                <h1>PonyRacer</h1>
+                <h2>{{ numberOfUsers }} users</h2>
+                `
+        })
+        export class App {
+            protected readonly numberOfUsers = 146;
+        }
+    
+    🔥We have an App component that will be activated every time Angular finds a <ns-root> tag. The App
+    class has a property, numberOfUsers. And the template has been augmented with an <h2> tag, using
+    the famous double curly braces (a.k.a. "mustaches") to indicate that an expression has to be evaluated.
+    This kind of templating is called interpolation.
+    We should now see in the browser:
+
+        <ns-root>
+            <h1>PonyRacer</h1>
+            <h2>146 users</h2>
+        </ns-root>
+
+    as {{ numberOfUsers }} will be replaced by its value. When Angular detects a <ns-root> element in
+    the page, it creates an instance of the App class, and this instance is the evaluation context of the
+    template’s expressions. Here the App instance sets the numberOfUsers property to '146', so we have
+    '146' displayed on screen.
+
+    🔥🔥The magic is that, whenever the value of numberOfUsers changes in our object, the page will be
+    automatically updated! Or rather, that’s how it works now, with the "brute-force" change detection
+    mechanism that Angular currently uses. 
+
+
+- 🔥🔥But we’ve seen in the previous chapter that Angular now promotes using signals to help it detect
+    changes in a more clinical way. If we wanted the number of users to change over time, we should thus
+    store it in a signal, and call the signal in the template:
+
+        @Component({
+            selector: 'ns-root',
+            template: `
+                <h1>PonyRacer</h1>
+                <h2>{{ numberOfUsers() 👈}} users</h2>
+                `
+        })
+        export class App {
+            protected readonly numberOfUsers = signal(146); 👈
+        }
+    
+    ⚠️One important fact to remember: 
+    if we try to display a variable that is not initialized, then, instead of displaying undefined, Angular is
+    going to display an empty string. The same will happen for a null value.
+
+
+- 🔥Let’s say that, instead of a simple value, our first component has a more complex user object,
+    reflecting the current user
+
+        @Component({
+            selector: 'ns-root',
+            template: `
+                <h1>PonyRacer</h1>
+                <h2>Welcome {{ user().name 👈}}</h2>
+                `
+        })
+        export class App {
+            protected readonly user = signal({ name: 'Cédric' }); 👈
+        }
+
+    As you can see, we can interpolate more complex expressions, like accessing the property of an
+    object.
+
+    <ns-root>
+        <h1>PonyRacer</h1>
+        <h2>Welcome Cédric</h2>
+    </ns-root>
+
+
+- ⁉️What happens if we have a typo in our template, with a property that does not exist in the class?
+
+        error TS2339: Property 'users' does not exist on type 'App'
+    
+    That’s great, because now you are quite sure that your templates are correct.
+
+
+- 🔥🔥One last little but handy feature. What happens if my user object is in fact fetched from the server,
+    and thus initialized to undefined before being valued with the result of the server call? Is there a
+    way to avoid the errors when the template is compiled?
+    Yes, there is: instead of writing user().name, you write user()?.name:
+
+        @Component({
+            selector: 'ns-root',
+            // the value of the user signal is undefined
+            // but the ?. will avoid the error
+            template: `
+                <h1>PonyRacer</h1>
+                <h2>Welcome {{ user()?.name 👈}}</h2>
+                `
+        })
+        export class App {
+            protected readonly user = signal<{ name: string } | undefined>(undefined); 👈
+        }
+    
+    And you don’t have errors anymore! The ?. is called the "optional chaining operator". It was usable
+    in Angular expressions even before being introduced in standard JavaScript and TypeScript.
+
+
+- Let’s go back to our example. We are now displaying a greeting message. Maybe we can go a step
+    further and display the upcoming pony races.
+    That should lead us to write our second component. For now, we’ll just make it simple:
+
+        // in another file, races.ts
+        import { Component } from '@angular/core';
+
+        @Component({
+            selector: 'ns-races',
+            template: `<h2>Races</h2>`
+        })
+        export class Races {}
+    
+    Nothing fancy: a simple class, decorated with @Component to give it a selector to match and an inline
+    template.
+    Now we want to include this component in our App template. What do we need to do?

@@ -1,0 +1,33 @@
+The templating syntax:
+
+- We’ve seen that a component needs to have a view. To define a view, you can define a template
+    inline or in a separate file. You’re probably familiar with a templating syntax, maybe even the one
+    from AngularJS 1.x. To simplify things, a template helps us to render HTML with some dynamic
+    parts depending on our data.
+
+- Angular has its own templating syntax that we need to learn before going further.
+    Let’s take a simple example, by modifying our first component:
+
+        import { Component } from '@angular/core';
+
+        @Component({
+            selector: 'ns-root',
+            template: '<h1>PonyRacer</h1>'
+        })
+        export class App {}
+    
+    Now we want to display some dynamic data on this first page, maybe the number of users registered into
+    our app. Later we’ll see how to get data from a server, but for now we’ll say that this number of users
+    is directly hard-coded in our class:
+
+        import { Component } from '@angular/core';
+
+        @Component({
+            selector: 'ns-root',
+            template: '<h1>PonyRacer</h1>'
+        })
+        export class App {
+            protected readonly numberOfUsers = 500;
+        }
+    
+    Now, how do we change our template to display this variable? The answer is interpolation❓

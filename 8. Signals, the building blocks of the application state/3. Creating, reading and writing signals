@@ -73,7 +73,10 @@ Creating, reading and writing signals:
     
     But it’s just a different way of doing:
         
-        rainbowDash.set({ ...rainbowDash(), color: 'yellow' });
+        rainbowDash.set({ 
+            ...rainbowDash(), 
+            color: 'yellow' 
+        });
     
     ⚠️⚠️ Note that this take all existing properties, copy them and override the color property only.
     Everything else is preserved. So name and speed is still there.

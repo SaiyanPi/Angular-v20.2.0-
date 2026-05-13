@@ -1,0 +1,74 @@
+Using other components in our templates:
+
+- 🤔We have our app component, App, where we want to display the pony races component, Races
+
+        1️⃣
+        // in another file, races.ts
+        import { Component } from '@angular/core';
+
+        @Component({
+            selector: 'ns-races',
+            template: `<h2>Races</h2>`
+        })
+        export class Races {}
+
+        2️⃣
+        // in app.ts
+        import { Component } from '@angular/core';
+
+        @Component({
+            selector: 'ns-root',
+            // added the Races component
+            template: `
+                <h1>PonyRacer</h1>
+                <ns-races /> 👈
+                `
+        })
+        export class App {}
+    
+    As you can see, we added the Races component in the template, by including a tag whose name matches the
+    selector we defined for the component.
+    ❌Buuuuuut, that will not work: your browser will not display the races component.
+    Why is that? Angular doesn’t know about this Races yet.
+
+
+- ✅The fix is simple: you need to add Races to the imports of the App decorator. That way, when Angular
+    compiles the template of App, it will look for a component with the ns-races selector in the list of
+    imported components, and will thus know that it must instantiate and display the Races.
+
+        import { Component } from '@angular/core'; 👈
+        // do not forget to import the component
+        import { Races } from './races';
+
+        @Component({
+            selector: 'ns-root',
+            template: `
+                <h1>PonyRacer</h1>
+                <ns-races /> ✅
+                `,
+            // add Races to the imports of App
+            imports: [Races] 👈
+        })
+        export class App {}
+    
+    Note that you will pass the class directly, so you’ll have to import it. And in order to be able import
+    it, you need to export the class Races in its source file races.ts (read the chapter 1 section 15 modules
+    again if that’s not clear for you). So Races will look like:
+
+        // in another file, races.ts
+        import { Component } from '@angular/core';
+
+        @Component({
+            selector: 'ns-races',
+            template: `<h2>Races</h2>`
+        })
+        export class Races {} 👈
+    
+    Now, our races component will proudly be displayed in our browser:
+
+        <ns-root>
+            <h1>PonyRacer</h1>
+            <ns-races>
+                <h2>Races</h2>
+            </ns-races>
+        </ns-root>

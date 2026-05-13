@@ -1,0 +1,127 @@
+Events:
+
+
+- If you’re developing a webapp, you know that displaying things is just one part of the job: you also
+    have to deal with user interactions. To allow this, the browser fires events, which you can listen to:
+    click, keyup, mousemove, etc.
+
+- Going back to our Races, we now want to have a button that will display the races when clicked.
+    Reacting to an event can be done as follows:
+
+        <button (click)="onButtonClick()">Click me!</button>
+
+    📝(click)="onButtonClick()" is Angular event binding and onclick="onButtonClick()" is plain browser JS
+
+    A click on the button of the example above will trigger a call to the component method onButtonClick().
+    Let’s add this to our component:
+
+        @Component({
+            selector: 'ns-races',
+            template: `
+                <h2>Races</h2>
+                <button (click)="refreshRaces()">Refresh the races list</button>
+                <p>{{ races().length }} races</p>
+                `
+        })
+        export class Races {
+            protected readonly races = signal<Array<RaceModel>>([]); 👈 creating instance of array signal
+            protected refreshRaces(): void {
+                this.races.set([{ name: 'London' }, { name: 'Lyon' }]); 👈 creating array signal
+            }
+        }
+    
+    If you try this in your browser, you should initially see "0 races". And after your click, "0 races"
+    should become "2 races".
+
+
+- 🔥The statement can be a function call, but it can be any executable statement, or even a sequence of
+    executable statements, like:
+
+        <button (click)="firstName.set('Cédric'); lastName.set('Exbrayat')">
+        Click to change name to Cédric Exbrayat
+        </button>
+    
+    ⚠️However I would not advise you to do this. Using methods is a better way of encapsulating the
+    behavior: it makes your code easier to maintain and test, and it makes the view simpler.
+
+
+- 🔥The cool thing is that it works with standard DOM events, but also with custom events that might
+    fire from your Angular components or from web components. We’ll see later how to fire custom
+    events.
+    For the moment, let’s say the Races component emits a custom event to notify the app that a new
+    race is available.
+    Our template in the App component would then look like:
+
+        @Component({
+            selector: 'ns-root',
+            template: `
+                <h1>PonyRacer</h1>
+                <ns-races (newRaceAvailable)="onNewRace()" />
+                `,
+            imports: [Races]
+        })
+        export class App {
+            protected onNewRace(): void {
+                // add a flashy message for the user.
+            }
+        }
+    
+    🧠We can easily figure out that the <ns-races> component has a custom event newRaceAvailable and
+    that, when this event is fired, the method onNewRace() of our App is called.
+
+
+- 🔥Angular will listen for the event on the element and on its children, so it will react to events that
+    bubble. Consider the template:
+
+        <div (click)="onButtonClick()">
+            <button>Click me!</button>
+        </div>
+
+    🧠Even though the user clicks on the button embedded inside the div, the onButtonClick() method will
+    be called, because the event bubbles up.
+
+    🧠Oh, and you can access the event in the method called! You just have to pass $event to your method:
+
+        <div (click)="onButtonClick($event)">
+            <button>Click me!</button>
+        </div>
+    
+    🔥Then you can handle the event in your component class:
+        
+        onButtonClick(event: Event) {
+            console.log(event);
+        }
+
+
+- 🔥By default, the event will continue to bubble up, eventually triggering other event listeners up in
+    the hierarchy.
+    You can use the event to prevent the default behavior and/or cancel propagation if you want:
+        
+        onButtonClick(event: Event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+
+- 🔥One cool feature is that you can also easily handle keyboard events with:
+
+        <textarea (keydown.space)="onSpacePress()">Press space!</textarea>
+    
+    Every time you will press the space key, the onSpacePress() method will be called. And you can do a
+    crazy combo, like (keydown.alt.space), etc.
+
+
+- 🔥🔥🔥To conclude this part, I want to point out that there is a big difference between something like:
+
+        <component [property]="doSomething()"></component>
+        and
+        <component (event)="doSomething()"></component>
+    
+    👉 In the first case, with property binding, the doSomething() value is called an expression, and will be
+    evaluated at each change detection cycle to see if the property needs to be updated.
+
+    👉 In the second case, however, with event binding, the doSomething() value is called a statement, and
+    will be evaluated only when the event is triggered.
+
+    By definition they have completely different goals and, as you might suspect, they have different
+    restrictions.

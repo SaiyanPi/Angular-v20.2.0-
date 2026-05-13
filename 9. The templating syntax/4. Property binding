@@ -1,0 +1,81 @@
+Property binding:
+
+
+- Interpolation is only one of the ways to have dynamic parts in your template.
+
+- 🔥In fact, the interpolation we just saw is just an easy way to use what is the core of Angular
+    templating system: property binding.
+
+- In Angular, every DOM property can be written to via special attributes on HTML elements
+    surrounded with square brackets []. It looks weird at first, but in fact it is valid HTML. An HTML
+    attribute can start with pretty much anything you want except a few characters like quotes, apostrophes,
+    slashes, equals, spaces…
+    I’m talking about DOM properties, but maybe this is not clear for you. We usually write to HTML
+    attributes, right? Right, usually we do. Let’s take this simple HTML:
+
+        <input type="text" value="hello">
+    
+    The input tag above has two attributes: a type attribute and a value attribute. When the browser
+    parses this tag, it creates a corresponding DOM node (an HTMLInputElement if we want to be
+    accurate), which has the matching properties type and value. Each standard HTML attribute has a
+    corresponding property in the DOM node. 🔥But the DOM node also has additional properties, which
+    don’t have a corresponding attribute. For example: childElementCount, innerHTML or textContent.
+    The interpolation we had above to display the user’s name:
+        
+        <p>{{ user().name }}</p>
+
+    is just sugar syntax for the following:
+
+        <p [textContent]="user().name"></p>
+
+    🔥The square bracket syntax allows you to modify the DOM property textContent, and we give it the
+    value user.name which will be evaluated in the context of the current component instance, as it was
+    for the interpolation.
+
+    ⚠️Note that the parser is case-sensitive, so you have to write the property name with the correct case:
+    textcontent or TEXTCONTENT will not work. It has to be textContent.
+
+
+- 🔥DOM properties have a great advantage over HTML attributes: they have up-to-date values. In my
+    input example above, the value attribute will always contain 'hello', whereas the value property of the
+    DOM node is dynamically modified by the browser, and thus contains whatever the user has entered in the
+    text field.
+
+
+- 🔥Finally, properties can have boolean values, whereas some attributes can only reflect it by being
+    present or absent on the start tag. For example, you have the selected attribute on the <option> tag:
+    no matter what value you give it, it will select the option, as long as it is present.
+        
+        <option selected>Rainbow Dash</option>
+        <option selected="false">Rainbow Dash</option> <!-- still selected -->
+
+
+- With properties access like Angular gives us, you can write:
+        
+        <option [selected]="isPonySelected()" value="Rainbow Dash">Rainbow Dash</option>
+    
+    🔥And the pony will be selected if isPonySelected returns true, and will not be selected if it returns
+    false. And whenever the value of isPonySelected changes, the selected property will be updated.
+
+
+- You can also access nested properties like the color attribute of the style property.
+
+        <p [style.color]="foreground()">Friendship is Magic</p>
+    
+    If the foreground signal is changing to 'green', then the text will update its color to 'green' too!
+
+
+- In conclusion, If you want to write 'Pony' followed by the pony’s name, you have two options:
+
+        <ns-pony name="Pony {{ pony().name }}" />
+        <ns-pony [name]="'Pony ' + pony().name" />  (which you will usually perfer)
+
+
+- 🔥If your value is not a dynamic one, you can simply write property="value":
+
+        <ns-pony name="Rainbow Dash" />
+
+
+- 🔥🔥You need to remember that if an HTML attribute is not surrounded by square brackets (name="…"),
+    then the value is a string. Whereas if it’s surrounded by square brackets ([name]="…"), then the value
+    is an expression, evaluated by Angular.
