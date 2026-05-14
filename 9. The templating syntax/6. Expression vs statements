@@ -1,0 +1,28 @@
+Expressions vs statements:
+
+
+- Expression:
+    🔥Expressions and statements differ in several ways. An expression will be executed many times,
+    as part of the change detection. It should thus be as fast as possible. Basically, an Angular 
+    expression is a simplified version of an expression you could write in JavaScript.
+    
+    🔥If you are using user.name as an expression, user should be defined, otherwise Angular will
+    throw an error.
+
+    🔥An expression must be single: you can’t chain several ones separated with a semi-colon.
+
+    ❌An expression should not have any side effect. That means it can’t be an assignment, for example.
+        
+        <!-- forbidden, as the expression is an assignment -->
+        <!-- this will throw an error ❌-->
+        <component [property]="user = 'Cédric'"></component>
+
+    ❌It cannot contain keywords, like if, var, etc
+
+
+- Statement:
+    🔥A statement, on the other hand, is triggered on the matching event. If you try to use a statement like
+    race.show() where race is undefined, you will have an error. You can chain several statements,
+    separated with a semicolon. A statement can, and generally should, have side effects. That’s the
+    point of reacting to an event: to make something happen. A statement can be a variable assignment,
+    and can contain keywords.

@@ -36,9 +36,9 @@ Using other components in our templates:
     compiles the template of App, it will look for a component with the ns-races selector in the list of
     imported components, and will thus know that it must instantiate and display the Races.
 
-        import { Component } from '@angular/core'; 👈
+        import { Component } from '@angular/core'; 
         // do not forget to import the component
-        import { Races } from './races';
+        import { Races } from './races'; 👈
 
         @Component({
             selector: 'ns-root',

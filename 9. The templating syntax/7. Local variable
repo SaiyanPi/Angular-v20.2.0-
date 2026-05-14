@@ -1,0 +1,40 @@
+Local variables:
+
+
+- When I say that Angular will look in the component instance to find a variable, it is not technically
+    correct. In fact, it will check the component instance and the local variables. Local variables are
+    variables that you can dynamically declare in your template using the # syntax.
+    Let’s say you want to display the value of an input:
+        
+        <input type="text" #name>
+        {{ name.value }}
+
+
+- 🔥Using the # syntax, we are creating a local variable name referencing the DOM object
+    HTMLInputElement. This local variable can be used anywhere in the template. As it has a value
+    property, we can display this property in an interpolated expression. I’ll come back to this example
+    later.
+
+
+- 🔥Another useful usage of local variables is when you want to execute some kind of action on another
+    element.
+    For example, you may want to give the focus on an element when you click on a button. This was a
+    bit cumbersome in AngularJS 1.x, as you had to create a custom directive and so on.
+    The focus() method is a standard part of the DOM API, and we can leverage this. Using a local
+    variable, it’s a no-brainer in Angular:
+
+        <input type="text" #name>
+        <button (click)="name.focus()">Focus the input</button>
+
+
+- 🔥It can also be used with a custom component - one we created in our app, imported from another
+    project, or even with a real Web Component:
+
+        <google-youtube #player></google-youtube>
+        <button (click)="player.play()">Play!</button>
+
+    Here, the button can start playing the video of the <google-youtube> component. This is actually a
+    real Web Component written with Polymer! This component has a play() method that Angular will
+    call when you click on the button, which is pretty cool!
+    
+    Local variables have a few use cases, and we will gradually see them.

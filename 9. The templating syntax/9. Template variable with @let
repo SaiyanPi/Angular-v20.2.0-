@@ -1,0 +1,39 @@
+Template variables with @let:
+
+
+- 🔥Angular v18.1 added a new feature to the template syntax: template variables. It is now possible to
+    define a variable in the template, using the @let instruction, without having to declare it in the
+    component class.
+
+- The syntax is simple: @let variableName = expression;. Let’s say our component has a count field
+    defined in its class, then we can define a variable in the template like this:
+
+        @let countPlusTwo = count() + 2;
+        <p>{{ countPlusTwo }}</p>
+
+- 🧠This can be handy when you want to use a value in several places in your template, especially if it is
+    a complex expression. Sometimes you can create a dedicated field in the component class, but
+    sometimes you can’t, for example in a for loop:
+
+        @for (user of users(); track user.id) {
+            <div class="name">{{ user.lastName }} {{ user.firstName }}</div>
+            <div class="address">
+                <span>{{ user.shippingAddress.default.number }}&nbsp;</span>
+                <span>{{ user.shippingAddress.default.street }}&nbsp;</span>
+                <span>{{ user.shippingAddress.default.zipcode }}&nbsp;</span>
+                <span>{{ user.shippingAddress.default.city }}</span>
+            </div>
+        }
+
+    ✨This can be written more cleanly using @let:
+        
+        @for (user of users(); track user.id) {
+            <div class="name">{{ user.lastName }} {{ user.firstName }}</div>
+            <div class="address">
+                @let address = user.shippingAddress.default;
+                <span>{{ address.number }}&nbsp;</span>
+                <span>{{ address.street }}&nbsp;</span>
+                <span>{{ address.zipcode }}&nbsp;</span>
+                <span>{{ address.city }}</span>
+            </div>
+        }

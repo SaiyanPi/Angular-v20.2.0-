@@ -1,0 +1,196 @@
+If, For and Switch with the control flow syntax:
+
+
+- Now, our Races is still not displaying the races :) The "proper way" in Angular would mean creating
+    another component Race to display each race. We are going to do something slightly simpler, and
+    just write a simple <ul><li> list.
+
+- 🔥Property and event binding is great, but it does not let us change the DOM structure, like iterating
+    over a collection and adding an element per item. To do so, we can use special instructions in the
+    template, that have been introduced in Angular v18, under the name Built-in control flow.
+
+- 🔥Previously, we needed to use special directives, that are called structural directives, like ngIf, ngFor,
+    ngSwitch to handle these cases. A directive in Angular is really close to a component, but does not
+    have a template. It is used to add behavior to an element. Structural directives are a subset of
+    directives that can change the structure of the DOM. They still exist, so you can still use ngIf, ngFor,
+    ngSwitch, etc. in your templates, but they are deprecated and the recommended way is to use the
+    new control flow syntax. If you’re interested in the old way, you can read the chapter about
+    structural directives later in this book
+    Let’s see how we can use the control flow syntax
+
+------------------------------------------------------------------------------------------------------------
+
+#) @if:
+
+- Let’s say we want to display a title in the template only if races has no element. We can use the @if
+    instruction:
+
+        <div>
+            @if (races().length === 0) {
+                <h2>No races to come</h2>
+            }
+        </div>
+    
+    If we want to display something else if there are some races, we can use @else:
+
+        <div>
+            @if (races().length === 0) {
+                <h2>No races to come</h2>
+            } @else {
+                <h2>Some races to come</h2>
+            }
+        </div>
+
+- It is also possible to use @else if:
+
+        <div>
+            @if (races().length === 0) {
+                <h2>No races to come</h2>
+            } @else if (races().length === 1) {
+                <h2>Only one race to come</h2>
+            } @else {
+                <h2>Some races to come</h2>
+            }
+        </div>
+
+- 🔥You can also alias the result of the condition in a local variable, which can be useful if you want to
+    use it several times.
+        
+        @if (races().length; as raceCount) {
+            <h2>{{ raceCount }} races to come</h2>
+            <!-- displays "2 races to come" -->
+        }
+
+
+- 🔥🔥 Tip for signals with nulable values:
+    Signals can sometimes contain a null or undefined value. This is usually the case when they are
+    used to store an entity fetched from the backend. For example, this component has a race signal
+    that contains a race or undefined:
+
+        protected readonly race = signal<RaceModel | undefined>(undefined);
+    
+    ⚠️In the template, if we use race().name, we get a TypeScript error indicating that race() can be
+    undefined.
+    Usually, with a property that is not a signal, we can use a @if to display the name only if the property
+    is not undefined, which makes sense. But here it won’t be enough to solve the error
+
+    🔥In this case, it can be handy to use an alias to store the value of the signal.
+        
+        @if (race(); as raceValue) {
+            <h1>{{ raceValue.name }}</h1>
+        }
+
+---------------------------------------------------------------------------------------------------------------
+
+#) @for:
+
+- Working with real data will inevitably lead you to display a list of something. That’s when @for
+    proves very useful: it allows displaying a template for each item of a collection. Our Races
+    component contains a field races which, as you can probably guess, is an array of races to display
+
+        import { Component, signal } from '@angular/core';
+        import { RaceModel } from './race.model';
+
+        @Component({
+            selector: 'ns-races',
+            templateUrl: './for.html'
+        })
+        export class Races {
+            protected readonly races = signal<Array<RaceModel>>([
+                { id: 1, name: 'London' },
+                { id: 2, name: 'Lyon' }
+            ]);
+        }
+    
+    The template uses @for to repeat the li tag for each item in the races array, and we chose to name
+    the current item race:
+
+        <div>
+            <h2>Races</h2>
+            <ul>
+                @for (race of races(); track race.id) 👈{
+                    <li>{{ race.name }}</li>
+                }
+            </ul>
+        </div>
+    
+    nd now we have a beautiful list, with one li tag per item in our collection!
+
+        <ul>
+            <li>London</li>
+            <li>Lyon</li>
+        </ul>
+
+    🔥You’ll note that @for requires to provide a track parameter. This is mainly for performance reasons,
+    as it helps Angular to track the items in the collection and to update the DOM only when needed
+    (we’ll dive into this in a later chapter). You’ll usually use a unique identifier for each item, like track
+    race.id, but it can be the item itself (track race) if you don’t have a better choice.
+
+
+- 🔥@for can be used with @empty to display something when the collection is empty (or null or undefined):
+
+        <div>
+            <h2>Races</h2>
+            <ul>
+                @for (race of races(); track race.id) {
+                    <li>{{ race.name }}</li>
+                } @empty {
+                    <li>No races</li>
+                }
+            </ul>
+        </div>
+
+
+- 🔥🔥@for also exposes some variables that can be useful:
+    • $index, the index of the current item, starting at zero
+    • $first, a boolean that is true if the element is the first of the collection
+    • $last, a boolean that is true if the element is the last of the collection
+    • $even, a boolean that is true if the element has an even index
+    • $odd, a boolean that is true if the element has an odd index
+
+    for example, you can use $even to add a "grey" CSS class to the even elements:
+
+        <ul>
+            @for (race of races(); track race.id) {
+                <li [class.grey]="$even">{{ race.name }}</li>
+            }
+    
+    🔥You can alias these variables to a local variable if you need, which can be useful if you have nested
+    loops:
+
+        <ul>
+            @for (race of races(); track race.id; let isEven = $even) {
+                <li [class.grey]="isEven">{{ race.name }}</li>
+            }
+
+---------------------------------------------------------------------------------------------------------------
+
+#) @switch:
+
+- As you can guess from its name, this instruction allows to switch between different templates based
+    on the value of an expression.
+
+- Let’s take our @if/@else if/@else example and rewrite it using @switch:
+
+        <div>
+            @switch (races().length) {
+                @case (0) {
+                    <h2>No races to come</h2>
+                }
+                @case (1) {
+                    <h2>Only one race to come</h2>
+                }
+                @default {
+                    <h2>Some races to come</h2>
+                }
+            }
+        </div>
+
+-----------------------------------------------------------------------------------------------------------------
+
+#) Migration from structural directives:
+
+- If you have existing code using structural directives, you can migrate to the built-in control flow
+    syntax using an automated migration, by running:
+        
+        ng g @angular/core:control-flow
