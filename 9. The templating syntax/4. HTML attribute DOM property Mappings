@@ -1,0 +1,64 @@
+Common HTML Attribute ↔ DOM Property Mappings:
+
+
+- Before we move to property binding and Why we need it, first let's understand the difference between
+    HTML attributes and DOM properties, and how they are mapped.
+
+    HTML Attribute	            DOM Property	            Notes
+    id	                        id	                        Same name
+    class	                    className	                Different name
+    value	                    value	                    Common in forms
+    checked	                    checked	                    Checkbox/radio state
+    disabled	                disabled	                Boolean property
+    selected	                selected	                <option> elements
+    readonly	                readOnly	                CamelCase in DOM
+    maxlength	                maxLength	                CamelCase
+    minlength	                minLength	                CamelCase
+    tabindex	                tabIndex	                CamelCase
+    colspan	                    colSpan	                    Table cells
+    rowspan	                    rowSpan	                    Table cells
+    contenteditable	            contentEditable	            CamelCase
+    for	                        htmlFor	                    Labels
+    readonly	                readOnly	                Input/textarea
+    src	                        src	                        Images/scripts
+    href	                    href	                    Links
+    alt	                        alt	                        Images
+    title	                    title	                    Tooltip text
+    placeholder	                placeholder	                Inputs
+    required	                required	                Boolean
+    multiple	                multiple	                Boolean
+    hidden	                    hidden	                    Boolean
+    open	                    open	                    <details>
+    autocomplete	            autocomplete	            Same name
+    autofocus	                autofocus	                Same name
+    spellcheck	                spellcheck	                Same name
+    draggable	                draggable	                Same name
+    lang	                    lang	                    Same name
+    dir	                        dir	                        Text direction
+    type	                    type	                    Input/button type
+    name	                    name	                    Form field name
+    pattern	                    pattern	                    Regex validation
+    min	                        min	                        Numeric/date inputs
+    max	                        max	                        Numeric/date inputs
+    step	                    step	                    Numeric/date inputs
+
+
+- ❌“Attribute and property are the same thing.” They often start synchronized, but they are NOT the
+    same storage. For example let's create a simple HTML.
+
+        <input value="hello">
+    
+    Initially:
+
+        input.getAttribute('value') // "hello"
+        input.value                 // "hello"
+    
+    After user types "world":
+
+        input.getAttribute('value') // "hello"
+        input.value                 // "world"
+    
+    🔥In the input example above, the value attribute will always contain 'hello', whereas the value
+    property of the DOM node is dynamically modified by the browser, and thus contains whatever the user
+    has entered in the text field.
+    🔥This is why Angular binds to DOM properties.

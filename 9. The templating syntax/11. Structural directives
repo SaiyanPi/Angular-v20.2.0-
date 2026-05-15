@@ -1,0 +1,338 @@
+Structural directives:
+
+
+- You can skip this section if you are using Angular v18 or later. It is still valid, but they are
+    deprecated and the new syntax is recommended. We picked similar examples as the control flow syntax,
+    so you can compare them.
+
+- 🔥The structural directives provided by Angular rely on using a ng-template element, inspired by the
+    template standard tag of the HTML specification.
+
+        <ng-template>
+            <div>Races list</div>
+        </ng-template>
+
+    Here we have defined a template, displaying a simple div. Alone, it does not have much use, as the
+    browser will not display it. But if we add one 'template' element in a view, then Angular can use its
+    content. The structural directives have the ability to do simple actions with this content, like
+    displaying it or not, repeating it, etc.
+    
+    Let’s see which directives are available!
+
+--------------------------------------------------------------------------------------------------------------
+
+#) NgIf:
+
+- 🔥We might want this template instantiated only if a condition is matched. For this, we will use the
+    directive ngIf:
+
+        <ng-template [ngIf]="races().length > 0">
+            <div><h2>Races</h2></div>
+        </ng-template>
+    
+    🔥The framework provides a few directives, like ngIf. They come from the module that we discussed
+    earlier: CommonModule(chapter 7 section 4). You can also define your own directives if needed: we’ll
+    come back to custom directives later.
+
+        <div *ngIf="races().length > 0"><h2>Races</h2></div>
+    
+    And you will always use this shorter version.
+    🔥The syntax uses * to show it is a structural directive. The ngIf will or will not display the div
+    whenever the value of races changes: if there are no more races, the div will disappear.
+
+- The directives provided by the framework have no special treatment: 🔥to be able to use them, a
+    standalone component must import them. The following example explicitly imports NgIf. 🔥You might
+    choose instead to import the whole CommonModule, which would make NgIf and other common
+    directives and pipes available to the template.
+
+        import { Component, signal } from '@angular/core';
+        import { NgIf } from '@angular/common';
+        import { RaceModel } from './race.model';
+       
+        @Component({
+            selector: 'ns-races',
+            template: `<div *ngIf="races().length > 0"><h2>Races</h2></div>`,
+            imports: [NgIf]
+        })
+        export class Races {
+            protected readonly races = signal<Array<RaceModel>>([]);
+        }
+    
+    It’s also possible to use an else syntax:
+
+        import { Component, signal } from '@angular/core';
+        import { NgIf } from '@angular/common';
+        import { RaceModel } from './race.model';
+        
+        @Component({
+            selector: 'ns-races',
+            template: `
+                <div *ngIf="races().length > 0; else empty"><h2>Races</h2></div>
+                <ng-template #empty><h2>No races.</h2></ng-template>
+                `,
+            imports: [NgIf]
+        })
+        export class Races {
+            protected readonly races = signal<Array<RaceModel>>([]);
+        }
+
+--------------------------------------------------------------------------------------------------------------
+
+#) NgFor:
+
+- Working with real data will inevitably lead you to display a list of something. That’s when NgFor
+    proves very useful: it allows you to instantiate one template per item in a collection. Our Races
+    component contains a field races which, as you can probably guess, is an array of races to display.
+
+        import { Component, signal } from '@angular/core';
+        import { CommonModule } from '@angular/common';
+        import { RaceModel } from './race.model';
+        
+        @Component({
+            selector: 'ns-races',
+            template: `
+                <div *ngIf="races().length > 0">
+                    <h2>Races</h2>
+                    <ul>
+                        <li *ngFor="let race of races()">{{ race.name }}</li>
+                    </ul>
+                </div>
+                `,
+            imports: [CommonModule]
+        })
+        export class Races {
+            protected readonly races = signal<Array<RaceModel>>([{ name: 'London' }, { name: 'Lyon' }]);
+        }
+
+    And now we have a beautiful list, with one li tag per item in our collection!
+        
+        <ul>
+            <li>London</li>
+            <li>Lyon</li>
+        </ul>
+    
+    🔥in the above example, which uses both NgIf and NgFor, we chose to import the whole CommonModule.
+    If you prefer to be more explicit, you can instead have NgIf and NgFor in the imports array.
+    It’s mainly a matter of preferences.
+
+    NgFor is using a particular syntax, called a microsyntax.
+
+        <ul>
+            <li *ngFor="let race of races()">{{ race.name }}</li>
+        </ul>
+    
+    🔥It is possible to declare another local variable bound to the index of the current element:
+        
+        <ul>
+            <li *ngFor="let race of races(); index as i">{{ i }} - {{ race.name }}</li>
+        </ul>
+    
+    The local variable i will receive the index of the current element, starting at zero. index is an
+    exported variable. Some directives export variables that you can then assign to a local variable to
+    be able to use them in your template:
+        
+        <ul>
+            <li>0 - London</li>
+            <li>1 - Lyon</li>
+        </ul>
+    
+    🔥There are also other exported variables that can be useful:
+    • even, a boolean that is true if the element has an even index
+    • odd, a boolean that is true if the element has an odd index
+    • first, a boolean that is true if the element is the first of the collection
+    • last, a boolean that is true if the element is the last of the collection
+
+-------------------------------------------------------------------------------------------------------------
+
+#) NgSwitch:
+
+- As you can guess from its name, this directive allows to switch between different templates based
+    on a condition.
+
+        <div [ngSwitch]="messageCount()">
+            <p *ngSwitchCase="0">You have no message</p>
+            <p *ngSwitchCase="1">You have a message</p>
+            <p *ngSwitchDefault>You have some messages</p>
+        </div>
+            
+    As you can see, ngSwitch takes a condition and the *ngSwitchCase take the possible values. You can
+    also have *ngSwitchDefault that will be displayed if none of the values matched.
+
+-------------------------------------------------------------------------------------------------------------
+
+#) Understanding structural directives and their limitations
+- 📝This content is really advanced, so you can skip it if you want: it is targeted at people who want
+    to understand why the new syntax was introduced, and who have already a good understanding of Angular.
+
+- In Angular v18, the built-in control flow syntax (@if, @for, @switch) is promoted as a replacement for
+    the venerable structural directives. To understand why this new syntax was introduced, let’s see how
+    structural directives work in Angular.
+
+- 🔥Structural directives under the hood:
+    -> 🔥Structural directives are directives that change the structure of the DOM by adding, removing,
+        or manipulating elements. They are easy to recognize in Angular because they begin with an
+        asterisk *.
+
+- ⁉️But how do they really work?
+    -> Let’s take a simple template with ngIf and ngFor directives as an example:
+        
+            <h1>Ninja Squad</h1>
+            <ul *ngIf="condition()">
+                <li *ngFor="let user of users()">{{ user.name }}</li>
+            </ul>
+
+    -> 💡If you read our chapter about the Angular compiler(Chapter 7 section 5), you know that the
+        framework generates JavaScript code from this template. And maybe you imagine that *ngIf gets
+        converted to a JavaScript if and *ngFor to a for loop like:
+
+            createElement('h1');
+            if (condition()) {
+                createElement('ul');
+                for (user of users()) {
+                    createElement('li');
+                }
+            }
+    
+    -> ⚠️🔥But Angular does not work exactly like that: the framework decomposes the component’s template
+        into "views". A view is a fragment of the template that has static HTML content. It can have
+        dynamic attributes and texts, but the HTML elements are stable.
+        So our example generates in fact three views, corresponding to three parts of the template:
+        
+            <h1>Ninja Squad</h1>
+                <!-- special comment -->
+            
+            <ul>
+                <!-- special comment -->
+            </ul>
+            
+            <li>{{ user.name }}</li>
+
+        🔥This is because the * syntax is in fact syntactic sugar to apply an attribute directive on an
+        ngtemplate element. So our example is the same as:
+
+            <h1>Ninja Squad</h1>
+            <ng-template [ngIf]="condition()">
+                <ul>
+                    <ng-template ngFor [ngForOf]="users()" let-user>
+                        <li>{{ user.name }}</li>
+                    </ng-template>
+                </ul>
+            </ng-template>
+        
+        🧠Here ngIf and ngFor are plain directives. Each ng-template then generates a "view". Each view
+        has a static structure that never changes. But these views need to be dynamically inserted at
+        some point. And that’s where the <!-- special comment --> comes into play.
+
+        🧠Angular has the concept of ViewContainer. A ViewContainer is like a box where you can
+        insert/remove child views. To mark the location of these containers, Angular uses a special HTML
+        comment in the created DOM.
+
+        🧠That’s what ngIf actually does under the hood: it creates a ViewContainer, and then, when the
+        condition given as input changes, it inserts or removes the child view at the location of the
+        special comment.
+
+        ✨This view concept is quite interesting as it will allow Angular to only update views
+        that consume a signal in the future, and not the whole template of a component!
+    
+    -> 🔥You can create your own structural directives if you want to. Let’s say you want to write a
+        *customNgIf directive. You can create a directive that takes a condition as an input and injects
+        a ViewContainerRef (the service that allows to create the view) and a TemplateRef (the
+        ng-template on which the directive is applied).
+
+            import {
+                Directive,
+                DoCheck,
+                EmbeddedViewRef,
+                inject,
+                input,
+                signal,
+                TemplateRef,
+                ViewContainerRef
+            } from '@angular/core';
+
+            @Directive({
+                // eslint-disable-next-line @angular-eslint/directive-selector
+                selector: '[customNgIf]'
+            })
+
+            export class CustomNgIf implements DoCheck {
+                /**
+                * The container where the view will be inserted
+                */
+                private readonly vcr = inject(ViewContainerRef);
+                /**
+                * The template to render
+                */
+                private readonly tpl = inject<TemplateRef<unknown>>(TemplateRef);
+                /**
+                * The condition to check
+                */
+                readonly condition = input.required<boolean>({ alias: 'customNgIf' });
+                /**
+                * The view created by the directive
+                */
+                readonly conditionalView = signal<EmbeddedViewRef<unknown> | null>(null);
+                /**
+                * This method is called every time the change detection runs
+                */
+                ngDoCheck() {
+                    // if the condition is true and the view is not created yet
+                    const conditionalView = this.conditionalView();
+                    if (this.condition() && !conditionalView) {
+                        // create the view and insert it in the container
+                        this.conditionalView.set(this.vcr.createEmbeddedView(this.tpl));
+                    } else if (!this.condition() && conditionalView) {
+                        // if the condition is false and the view is created
+                        // destroy the view
+                        conditionalView.destroy();
+                        this.conditionalView.set(null);
+                    }
+                }
+            }
+
+        This works great! And as you can see, it lets developers like us create powerful structural
+        directives if we want to: the built-in directives offered by Angular are not special in any way.
+        ⚠️But this approach has some drawbacks: for example, it is a bit clunky to have an else
+        alternative with *ngIf:
+
+            <div *ngIf="condition(); else elseBlock">If</div>
+            <ng-template #elseBlock><div>Else</div></ng-template>
+
+        🔥elseBlock is another input of the NgIf directive, of type TemplateRef, that the directive will
+        display if the condition is falsy. But this is not very intuitive to use, so we often see this
+        instead:
+
+            <div *ngIf="condition()">If</div>
+            <div *ngIf="!condition()">Else</div>
+        
+        🔥🔥The structural directives are also not perfect type-checking-wise. Even if Angular does
+        some magic (with some special fields called ngTemplateGuard in the directives to help the
+        type-checker), some cases are too tricky to handle. For example, the "else" alternative of *ngIf
+        is not type-checked:
+            
+            <div *ngIf="!adminUser; else userNotNullBlock">No user</div>
+            <ng-template #userNotNullBlock>
+                <div>
+                    <!-- should compile as adminUser is not null here -->
+                    <!-- but it doesn't which causes an error like: Object is possibly 'null'-->
+                    {{ adminUser.name }}
+                </div>
+            </ng-template>
+    
+    -> NgSwitch is even worse, as it consists of 3 separate directives NgSwitch, NgSwitchCase, and
+        NgSwitchDefault. The compiler has no idea if the NgSwitchCase is used in the right context.
+
+            <!-- user.type can be `'user' | 'anonymous'` -->
+            <ng-container [ngSwitch]="user().type">
+                <div *ngSwitchCase="'user'">User</div>
+                <!-- compiles even if user.type can't be 'admin' -->
+                <div *ngSwitchCase="'admin'">Admin</div>
+                <div *ngSwitchDefault>Unknown</div>
+            </ng-container>
+    
+    -> 💡It’s also worth noting that the * syntax is not very intuitive for beginners. So, to sum up,
+        structural directives are powerful but have some drawbacks. Fixing these drawbacks would require
+        a lot of work in the compiler and the framework.
+
+        That’s why the Angular team decided to introduce a new syntax to write control flow statements
+        in templates!

@@ -32,11 +32,11 @@ Property binding:
     value user.name which will be evaluated in the context of the current component instance, as it was
     for the interpolation.
 
-    ⚠️Note that the parser is case-sensitive, so you have to write the property name with the correct case:
-    textcontent or TEXTCONTENT will not work. It has to be textContent.
+    ⚠️Note that the parser is case-sensitive, so you have to write the property name with the correct
+    case: textcontent or TEXTCONTENT will not work. It has to be textContent.
 
 
-- 🔥DOM properties have a great advantage over HTML attributes: they have up-to-date values. In my
+- 🔥🔥DOM properties have a great advantage over HTML attributes: they have up-to-date values. In the
     input example above, the value attribute will always contain 'hello', whereas the value property of the
     DOM node is dynamically modified by the browser, and thus contains whatever the user has entered in the
     text field.

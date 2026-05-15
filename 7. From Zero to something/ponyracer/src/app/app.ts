@@ -1,8 +1,9 @@
 import { Component, signal } from '@angular/core';
+import { Ponies } from './ponies/ponies/ponies';
 
 @Component({
   selector: 'ns-root',
-  imports: [],
+  imports: [Ponies],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

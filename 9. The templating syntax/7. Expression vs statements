@@ -21,8 +21,8 @@ Expressions vs statements:
 
 
 - Statement:
-    🔥A statement, on the other hand, is triggered on the matching event. If you try to use a statement like
-    race.show() where race is undefined, you will have an error. You can chain several statements,
+    🔥A statement, on the other hand, is triggered on the matching event. If you try to use a statement
+    like race.show() where race is undefined, you will have an error. You can chain several statements,
     separated with a semicolon. A statement can, and generally should, have side effects. That’s the
     point of reacting to an event: to make something happen. A statement can be a variable assignment,
     and can contain keywords.

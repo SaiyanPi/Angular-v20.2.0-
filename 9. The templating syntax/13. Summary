@@ -1,0 +1,143 @@
+Summary:
+
+
+- 🔥The Angular templating system gives us a powerful syntax to express the dynamic part of our
+    HTML. It allows to express data and property binding, event binding and templating concerns, in a
+    clear way, each with their own symbols:
+        • {{}} for interpolation
+        • [] for property binding
+        • () for event binding
+        • # for variable declaration
+        • @if/@for/@switch for the control flow
+    
+    It takes some time to be fluent in this syntax, but you will soon be up to speed, and then it’s easy
+    to read and write. Let’s go through a complete example before moving on.
+
+
+- example: ✨I want to write a Ponies component, displaying a list of ponies. ✨Each pony should be
+    represented by a Pony component, ✨but we haven’t seen yet how to pass parameters to a component. So,
+    for now, we are going to display a simple list. ✨The list should be displayed only if it’s not empty,
+    and ✨I’d like to have some color for the even lines of my list. ✨Finally, I want to be able to
+    refresh the list with a button click.
+
+    We'll have a folder structure:
+
+        src/app/
+            └── ponies/
+                ├── models/
+                │    └── pony.model.ts
+                │
+                ├── ponies/
+                │    ├── ponies.ts
+                │    ├── ponies.html
+                │
+                └── pony/
+                    ├── pony.ts
+                    ├── pony.html
+    
+    1️⃣First let's create all the required components and interface:
+        🔥 To create a ponies component inside a ponies folder: 
+                ng g c ponies/
+                
+        🔥 To create a pony component inside a ponies folder:
+                ng g c ponies/pony
+
+        🔥 To create an interface PonyModel inside a models folder inside a ponies folder: 
+                src/app/ponies/models/pony-model.ts
+        
+
+    2️⃣Let's update the Ponies components next:
+
+            import { Component, signal } from '@angular/core';
+            import { PonyModel } from '../models/pony-model';
+
+            @Component({
+                selector: 'ns-ponies',
+                standalone: true,
+                template: `
+                    <button (click) = "refreshPonies()">Refresh</button>
+                    <ul>
+                        @for (pony of ponies(); track pony.id) {
+                        <li [style.color]="$even ? 'green' : 'black'">{{pony.name}}</li>
+                        }
+                    </ul>`,
+                imports: [],
+            })
+            export class Ponies {
+                protected readonly ponies = signal<PonyModel[]>([ 
+                    { id: 1, name: 'Rainbow Dash' },
+                    { id: 2, name: 'Pinkie Pie' }
+                ]);
+                
+                protected refreshPonies() {
+                    this.ponies.set([
+                    { id: 3, name: 'Twilight Sparkle' },
+                    { id: 4, name: 'Applejack' }
+                    ]);
+                }
+            }
+
+        
+        🔥(learned from section 3): we import PonyModel interface to use it in the signal.
+
+        🔥(learned from Chapter 8, section 3): Notice that when creating signal ponies we did not use
+            the syntax:
+                signal<PonyModel>([..])
+            Instead we used:
+                signal<PonyModel[]>([..])
+            🔥It's because the ESLint perfers PonyModelModel[] mainly because it's cleaner and more
+            readable and also to avoid nesting confusion. 
+            PonyModel[][] is much easier to read than Array<Array<PonyModel>>
+        
+        🔥(learned from section 6): Next, we added the button in the template which triggers the 
+            refreshPonies() method. refreshPonies() method updates the ponies signal with a new list of
+            ponies. (see section Chapter 8, section 3 for more details about signals)
+
+        🔥Lastly, a touch of color to finish, with the use of [style.color] and the $even variable in
+            the template.
+
+
+    3️⃣Our Ponies component is ready Now we need to use ponies component in our app component
+
+            import { Component, signal } from '@angular/core';
+            import { Ponies } from './ponies/ponies/ponies';
+
+            @Component({
+                selector: 'ns-root',
+                imports: [Ponies],
+                templateUrl: './app.html',
+                styleUrl: './app.css'
+            })
+            export class App {
+                protected readonly title = signal('ponyracer');
+            }
+
+        🔥we import the Ponies component into our app component.
+
+        🔥imports: [Ponies], gives a warning ⚠️'All imports are unused(-998113)' because in Angular 
+            15+ (and especially Angular 17+ with @for), this rule applies:
+                If you use imports: []
+                THEN the component MUST be standalone
+            Otherwise Angular ignores imports entirely and treats your component like a classic module
+            component.
+
+        🔥✅To fix the warning, we need to make our Ponies component standalone by adding standalone: true
+            in the @Component.
+    
+
+    4️⃣ Finally we can use <ns-ponies></ns-ponies> inside the app template or inside the app.html to
+        display the list of ponies. I've decided to use it inside the app.html:
+
+            <div class="app">
+                <h1>Hello, {{ title() }}</h1>
+                <br>
+                <ns-ponies></ns-ponies>
+            </div>
+    
+    5️⃣ ng serve the application and see the result in the browser. You should see the list of ponies with
+        text color black and green, and when you click on the refresh button, the list should update
+        with the new ponies.(see ponyracer app inside Chapter 7)
+
+
+- ⚠️Note that we did not use Pony component because we haven’t seen yet how to pass parameters to a
+    component. So, for now, we only displayed a simple list.

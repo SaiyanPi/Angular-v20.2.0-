@@ -26,8 +26,8 @@ Using other components in our templates:
         })
         export class App {}
     
-    As you can see, we added the Races component in the template, by including a tag whose name matches the
-    selector we defined for the component.
+    As you can see, we added the Races component in the template, by including a tag whose name matches 
+    the selector we defined for the component.
     ❌Buuuuuut, that will not work: your browser will not display the races component.
     Why is that? Angular doesn’t know about this Races yet.
 

@@ -1,0 +1,42 @@
+Template directives:
+
+
+- 🔥Angular comes with plenty of other useful directives, but which are not structural. We’ll use several
+    of them when writing forms, for example. Two of them are commonly used to act on the CSS styles
+    of the elements.
+
+---------------------------------------------------------------------------------------------------------
+
+#) NgStyle:
+
+- The first one is ngStyle. We already saw(in property binding) that we can act on the style of an
+    element using: 
+
+        <p [style.color]="foreground()">Friendship is Magic</p>
+    
+    🔥If you need to set several styles at the same time, you can use the ngStyle directive:
+        
+        <div [ngStyle]="{ fontWeight: fontWeight(), color: color() }">I've got style</div>
+    
+    📝Note that the directive expects an object whose keys are the styles to set. The keys can either be
+    in camelCase (fontWeight) or in dash-case ('font-weight').
+
+---------------------------------------------------------------------------------------------------------
+
+#) NgClass:
+
+- 🔥In the same spirit, the ngClass directive allows you to add or remove classes dynamically on an
+    element.
+    As for the style, you can either set a class using property binding:
+
+        <div [class.awesome-div]="isAnAwesomeDiv()">I've got style</div>
+
+    or set several classes:
+        
+        <div [class.awesome-div]="isAnAwesomeDiv()" [class.wonderful-div]="isAWonderfulDiv()">
+        I've got style</div>
+    
+    🔥Or you can use the ngClass directive to set several classes at the same time:
+
+        <div [ngClass]="{ 'awesome-div': isAnAwesomeDiv(), 'wonderful-div': isAWonderfulDiv()}">
+        I've got style</div>
