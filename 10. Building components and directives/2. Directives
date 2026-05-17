@@ -1,0 +1,27 @@
+Directives:
+
+
+- 🔥A directive is very much like a component, except it does not have a template. The goal of a
+    component is to enrich HTML by using custom HTML elements like <ns-pony /> to display a pony.
+    🔥Directives also enrich HTML by letting you attach a custom behavior to existing HTML elements.
+    For example, you could attach a drag directive to a <div>, or a <section>, or even a <ns-pony>
+    element to make it draggable
+
+- We’ve already seen the ngClass directive: it allows adding or removing CSS classes to HTML
+    elements. You can attach several directives to the same element. For example, a <div> could need
+    CSS classes added to them by ngClass, and could also be made draggable by the drag directive.
+    (Chapter 9, section 12)
+
+- 🔥The way we define directives is similar to the way we define components. We create a class. We
+    decorate this class with a @Directive decorator. And we pass metadata to this decorator as we
+    did for the @Component decorator. In fact, components are directives. All the metadata that we
+    specify on a directive, we can also pass them to a component. Their lifecycles are also pretty
+    much identical.
+
+- Even though directives are a big part of what makes Angular extremely powerful, they’re more
+    commonly used in low-level, foundational parts of libraries, or of the framework itself. 🔥A
+    typical web application developer rarely creates directives, and more commonly creates
+    components.
+
+- Let’s learn about the most common things we can define on components and directives. More
+    advanced stuff will be described later.

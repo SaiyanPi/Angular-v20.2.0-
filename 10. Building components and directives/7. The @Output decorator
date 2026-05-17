@@ -1,0 +1,17 @@
+The @Output decorator:
+
+
+- Even though outputs have nothing to do with signals, the output() function described above was
+    introduced at the same time as the input() function, to have a pleasant symmetry between inputs
+    and outputs.
+
+- Before that, outputs were defined using the @Output decorator. And they were also using a different
+    class: EventEmitter which was unnecessarily tied to the RxJS library (we’ll talk about this library in
+    a few chapters). In case your codebase still uses them, here’s how an output is defined in the legacy
+    way:
+
+        @Output() readonly ponySelected = new EventEmitter<PonyModel>();
+    
+    and here’s how an alias can be specified for the input:
+
+        @Output('activated') ponySelected = new EventEmitter<PonyModel>();

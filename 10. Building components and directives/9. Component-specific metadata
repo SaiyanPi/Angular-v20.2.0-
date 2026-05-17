@@ -1,0 +1,6 @@
+Component-specific metadata:
+
+
+- Inputs, outputs, and the hooks we’ve just described are common to directives and components.
+    Components, however, can define styles that will apply to their template, and must have an
+    associated template.

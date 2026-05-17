@@ -1,0 +1,151 @@
+Lifecycle:
+
+
+- Components and directives have a lifecycle. 🔥When Angular must display a component, it starts by
+    constructing it and thus calls the component class constructor. 🔥Then it will pass the initial input
+    values to the component. 🔥If the expressions passed as inputs later have different values, then these
+    new values are written to the inputs again. 🔥And finally, if the user navigates away from this
+    component, for example, the component is destroyed. 🔥Hopefully, the component isn’t reachable
+    from anywhere anymore at this point, and the JavaScript virtual machine can garbage collect the
+    component object.
+
+- Angular allows you to react to those various phases (and other ones, more advanced, that we’ll
+    discover later). 🔥One thing is very important to understand: inputs are passed after the component
+    has been constructed (In other words, constructor runs before Angular assigns the input value). It’s
+    thus forbidden to read inputs while the component is being constructed.
+    🔥With the signal inputs, trying to do that will lead to an exception being thrown by the InputSignal.
+    ⚠️With the legacy inputs, trying to do that will just give you the default value of the property,
+    rather than the one actually bound by the parent component.
+    That means that the following component will not work ❌:
+
+        export class Pony {
+            readonly color = input.required<string>();
+            constructor() {
+                // ❌ Don't do this
+                console.log(`My initial color is ${this.color()}`);
+            }
+        }
+
+
+- 🔥If you want to access the value of an input, to load additional data from the server, for example,
+    you can use a lifecycle hook. More powerful options are available for signal inputs, which we’ll
+    discover in the next chapter.
+    Several hooks are available:
+        🔥ngOnChanges is called when the value of one or several bound inputs change. It will receive a
+        changes map, containing the current and previous values of the inputs, wrapped in a SimpleChange.
+        It will not be called if there is no change.
+
+        🔥ngOnInit will be called only once, after the first change (whereas ngOnChanges is called on every
+        change). It’s guaranteed to be called even if there are no inputs. But if there are inputs, it’s
+        called after the first ngOnChanges call. It makes this phase perfect for initialization work that
+        depends on input values, as the name suggests.
+
+        🔥ngOnDestroy is called when the component is destroyed. Really useful to do some cleanup.
+    
+    Other phases are available but are for more advanced use cases. We will describe them in the
+    Advanced components and directives chapter a bit further.
+
+-------------------------------------------------------------------------------------------------------------
+
+- Above example will work better using ngOnInit. 🔥Angular invokes the method ngOnInit() if it’s
+    present, so you just have to implement it in your directive/component. But the best practice is to
+    implement the OnInit interface. That forces you to implement the method, and make sure you have
+    defined it correctly:
+
+        export class Pony implements OnInit {
+            readonly color = input.required<string>();
+            ngOnInit() {
+                // ✅ Do this
+                console.log(`My initial color is ${this.color()}`);
+            }
+        }
+    
+    Now we have access to our inputs!
+
+------------------------------------------------------------------------------------------------------------
+
+- 🔥If you want to do something every time an input changes, use ngOnChanges:
+
+        export class Pony implements OnChanges {
+            readonly color = input.required<string>();
+
+            ngOnChanges(changes: SimpleChanges): void {
+                const ponyChange = changes['color'];
+                // 👆 equivalent to:const ponyChange = changes.color;
+
+                console.log(`Color changed from ${ponyChange.previousValue}`);
+                console.log(`to ${ponyChange.currentValue}`);
+                console.log(`Is it the first change? ${ponyChange.isFirstChange()}`);
+
+                // but you can also access the new value by reading the input
+                console.log(`My new color is ${this.color()}`);
+            }
+        }
+    
+    🔥🔥The changes parameter is a record, with the input names as keys, and a SimpleChange object with
+    two attributes (the previous and the current value) as value, as well as a method isFirstChange() to
+    know if it is… the first change.
+
+    🔥const ponyChange = changes['color']; returns a SimpleChange object.
+
+    That object contains:
+
+        Property	        Meaning
+        --------------------------------------------------------------
+        previousValue	    old value
+        currentValue	    new value
+        isFirstChange()	    whether this is the first assignment
+    
+    🔥isFirstChange() is trueonly when it receives the value for the first time. For example when you
+    assign the first value. 
+       
+        color = 'blue'
+    
+    Angular calls ngOnChanges() with:
+        
+        {
+            color: {
+                previousValue: undefined,
+                currentValue: 'blue',
+                firstChange: true
+            }
+        }
+    
+    ⚠️But when you change the value, let's say from blue to green
+
+        color = 'green'
+    
+    Angular calls ngOnChanges() with:
+        
+        {
+            color: {
+                previousValue: 'blue',
+                currentValue: 'green',
+                firstChange: false
+            }
+        }
+
+------------------------------------------------------------------------------------------------------------
+
+- The ngOnDestroy phase is designed to clean the component – for example, to cancel background
+    tasks. Here, the Pony is logging "hello" every second when it is created. When the component is
+    removed from the page, you want to stop the setInterval to avoid a memory leak:
+
+        export class Pony implements OnDestroy {
+            readonly color = input.required<string>();
+            private readonly interval: number;
+
+            constructor() {
+                this.interval = window.setInterval(() => console.log(`My color is ${this.color()}`), 1000);
+            }
+
+            ngOnDestroy(): void {
+                window.clearInterval(this.interval);
+            }
+        }
+
+    ⚠️If you don’t do this, JavaScript will keep the instance of the component in memory, and it will
+    log every second forever.
+
+    ⚠️Note that unlike the first example of this section, constructor is not reading the input
+    immediately because of the callback function.

@@ -14,7 +14,7 @@ import { PonyModel } from '../models/pony-model';
   imports: [],
 })
 export class Ponies {
-  protected readonly ponies = signal<PonyModel[]>([ 
+  protected readonly ponies = signal<PonyModel[]>([
     { id: 1, name: 'Rainbow Dash' },
     { id: 2, name: 'Pinkie Pie' }
   ]);

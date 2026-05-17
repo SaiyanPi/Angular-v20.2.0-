@@ -79,3 +79,62 @@ Property binding:
 - 🔥🔥You need to remember that if an HTML attribute is not surrounded by square brackets (name="…"),
     then the value is a string. Whereas if it’s surrounded by square brackets ([name]="…"), then the value
     is an expression, evaluated by Angular.
+
+
+----------------------------------------------------------------------------------------------------------
+
+From ChatGpt:
+
+- Think of Angular templates as two worlds:
+    👉HTML world → what the user sees
+    👉TypeScript world → your component data and logic
+
+- Property binding is simply:
+    🔥“Take a value from TypeScript and put it into a property of an HTML element or Angular component.”
+
+- The syntax is: [property]="expression"
+
+- Examples:
+
+    1️⃣ Styling / class bindings:
+        TS:
+            export class PonyComponent {
+                ponyColor = 'blue';
+            }
+
+        HTML:
+            <div [class]="ponyColor"></div>
+
+        TS:
+            export class PonyComponent {
+                isHappy = true;
+            }
+        
+        HTML:
+            <div [class.happy]="isHappy">Happy pony</div>
+
+            
+    2️⃣ Image Source:
+        TS:
+            export class PonyComponent {
+                imageUrl = 'https://example.com/pony.png';
+            }
+
+        HTML:
+            <img [src]="imageUrl">
+    
+
+    3️⃣ Link href:
+        TS:
+            profileLink = 'https://example.com/user/1';
+
+        HTML:
+            <a [href]="profileLink">Profile</a>
+        
+
+    4️⃣ Disable button:
+        TS:
+            isSaving = true;
+
+        HTML:
+            <button [disabled]="isSaving">Save</button>

@@ -1,0 +1,9 @@
+Template / Template URL:
+
+
+- 🔥The main feature of a @Component is to have a template, whereas a directive does not have one. You
+can either declare your template inline, using template or use a URL to put it in a separate file with
+templateUrl (but you can’t do both at the same time).
+
+- 🔥As a rule of thumb, if your template is small (1-2 lines), it’s perfectly fine to keep it inline.
+    When it starts to grow, move it to its own file to avoid cluttering your component.

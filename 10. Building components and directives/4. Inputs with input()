@@ -1,0 +1,63 @@
+Inputs with input():
+
+
+- 🔥Inputs are what allows a component or directive to receive information from its parent component.
+    You can see them as parameters of a function: the calling function uses parameters to pass data
+    to the called function.
+
+- 🔥To pass an input to a component or directive, we use the property binding syntax(Chapter 9
+    section 5) that we described in the previous chapter. For example, if we wanted to pass a color
+    to the pony component, we would use:
+    
+    to pass the literal 'blue' string:
+        
+        <ns-pony color="blue" />
+    
+    or to pass the value of the Angular expression selectedColor():
+
+        <ns-pony [color]="selectedColor()" />
+
+    🔥In order for a directive or component to accept information from its parent, it must define 
+    inputs.
+
+        @Component({
+            selector: 'ns-pony',
+            template: 'My color is {{ color() }}'
+        })
+        export class Pony {
+            protected readonly color = input<string>();
+        }
+    
+    🔥The color property is a special kind of signal: an InputSignal. ⚠️Such a signal is not writable.
+    The Pony can’t change its color. ⚠️The only way to change its value is to bind another value from
+    the parent component.
+
+    🔥The input in the above example is optional. That means that the parent component is allowed
+    to not pass a color to the component <ns-pony />. ⚠️But the input is typed, so if it passes a
+    value, the value must be a string. ⚠️If the parent doesn’t pass any color, the color signal will
+    contain undefined. The type of color is InputSignal<string | undefined>.
+
+    🔥The component could choose to use a default value for the color, in case the parent doesn’t pass
+    any. The type of color would then be InputSignal<string>: it always has a string value.
+
+        readonly color = input('red');
+
+    🔥Or it could choose to force the parent to pass a value by making the input required. In this case,
+    the parent component template would fail to compile if it didn’t pass a value.  
+
+        readonly color = input.required<string>();
+
+    🔥If you wanted to use color as the property name, but prefer to use another name in the templates
+    for the input, you can choose to give it an alias.
+    For example, if the input is defined that way:
+        
+        readonly color = input.required<string>({ alias: 'c' });
+    
+    then the parent will use c to pass a color value:
+        
+        <ns-pony [c]="selectedColor()" />
+
+
+- The above examples all define an input of type string. 🔥But anything can be passed as input. It’s very
+    common to pass complex objects as inputs, such as a PonyModel object that would contain a name, a
+    color, a birthdate, etc.

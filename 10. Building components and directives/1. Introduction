@@ -1,0 +1,9 @@
+Building components and directives Introduction:
+
+
+- So far, we have seen some small components. And of course, you can sense that, as they are the
+    backbone of our apps, they can be more complex than what we have seen. How do we pass data?
+    How do we manage the lifecycle of our component? What are the best practices to build these
+    things?
+    
+    🔥Directives: What do they do? Let’s find out!

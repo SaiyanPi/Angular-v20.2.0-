@@ -1,0 +1,20 @@
+Styles / Style URL:
+
+
+- You can also specify the styles of your component. It is particularly useful if you plan to have really
+    isolated components. You can specify this using styles or styleUrl (or styleUrls if you have several
+    files).
+
+- 🔥As you can see below, the styles attribute takes an array of CSS rules as a string. You can imagine
+    it grows pretty quickly, so using a separate file and styleUrl is a good idea. As the name of the
+    latter suggests, you can specify an array of URLs.
+
+        @Component({
+            selector: 'ns-pony',
+            template: '<div class="pony">My color is {{ color() }}</div>',
+            styles: ['.pony { background-color: lightgray; }']
+        })
+
+        export class Pony {
+            readonly color = input.required<string>();
+        }

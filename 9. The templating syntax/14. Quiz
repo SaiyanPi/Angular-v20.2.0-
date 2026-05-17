@@ -1,0 +1,94 @@
+Quiz:
+
+
+1) If greetings is a signal of the component, you can display its value in your template using?
+
+        {{ greetings }}
+
+        {{ greetings() }} ✅
+
+        (( greetings ))
+
+        [[ greetings() ]]
+
+
+
+2) If user is a signal of a component App and contains { name: 'Cyril' }, how can you display 'Cyril'?
+
+        {{ name() }}
+
+        {{ user().name() }}
+
+        {{ user().name }} ✅
+
+        {{ App.user().name }}
+
+
+
+3) You can listen to an event using
+
+        {click}="doSomething()"
+
+        (click)="doSomething()" ✅
+
+        (CLICK)="doSomething()"
+
+
+
+4) With Angular, you can listen to all DOM events, component events and Web component events
+
+        true ✅
+
+        false
+
+
+
+5) You can pass a special parameter to the method to access the emitted event with
+
+        event
+
+        $event ✅
+
+        %event
+
+
+
+6) You can disable a button depending on the value of a signal called isDisabled using
+
+        <button disabled="isDisabled">
+
+        <button (disabled)="isDisabled">
+
+        <button [disabled]="isDisabled">
+
+        <button [disabled]="isDisabled()"> ✅
+
+
+
+7) You can add/remove a class orange to a div when a signal isOrange is true/false, using
+
+        <div [class.orange]="isOrange()"> ✅
+
+        <div [orange]="isOrange()">
+
+        <div class="{ orange: isOrange() }">
+
+
+
+8) You can change the font color to the value of a signal fontColor, using
+
+        <div [style.color]="fontColor()"> ✅
+
+        <div [color]="fontColor()">
+
+        <div style="{ color: fontColor() }">
+
+
+
+9) If user is a signal of a component and contains { name: 'Cyril' }, what does {{ user() }} display?
+
+        name: Cyril
+
+        { name: Cyril }
+
+        [object Object] ✅

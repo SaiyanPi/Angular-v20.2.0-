@@ -1,0 +1,78 @@
+Outputs with output():
+
+
+- Let’s go back to our latest example, and say we want to be able to select a pony by clicking on it and
+    inform the parent component. For this, we will use a custom event.
+    This is important. 🔥In Angular, data flows into a component via properties, and 🔥flows out of a
+    component via events.
+
+                                    Races
+                                    |   ^
+                              [race]|   |
+                                    |   |
+                                    v   |
+                                    Race
+                                    |   ^
+                              [pony]|   |
+                                    |   |(selected)
+                                    v   |
+                                    Pony
+                
+- 🔥Custom events are emitted using an OutputEmitterRef. You don’t really need to use this awful type
+    name. Such objects are created for you by the output() function.
+
+- 🔥You’re free to choose the type of the events that you emit. It could be undefined, to just signal
+    that something happened. Or it could be a PonyModel, to pass all the information about the pony that
+    has just been selected, for example.
+    🔥🔥Let’s say we want to emit an event called ponySelected. We have two things to do:
+        1️⃣ define a property ponySelected initialized by calling output()
+        2️⃣ call this.ponySelected.emit() to emit an event when the pony is being selected
+
+        @Component({
+            selector: 'ns-pony',
+            template: `
+                <div>I'm the pony {{ ponyModel().name }}</div>
+                <div><button (click)="selectMe()">Select me</button></div>
+                `
+        })
+        export class Pony {
+            readonly ponyModel = input.required<PonyModel>();
+
+            // define the output
+            readonly ponySelected = output<PonyModel>(); 1️⃣
+            // ☝️OutputEmitterRef<PonyModel>
+            /**
+            * Selects the pony when the "Select me" button is clicked.
+            * Emits a custom event of type PonyModel
+            */
+
+            protected selectMe() {
+                this.ponySelected.emit(this.ponyModel()); 2️⃣
+            }
+        }
+
+    🔥🔥To use it in the template of the parent component:
+
+        <ns-pony [ponyModel]="ponyModel()" (ponySelected)="betOnPony($event)" />
+    
+    In the above example, every time the user clicks on the button in the pony component, it emits an
+    event ponySelected, with the pony as a value (the parameter of the emit() method). 🔥The parent
+    component is listening to this event, as you can see in the template, 🔥and will call its betOnPony
+    method with the value of the event $event. 🔥$event is the syntax you have to use to access the
+    emitted event. Here, it is the PonyModel object.
+
+    🔥The parent component must then have a method betOnPony(), which will be called with the selected
+    pony:
+
+        protected betOnPony(event: PonyModel) {
+            // do something with the received event
+        }
+
+
+- 🔥As for the inputs, if you wish, you can choose an alias for the output:
+        
+        readonly ponySelected = output<PonyModel>({ alias: 'activated' }👈);
+
+    The parent component will then have to use this alias to listen to the event:
+        
+        <ns-pony [ponyModel]="ponyModel()" (activated👈)="betOnPony($event)" />

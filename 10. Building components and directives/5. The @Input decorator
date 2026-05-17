@@ -1,0 +1,27 @@
+The @Input decorator:
+
+
+- We’ve just seen how to define inputs as signals. That’s the modern way of doing it. 🔥If you work on
+    an existing code base, the inputs of your components are probably defined the old way, using the
+    @Input decorator
+
+- Inputs defined this way are passed by the parent component using the exact same property binding
+    syntax. 🔥The difference is only in the component which defines the input. Such "legacy" inputs are
+    simple properties (not signals), decorated with @Input(). Here are the above examples rewritten in
+    the legacy way.
+
+        🔥An optional input:
+            @Input() color: string | undefined;
+
+        🔥An optional input with a default value:
+            @Input() readonly color = 'red';
+        
+        🔥A required input:
+            @Input({ required: true }) color!: string;
+
+        🔥A required input with an alias:
+            @Input({ required: true, alias: 'c' }) color!: string;
+
+
+- ⁉️OK, now what about passing data up? We can’t use properties to pass data from Pony (child component)
+    to Ponies(parent component). But we can use events!

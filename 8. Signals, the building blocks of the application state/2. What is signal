@@ -1,5 +1,7 @@
 What is a signal?
 
+- 🔥A signal is essentially a function with extra abilities attached to it.
+
 - 🔥A signal is a box which always contains a value. You can get the value inside the box by reading the
     signal. And when the signal is writable, you can put another value inside the box by setting or
     updating the signal. The value inside the box can be anything: a number, a string, an object, an

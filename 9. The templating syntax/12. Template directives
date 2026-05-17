@@ -27,9 +27,10 @@ Template directives:
 
 - 🔥In the same spirit, the ngClass directive allows you to add or remove classes dynamically on an
     element.
-    As for the style, you can either set a class using property binding:
+    As for the style, you can either 🔥set a class using property binding:
 
         <div [class.awesome-div]="isAnAwesomeDiv()">I've got style</div>
+        // 🔥Add or remove the CSS class awesome-div depending on the result of isAnAwesomeDiv().
 
     or set several classes:
         

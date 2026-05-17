@@ -1,0 +1,103 @@
+Selectors:
+
+
+- 🔥The selector is what allows Angular to identify a component or directive inside HTML templates.
+    Selectors can be of various types:
+        • an element, as it’s usually the case for components: ns-pony.
+        • a class, not so frequent: .alert.
+        • an attribute, the most frequent for directives: [color].
+        • an attribute with a specific value: [color=red].
+        • a combination of the above: 
+            -> footer[color=red] matches an element named footer having an attribute color whose 
+                value is red. 
+            -> [color], footer.alert matches any element having an attribute color or (,) any
+                element named footer with the CSS class alert. 
+            -> footer:not(.alert) matches any element named footer that does not (:not()) have the 
+                CSS class alert.
+
+    For example, this is a very simple directive that does nothing but 🔥gets activated if the
+    attribute doNothing is on an element:
+
+        @Directive({
+            selector: '[doNothing]' 👈
+        })
+        export class DoNothing {
+            constructor() {
+                console.log('Do nothing directive');
+            }
+        }
+
+    Such a 🔥directive will be activated in a component like this Test:
+
+        @Component({
+            selector: 'ns-test',
+            template: '<div doNothing👈>Click me</div>', 
+            imports: [DoNothing]
+        })
+        export class Test {}
+    
+
+- A more complex selector could be:
+
+        @Directive({
+            selector: 'div.loggable[logText]:not([notLoggable=true])' 👈
+        })
+        export class ComplexSelector {
+            constructor() {
+                console.log('Complex selector directive');
+            }
+        }
+
+    Here it will match all div elements with a:
+        🔥loggable class (div.loggable)
+        🔥logText attribute that don’t have an attribute notLoggable with a true value 
+            ([logText]:not([notLoggable=true]))
+
+    ✅ So this template will trigger the directive:
+        
+        <div class="loggable" logText="text">Hello</div>
+    
+    ❌But this one will not:
+        
+        <div class="loggable" logText="text" notLoggable="true">Hello</div>
+
+    🔥Let’s be honest, though: if you are writing something like this, there is something wrong!
+    CSS selectors like descendants, siblings, ids, wildcards, and pseudos (other than :not) are
+    not supported.
+
+    Explanation:
+        Angular does NOT support complex CSS selector behavior such as:
+        ❌descendant selectors:
+
+            div p
+
+        ❌sibling selectors:
+
+            div + p
+            div ~ p
+
+        ❌id selectors:
+
+            #header
+
+        ❌wildcard selectors:
+
+            *
+
+        ❌most pseudo selectors:
+
+            :hover
+            :first-child
+            :nth-child()
+
+        ✅The only pseudo-selector Angular supports there is:
+
+            :not(...)
+
+            So this works: selector: '[logText]:not([notLoggable])'
+
+            Meaning: Apply this directive to elements that have logText but do NOT have notLoggable.
+
+            ✅That matches: <div logText="text"></div>
+
+            ❌but NOT: <div logText="text" notLoggable="true"></div>
