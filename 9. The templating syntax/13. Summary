@@ -37,13 +37,13 @@ Summary:
     
     1️⃣First let's create all the required components and interface:
         🔥 To create a ponies component inside a ponies folder: 
-                ng g c ponies/
+                ng g c ponies/ponies
                 
         🔥 To create a pony component inside a ponies folder:
                 ng g c ponies/pony
 
         🔥 To create an interface PonyModel inside a models folder inside a ponies folder: 
-                src/app/ponies/models/pony-model.ts
+                ng g i ponies/pony-model
         
 
     2️⃣Let's update the Ponies components next:

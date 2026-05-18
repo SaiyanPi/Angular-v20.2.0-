@@ -1,0 +1,128 @@
+--------------------------------------- Templates ---------------------------------------------------
+
+- LEARN A BIT MORE ABOUT COMPONENTS AND THE TEMPLATING SYNTAX WITH A NEW COMPONENT FOR THE RESPONSIVE
+    MENU.
+
+- All the required files can be found inside the resource3 folder:
+
+- Instructions:
+
+1️⃣ Let’s add our first component to the application: the menu. The main page will contain a classical
+    navigation menu allowing to go back to the main page, and to access the various new features that
+    we will develop.
+    To create a new component, you can of course do it manually by creating a new directory and adding
+    the component files, or you can use Angular CLI:
+
+        ng generate component menu
+    
+    A new folder menu appears in the app folder. It contains the TypeScript file defining the component,
+    as well as its HTML template and its CSS stylesheet. A test file is also generated. We’ll talk
+    about it later.
+
+
+2️⃣ Let’s create the template of our menu component. Since this is a standard Bootstrap navbar, you can
+    look at the Bootstrap documentation for the necessary markup. To make it simpler, and since it’s
+    not really Angular-related, here it is:
+
+    menu.html:
+
+        <nav class="navbar navbar-expand-md navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand">PonyRacer</a>
+                <div id="navbar" class="navbar-collapse">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link">Races</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+
+3️⃣ To go further, we need to learn a bit more about the Angular template syntax.
+    Our menu doesn’t do much right now. We haven’t even included it in the application. Let’s fix that.
+    Open the template of the main component, app.html, and add the required markup to display our Menu
+    at the very top (above the main tag).
+    🔥Angular will recognize the tag <pr-menu> as the selector of the Angular component Menu only if
+    we add the Menu to the imports field of the App.
+    ✨Refresh the page, the menu should appear in your browser!
+
+
+4️⃣ This menu isn’t responsive yet. If you reduce the page size to the dimension it would have on a
+    phone, it would be nice to have a button appearing on the right side of the menu, allowing to
+    display a list of the items in the menu. Let’s use our new templating skills to achieve that.
+
+    First step: add a button in the header of the navbar:
+
+    menu.html:
+
+        <nav class="navbar navbar-expand-md navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand">PonyRacer</a>
+                <button type="button" class="navbar-toggler">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div id="navbar" class="navbar-collapse">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link">Races</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    
+    Now, if you reduce the width of your browser window, the button will appear on its own. Cool!
+
+
+5️⃣ But it still doesn’t do anything when clicked. We would like to make the menu visible when we
+    click the button.
+    🧠The way to do that, using Bootstrap, is to dynamically add the CSS class collapse to the div
+    identified by navbar. This CSS class must be added when we click the button, and should be
+    removed if we click it a second time (to hide the menu).
+    Now, the old-fashioned way to do that would be to modify the DOM. But that’s not how Angular
+    works. With Angular, the DOM modifies itself based on the state of the component.
+    
+    We thus have to:
+
+    👉add a signal navbarCollapsed in the component, initialized to true (the menu is collapsed by
+    default);
+
+    👉add a click event handler on the button. This handler should call a method toggleNavbar() of
+    our Menu component;
+
+    👉write this method, and make it flip the value of the navbarCollapsed signal;
+
+    👉use [class.collapse] in the template in order to dynamically add or remove the CSS class
+    collapse to/from the div with the id navbar based on the value of the navbarCollapsed signal.
+
+
+6️⃣ Now let’s verify everything has been done correctly. You can of course test it in your browser,
+    but ✨we will automate this verification by using the provided unit tests menu.spec.ts and
+    app.spec.ts. We will learn later how to write such unit tests. For the time being, you just
+    need to replace the files in your project by the one provided with this exercise, and to
+    execute the following command:
+
+        ng test
+    
+    If you did it right, the test should all pass.  If you didn’t, the result might look like the
+    following:
+
+        Chrome 52.0.2743 (Mac OS X 10.11.6) Menu Component should have a `navbarCollapsed` field FAILED
+        Expected undefined to be true, 'Check that `navbarCollapsed` is initialized with `true`.
+        Maybe you forgot to declare `navbarCollapsed` in your component.'.
+    
+    That means that the tests were executed, and that at least one of them failed. The first line
+    in this example output shows that the test "Menu Component should have a navbarCollapsed field"
+    has failed, because the test expected a value true and instead got a value undefined for the
+    field navbarCollapsed. Additionally, it displays a hint explaining how you (probably) messed up:
+
+        Check that `navbarCollapsed` is initialized with `true`. Maybe you forgot to declare
+        `navbarCollapsed` in your component.
+
+
+- 🎯Your goal is to make all the tests pass, in order to validate this exercise
+
+- 🧠You can run the tests automatically every time you save your changes by running the command
+    ng test.

@@ -1,0 +1,34 @@
+------------------------------------- List of races ---------------------------------------------------
+
+- CREATE A NEW COMPONENT TO DISPLAY THE LIST OF RACES.
+
+- Instructions:
+
+1️⃣ Create a new component races which will allow to display the list of pony races.
+
+        ng generate component races
+    
+    👉 Our new component should have a signal races containing an array of the races to display.
+    
+    👉To represent a race, we will create a TypeScript interface in a new folder models (inside app).
+    Define this interface RaceModel in a file named race-model.ts. It should have two fields id, of
+    type number, and name, of type string.
+
+        ng generate interface models/race-model 
+    
+    Don’t forget to export it, so you can import it later.
+
+
+2️⃣ In the component Races, start by initializing the races signal with a hard-coded, fake list of
+    races:
+
+        [{ id: 1, name: 'Lyon' }, { id: 2, name: 'London' }];
+
+
+3️⃣ In the template, use a for loop to display this list of races. For each race, we want a div
+    containing a h2 header containing the name of the race.
+
+
+4️⃣ To display our component, add it in the template of the main component, just below the title.
+    In order to validate the exercise, make sure all the unit tests provided in races.spec.ts are
+    passing.
