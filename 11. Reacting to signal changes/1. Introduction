@@ -1,0 +1,10 @@
+Reacting to signal changes:
+
+
+- We just discovered how to use ngOnChanges to react to changes in the value of inputs. This is very
+    helpful, 🔥but it’s a bit cumbersome when you need to only react to the changes of some inputs. 🔥And
+    of course it’s limited to inputs, and inputs only.
+
+- 🔥We’ve also learnt that signals have super-powers. Thanks to them, Angular knows that a view that
+    reads a signal must be refreshed when the signal changes. We can also use those super-powers
+    ourselves. 🔥🔥Two functions allow us to do that: computed() and effect().

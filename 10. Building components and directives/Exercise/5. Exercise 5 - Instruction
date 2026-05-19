@@ -1,0 +1,34 @@
+-------------------------------------- Race detail --------------------------------------------------------
+
+- DISPLAY A MORE FRIENDLY RACE DETAIL, WITH A LIST OF PONIES.
+
+- Instruction:
+
+1️⃣ Instead of just displaying the name of the race, we would like a Race component that would display
+    the race and its details.
+
+        ng generate component race
+
+
+2️⃣ This component must have a required input (input.required<RaceModel>()) named raceModel (the name is
+    important as the tests use it), which is the race to display. It must display the name of the race
+    in a h2 heading, and use a bullet list (<ul><li>…​) to display the name of the ponies engaged in the
+    race.
+
+
+3️⃣ Enrich the file race-model.ts so that a RaceModel also has an array of PonyModel (another interface
+    to create, in a file pony-model.ts) named ponies, and a field startInstant of type string. The
+    interface PonyModel contains one field id of type number and two fields of type string: name and
+    color.
+
+    In other word, create a pony-model.ts interface with fields id of type number and two fields of type
+    string: name and color. And Enrich/update the race-model.ts interface so that RaceModel has an
+    array of PonyModel named ponies and a field startInstant of type string.
+
+
+4️⃣ Replace the test files in the project with the files from resource5 folder. And run the test
+
+        ng test
+
+
+⚠️ Note that the application is inside the Chapter9 section Exericse.
