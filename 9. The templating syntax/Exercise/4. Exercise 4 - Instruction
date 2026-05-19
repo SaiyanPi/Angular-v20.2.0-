@@ -32,3 +32,13 @@
 4️⃣ To display our component, add it in the template of the main component, just below the title.
     In order to validate the exercise, make sure all the unit tests provided in races.spec.ts are
     passing.
+
+
+5️⃣ Add the races.e2e-spec.ts file from the resource folder into e2e folder. Update the app.spec.ts
+    (or simply replace the app.spec.ts file in the app folder from the resource folder) and run the
+    test:
+
+        ng test
+
+    In order to validate the exercise, make sure all the unit tests provided in races.spec.ts are
+    passing.
