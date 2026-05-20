@@ -1,0 +1,63 @@
+Effects:
+
+
+- 🔥Effects are another way to react to signal changes. 🔥🔥Instead of being used to compute a derived
+    value, they’re used to trigger a side effect (hence the name) when a signal changes. 
+    🔥🔥Examples of such a side effect are storing a value of a signal in local storage when a signal
+    changes, or updating the DOM when a signal changes. ⚠️It might be tempting to use an effect to update
+    other signals when a source signal changes. That’s possible, but it can lead to infinite loops, and
+    computed signals are more suited to such a task.
+
+
+- To illustrate how effects work, we will just use one that logs to the console.
+    pony.ts:
+
+        readonly ponyModel = input.required<PonyModel>();
+        constructor() {
+            effect(() => console.log(`${this.ponyModel().name} - ${this.ponyModel().color}`));
+        }
+    
+    🔥🔥This example will log the name and color of the pony every time the parent passes a pony as
+    input.
+
+
+- 🔥Unlike computed signals, effects are bound to the component (or directive, or service, or pipe) in
+    which they are constructed. An effect must be created while the component is being constructed.
+    🔥It’s possible to do it elsewhere, but it’s more complex, and we will learn about that later. The
+    advantage of this restriction is that Angular takes care of destroying the effect when its owning
+    component is destroyed.
+
+
+- 🔥Another feature that must be understood is that effects are not executed synchronously, whenever
+    one of their source signals change. Instead, they’re called asynchronously, before the change
+    detection. 🔥This means that intermediate signal values won’t be noticed by effects.
+    Let’s illustrate this using the following component:
+    score.ts:
+
+        protected readonly score = signal(0);
+        constructor() {
+            effect(() => console.log(`The score is now ${this.score()}`));
+        }
+        protected plusOne() {
+            this.score.update(s => s + 1);
+        }
+        protected plusTwo() {
+            this.plusOne();
+            this.plusOne();
+        }
+
+    👉Creating the component will log "The score is now 0", because the effect function is always executed
+    once initially to be able to know which signals the effect depends on.
+
+    👉Calling the plusTwo() method (as a reaction to a button click for example), will set the score
+    signal to 1, then to 2. 🔥But only the final value of the score (i.e. the value that is stored in the
+    signal after the click event has been handled), will be logged by the effect. So the console will
+    only log "The score is now 2"
+
+
+- There are still more things to learn about signals, computed and effect (such as the untracked
+    function and the equality function, effect cleaning functions), but we will keep that for later.
+
+
+- You now know enough to start using signals. And hopefully, you understand why they are so great
+    in helping us to manage the state of our components in a simple, expressive and concise way

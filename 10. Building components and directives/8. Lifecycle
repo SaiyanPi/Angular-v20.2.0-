@@ -96,7 +96,7 @@ Lifecycle:
         currentValue	    new value
         isFirstChange()	    whether this is the first assignment
     
-    🔥isFirstChange() is trueonly when it receives the value for the first time. For example when you
+    🔥isFirstChange() is true only when it receives the value for the first time. For example when you
     assign the first value. 
        
         color = 'blue'

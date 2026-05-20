@@ -1,0 +1,130 @@
+Computed signals:
+
+
+- 🧠Have you ever used a spreadsheet with formulas? It’s great, isn’t it? You can sum all the amounts of
+    a sales column and store the result in a total cell. Then you can use another formula to apply the
+    VAT to that total and store the result in yet another cell. If you add a sale, or if you change an
+    amount, the total is automatically recomputed, and the VAT total as well. Computed signals allow
+    doing the same thing.
+
+- 🤔Let’s say our pony component receives a PonyModel as input, containing (among other properties) a
+    name and a color. And let’s say its template wants to display its identity as NAME (color) (for
+    example "RAINBOW DASH (blue)").
+    
+    1️⃣The first thing that comes to mind is to do it this way in the template:
+        pony.html:
+
+            <div>{{ ponyModel().name.toUpperCase() }} ({{ ponyModel().color }})</div>
+
+
+        ⚠️This is absolutely fine. But if the application uses the "brute-force" change detection, this
+        transformation will be done many times, even if the pony is the same as before. And if the
+        template must display the identity several times, copy and pasting this is not the best idea.
+
+
+    2️⃣We might improve that by delegating to a method in the component:
+        pony.html:
+
+            <div>{{ identity(ponyModel()) }}</div>
+    
+
+        ⚠️This avoids the duplication, but it still invokes the identity() method many times unnecessarily
+
+
+    3️⃣A better way would be to use ngOnChanges to compute the identity when the ponyModel changes, and
+    store the result in another property:
+        pony.ts:
+
+            readonly ponyModel = input.required<PonyModel>();
+            protected readonly identity = signal<string>('');
+
+            ngOnChanges() {
+                this.identity.set(`${this.ponyModel().name.toUpperCase()} (${this.ponyModel().color })`);
+            }
+    
+        That is nice. ⚠️But if we later introduce another input, we’ll recompute the identity whenever
+        this unrelated input changes, unless we make our ngOnChanges method more complex. ⚠️Also, note how
+        we’re forced to initialize the identity signal with a fake default value. 🤔There got to be an even
+        better way.
+    
+
+    4️⃣✅The better way is to use a computed signal. 🔥A computed signal is a read-only signal, whose
+    value is derived from another (or several other) signal(s):
+
+            readonly ponyModel = input.required<PonyModel>();
+            protected readonly identity = computed(() => `${this.ponyModel().name.toUpperCase()}
+            (${this.ponyModel().color})`);
+
+        🔥🔥The identity property is now a Signal<string>, whose value will always contain the identity
+        of the pony contained in the ponyModel signal. There is a dependency that is created and tracked
+        by Angular between the two signals. Whenever ponyModel changes, identity also changes.
+
+
+- 🔥Computed signals are memoized and lazy, which make them perfect for representing state that can
+    be read many times. 🔥🔥This means that the identity of a pony is stored inside the computed signal.
+    And 🔥🔥it’s not recomputed every time we write a new pony, but only the next time the identity
+    signal is read. You can try to execute the following example, and see what is being logged:
+
+        const count = signal(1);
+        const double = computed(() => {
+            console.log(`computing double of ${count()}`);
+            return count() * 2;
+        });
+
+        console.log(double());
+        count.set(2);
+        count.set(3);
+        count.set(4);
+        console.log(double());
+        console.log(double());
+        console.log(double());
+
+        o/p:    'computing double of 1',
+                2,
+
+                'computing double of 4',
+                8,
+
+                8,
+
+                8
+        
+        Timeline:   count = 1
+                    double = not computed yet
+
+                    double() read
+                    → compute using 1
+                    → cache 2
+
+                    count = 2
+                    → mark dirty
+
+                    count = 3
+                    → still dirty
+
+                    count = 4
+                    → still dirty
+
+                    double() read
+                    → compute once using latest value 4
+                    → cache 8
+
+                    double() read again
+                    → return cached 8
+
+                    double() read again
+                    → return cached 8
+
+
+- 🔥Computed signals are even greater when they depend on multiple signals. Let’s say you have a form
+    letting you enter a price and a quantity, and displaying a total, as well as a vat-included total.
+    Programming that imperatively requires you to think about computing the total and the vat included
+    total whenever you change the price, and also whenever you change the quantity.
+    Dependencies are not so obvious, and it can quickly become spaghetti code. Including yet another
+    rule (like a discount percentage) could easily introduce a bug. Once the form input values are
+    available as signals, computed signals make the logic very easy to implement, and very efficient as
+    well:
+
+        const total = computed(() => price() * quantity());
+        const totalAfterDiscount = computed(() => total() * (1 - discountRate()));
+        const vatIncludedTotalAfterDiscount = computed(() => totalAfterDiscount() * vatRate());
