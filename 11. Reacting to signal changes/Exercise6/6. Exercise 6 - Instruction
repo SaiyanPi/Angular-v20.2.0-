@@ -1,0 +1,71 @@
+------------------------------------------- Pony component ------------------------------------------
+
+- ADD A NICE PONY COMPONENT, WITH A BEAUTIFUL 8-BIT ARTWORK IMAGE.
+
+- Instruction: Angular Prerequisite "Building components" and "Reacting to signal changes" chapters
+
+1️⃣As we did for races, let’s create a component(Pony component) for ponies.
+    🧠This component will have a ponyModel as a required input, which is the pony to display.
+    The template must display the image of the pony, as well as its name in a figcaption tag,
+    both of them in a figure tag.
+    pony.html:
+
+        <figure>
+            <img src='image.jpg' alt='missing'/>
+            <figcaption>Caption goes here</figcaption>
+        </figure>
+    
+    🧠Create a computed signal in your component named ponyImageUrl(). It should return the full path
+    of the image based on the color of the pony. For example, if the pony is PURPLE, the image URL
+    should be images/pony-purple.gif.
+    Hint: strings have a toLowerCase() method.
+
+
+2️⃣The URL of the image must of course be dynamic, based on the color of the pony to display.
+    Create a folder images in the public directory, where the public assets go, and copy the provided
+    images inside public/images from resource5.
+
+    🧠The template of the component should consist in a simple figure tag containing an img with a
+    dynamic src attribute and will use a computed signal of our component named ponyImageUrl()
+    to get it. 
+
+    🧠You must also generate the alt attribute of the image and the figcaption text to be the pony’s
+    name.
+    pony.html:
+
+        <figure>
+            <img [src]="ponyImageUrl()" [alt]="ponyModel().name" />
+            <figcaption>{{ ponyModel().name }}</figcaption>
+        </figure>
+
+    🧠Of course, you must implement computed signal from your component. It should return the full path 
+    of the image based on the color of the pony. For example, if the pony is PURPLE, the image URL
+    should be images/pony-purple.gif.
+
+
+3️⃣Finally, the Race component should of course use this new component to display its ponies.
+
+
+4️⃣Our component must also fire a custom event ponySelected when the user clicks on the element.
+
+    🧠To achieve that, add a click listener on the root element of the template, calling a method of the
+    component. This method will emit the pony using an output<PonyModel>() named ponySelected.
+    For now, the parent component doesn’t listen to our custom event, but it will soon, don’t worry.
+
+
+5️⃣To finish, let’s add a bit of style. In the file pony.css, add a CSS style for the figure and img
+    elements containing the following rules:
+    pony.css
+    
+        figure {
+            margin: 3px;
+            padding: 3px;
+            font-size: 12px;
+        }
+
+        img {
+            height: 50px;
+        }
+
+
+6️⃣Do not forget to copy all the test files and run ng test to be sure that everything is OK.

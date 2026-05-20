@@ -1,0 +1,26 @@
+<div>
+  <!-- Exercise 5 -->
+  <h2>{{ raceModel().name }}</h2>
+  <!-- <ul>
+    @for (pony of raceModel().ponies; track pony.id) {
+      <li>{{ pony.name }}</li>
+    }
+  </ul> -->
+
+  <div class="row">
+    @for (pony of raceModel().ponies; track pony.id) {
+      <div class="col-sm-2">
+        <pr-pony [ponyModel]="pony" />
+      </div>
+    }
+  </div>
+  <!-- Exercise 6 -->
+  <!-- 3️⃣the Race component should of course use Pony component to display its ponies. -->
+  <!-- 🔥This is input(), Inputs allows directives/components to receive information from its
+    parent component. Here inside race template, we are using the <pr-pony> selector from Pony
+    component therefore, Pony component is a child component and Race component is a parent
+    component. And as per the definition, we are passing the information/value 'pony' from the
+    parent(Race) component and assign it to the child(Pony) component input named ponyModel
+    using property binding.
+  -->
+</div>

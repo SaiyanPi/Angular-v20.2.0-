@@ -80,7 +80,7 @@ Computed signals:
         console.log(double());
 
         o/p:    'computing double of 1',
-                2,
+                2,const 
 
                 'computing double of 4',
                 8,
