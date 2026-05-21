@@ -1,0 +1,32 @@
+Emulated strategy:
+
+
+- 🔥As said earlier, this is the default strategy. And the reason is really simple: it emulates (hence
+    the name) the ShadowDom strategy, but without using the Shadow DOM. 🔥It’s safe to use everywhere and
+    styles won’t bleed into child components.
+
+
+- 🔥To achieve that, Angular will take the CSS defined for the component, and inline it inside the
+    <head> element of the page (and not in each component as we saw for the ShadowDom strategy). 🔥But
+    before inlining it, it’s going to rewrite the CSS selector, to append a unique attribute identifier.
+    This unique attribute is then added to all the elements of our component’s template! That way the
+    style will only apply to our component. The same example, would now give:
+
+        <html>
+        <head>
+            <style>.red[_ngcontent-dvb-3] {color: red}</style>
+        </head>
+        <body>
+            ...
+            <ns-pony _ngcontent-dvb-2="" _nghost-dvb-3="">
+                <div _ngcontent-dvb-3="" class="red">Rainbow Dash</div>
+            </ns-pony>
+        </body>
+        </html>
+    
+    The red class selector has been rewritten to .red[_ngcontent-dvb-3], 🔥so it will only apply on
+    elements that have both the class red and the attribute _ngcontent-dvb-3. 🔥You can see that this
+    attribute has also been added to our div automatically, so that works perfectly. The <ns-pony>
+    element also has a few attributes: _ngcontent-dvb-2 which is the unique identifier generated for its
+    parent, and _nghost-dvb-3 which is a unique identifier for the host element itself. 🔥Yes, we can also
+    add styles that apply on the host element, as we’ll see shortly in section 5: Styling the host.

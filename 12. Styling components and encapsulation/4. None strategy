@@ -1,0 +1,6 @@
+None strategy:
+
+
+- This strategy is not doing any encapsulation. The styles will be inlined at the top of the page (a
+    for the Emulated strategy), but not rewritten. They then behave like "normal" styles, cascading
+    into children.

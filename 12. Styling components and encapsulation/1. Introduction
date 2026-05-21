@@ -1,0 +1,55 @@
+Styling components and encapsulation:
+
+
+- Let’s stop to talk about styles and CSS for a minute.Why talk about freaking CSS? Well because
+    Angular is doing a lot of things for us behind the scenes.
+
+- As a Web developer, you often add CSS classes to elements. And the essence of CSS is that it will
+    cascade. That’s sometimes what you want (to change the font everywhere in your app for example),
+    or sometimes not. Imagine you want to add a style on a selected element in a list: you will usually
+    use a very narrow CSS selector in your CSS, like li.selected. Or an even narrower one, using
+    conventions like BEM(https://bem.info/en/methodology/css/), because you just want to style the
+    selected element in a specific part of your app.
+
+- That’s where Angular can be useful. 🔥The styles you define in a component (either with the styles
+    attribute, or in a dedicated CSS file for the component with styleUrl or styleUrls), are scoped by
+    Angular to this component and only this one. That’s called style encapsulation. How does it achieve
+    this?
+
+- It starts with you writing some styles. Then it depends on the strategy you select for the attribute
+    encapsulation of the component decorator. This attribute can have three different values:
+        👉 ViewEncapsulation.Emulated, which is the default one
+        👉 ViewEncapsulation.ShadowDom, which relies on Shadow DOM v1
+        👉 ViewEncapsulation.None, which means you don’t want encapsulation
+
+    Each value will induce a different behavior of course, so let’s have a look. We’ll take a component
+    you’re starting to know well, i.e. our Pony. This is a really simple version of the component, only
+    displaying the pony’s name in a div. 🧠For the purpose of the example, we add a CSS class red to this
+    div:
+
+        import { Component, signal, ViewEncapsulation } from '@angular/core';
+
+        @Component({
+            selector: 'ns-pony',
+            template: `<div class="red">{{ name() }}</div>`,
+            styles: [
+                `
+                .red {
+                    color: red;
+                }
+                `
+            ],
+            // 🔥that's the same as the default mode
+            encapsulation: ViewEncapsulation.Emulated
+        })
+        export class Pony {
+            protected readonly name = signal('Rainbow Dash');
+        }
+
+    This class is then used in the styles of the component:
+        
+        .red {
+            color: red;
+        }
+    
+    As you can see, we want to display the pony’s name in a red font.

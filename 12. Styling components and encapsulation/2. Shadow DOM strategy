@@ -1,0 +1,32 @@
+Shadow DOM strategy:
+
+
+- 🔥If you use the ShadowDom option, you’re telling Angular to use the Shadow DOM of your browser to
+    take care of the encapsulation. 🔥The Shadow DOM is a part of the Web Component specification. This
+    specification allows you to create elements in a special DOM, which is perfectly encapsulated. With
+    this strategy, if we look at the generated DOM with our browser’s inspector, we’ll see:
+
+        <ns-pony>
+            #shadow-root (open)
+            <style>.red {color: red}</style>
+            <div class="red">Rainbow Dash</div>
+        </ns-pony>
+
+
+    You can spot the #shadow-root (open) that Chrome will display in the inspector: that’s because our
+    component has been included in a Shadow DOM element! And we can also see that the style was
+    added at the top of our component’s content.
+
+
+- 🔥With the ShadowDom strategy, you are sure that your component’s styles are not "bleeding" into your
+    child components if they are using the ShadowDom strategy as well. 🔥But they will bleed into the
+    child components if they don’t, which can be useful in some cases.
+
+
+- ⚠️But remember, Shadow DOM is a rather new specification, so it’s not available in every browser.
+    You can check the availability on the awesome website caniuse.com. So be careful when you use it
+    in your apps!
+
+
+- ⚠️As a side note: the component selector must be hyphenated otherwise the ShadowDOM strategy won’t
+    work.

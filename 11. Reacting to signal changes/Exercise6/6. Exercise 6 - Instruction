@@ -69,3 +69,43 @@
 
 
 6️⃣Do not forget to copy all the test files and run ng test to be sure that everything is OK.
+
+--------------------------------------------------------------------------------------------------------
+
+🧠 mental model.
+from exercise 5, we already have a pony in race template of race component(which we got by binding the
+input property raceModel of race component in the races template of races component). 
+
+In order to dynamically assign the pony gifs according to the pony's color, computed signal is the best.
+computed signal is read only and derives from other signal. 
+
+So first let's create an input signal 'ponyModel' in our newly created Pony component. The reason behind
+the input() is that we need to get the pony from race template into our new Pony component. Hence we are
+gonna bind this input signal property ponyModel in the race template just like we bind the raceModel in
+the races template in order to passdown the race value in Race component from Races Component in Exercise5.
+
+Great now we have a input() property ponyModel with the value pony. Next part is to create a computed
+signal using the pony which has a color property. Now we just created a ponyImageUrl which is a computed
+signal using a ponyModel property which is also a signal(remember the definition of computed signal?).
+
+We now have pony image url according to its color. let's do the property binding [src] = "ponyImageUrl()"
+and [alt]="ponyModel().name" in the img tag of our pony template.
+
+Next thing we want is our pony component to fire custon event when the user click on the element. Let's
+add a click event listener in the root element of our pony template which calls the selectPony() method
+in our component. We want this method to emit the ponyModel. Data flows out of the components via events
+and custom events are emitted by output(). So let's create an output property 'ponySelected'. Finally we
+can emit the ponyModel with value pony using the output property 'ponySelected' when the user clicks on
+the element as:
+
+        protected selectPony(): void {
+            this.ponySelected.emit(this.ponyModel());
+        }
+
+For now, parent component doesn't listen to our custom event but it soon it will. Just for the idea, our
+output property 'ponySelected' is the actual event fired when uses clicks the on the element and
+ponyModel with the value pony is the value($event) of the event. In parent component's template:
+        
+        <ns-pony [ponyModel]="ponyModel()" (ponySelected)="betOnPony($event)" />
+
+here, $event is a pony.

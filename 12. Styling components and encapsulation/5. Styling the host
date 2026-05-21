@@ -1,0 +1,18 @@
+Styling the host:
+
+
+- 🔥A special CSS selector exists to style only the host element. It is called :host, and it comes from
+    the Web Component specification:
+
+        :host {
+            display: block;
+        }
+
+    🔥It will be kept as is for the ShadowDom strategy and rewritten into [_nghost-xxx] if you use
+    Emulated.
+
+
+- To conclude, you don’t have to do much to have perfectly encapsulated styles, because the Emulated
+    strategy takes care of this business for us. You can switch the strategy to use the ShadowDom one
+    if you target only specific browsers, or None if you don’t want to encapsulate styles. This
+    strategy can be tweaked per component, or globally for your whole app in the root module.

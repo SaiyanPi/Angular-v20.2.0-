@@ -16,7 +16,7 @@ export class Pony {
     this.ponySelected.emit(this.ponyModel());
   }
 
-  // Exercise 6
+  // Exercise 6:
   // 1️⃣Create a computed signal in your component named ponyImageUrl(). It should return the full path
   // of the image based on the color of the pony.
   // 4️⃣Our component must also fire a custom event ponySelected when the user clicks on the element.
