@@ -1,11 +1,14 @@
 <div>
-  <!-- Exercise 5 -->
+  <!-- Exercise 5 👇-->
   <h2>{{ raceModel().name }}</h2>
   <!-- <ul>
     @for (pony of raceModel().ponies; track pony.id) {
       <li>{{ pony.name }}</li>
     }
   </ul> -->
+
+  <p>{{ raceModel().startInstant | date: 'short' }}</p>
+  <!-- Exercise 7 ☝️-->
 
   <div class="row">
     @for (pony of raceModel().ponies; track pony.id) {
@@ -14,7 +17,7 @@
       </div>
     }
   </div>
-  <!-- Exercise 6 -->
+  <!-- Exercise 6 ☝️-->
   <!-- 3️⃣the Race component should of course use Pony component to display its ponies. -->
   <!-- 🔥This is input(), Inputs allows directives/components to receive information from its
     parent component. Here inside race template, we are using the <pr-pony> selector from Pony

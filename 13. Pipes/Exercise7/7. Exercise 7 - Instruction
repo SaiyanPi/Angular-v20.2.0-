@@ -3,3 +3,135 @@
 - USE A PIPE IN YOUR TEMPLATE TO FORMAT RAW DATA.
 
 - Instruction: Angular Prerequisite "Pipes" chapter
+
+1️⃣ We currently do not display the startInstant of the race in Race. Let’s fix this!
+    Use the date pipe to display the start instant in a short format in a p tag below the title.
+
+
+2️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
+
+
+--------------------------------------------------------------------------------------------------------
+
+Mental Note:
+Currently we have 4 components(Races, Race, Pony, and Menue) beside the default app component.
+
+Let's create a mental map for our compenents or how the data flows between our components:
+
+                        App Component/ App template 
+                        (parent to Races and Menu)
+                        |                       |
+                        |                       |
+                        |                       |
+                        |                       v
+                        |                   Menu component
+                        |
+                        |
+                Races component ---------> RaceModel
+                (parent to Race)
+                        |
+                        |
+                        |
+                        v
+                Race component ----------> RaceModel
+                (parent to Pony)
+                        |
+                        |
+                        |
+                        v
+                Pony component ----------> PonyModel
+
+
+In the above map, We should remember that:
+    1️⃣The term "A is parent to B" means that the selector of B is used inside the template of A
+        eg: Races component is the parent component of Race component means
+            selector of Race component(pr-race) is used inside the template of component Races(races.html)
+
+            Inside races.html:
+
+                @for (race of races(); track race.id) {
+                    <div>
+                        <!-- <h2>{{ race.name }}</h2> -->
+                        <pr-race [raceModel]="race" /> 👈
+                    </div>
+                }
+
+
+Also let's quickly look back to our interfaces: RaceModel implements PonyModel.
+
+    RaceModel:
+        export interface RaceModel {
+            id: number;
+            name: string;
+            ponies: Array<PonyModel>;
+            startInstant: string;
+        }
+
+
+    PonyModel:
+        export interface PonyModel {
+            id: number;
+            name: string;
+            color: string;
+        }
+
+
+Also let's see the snippent of our components templates just to get the idea behind displaying the
+races and ponies:
+
+    app.html:
+        <pr-menu /> 👈
+        <main class="container" style="margin-top: 70px">
+            <h1>Ponyracer</h1>
+            <pr-races /> 👈
+        </main>
+
+
+    races.html:
+        @for (race of races(); track race.id) {
+            <div>
+                <pr-race [raceModel]="race" /> 👈
+            </div>
+        }
+    
+
+    race.html:
+        <div>
+            <h2>{{ raceModel().name }}</h2>
+            <div class="row">
+                @for (pony of raceModel().ponies; track pony.id) {
+                    <div class="col-sm-2">
+                        <pr-pony [ponyModel]="pony" /> 👈
+                    </div>
+                }
+        </div>
+
+
+    pony.html:
+        <figure (click)="selectPony()">
+            <img [src]="ponyImageUrl()" [alt]="ponyModel().name" />
+            <figcaption>{{ ponyModel().name }}</figcaption>
+        </figure>
+
+
+From the templates above, we should know that:
+    🔥 Pony component is responsible for displaying singly pony hence name Pony and not Ponies.
+    🔥 Race component is responsible for displaying a series/list of pony hence ponies under the race
+        name. Note that we used pony selector inside the for loop in race template.
+    🔥 Races component is responsible for displaying a series/list of race hence races. Note that we
+        used race selector containing a race name and a series/list of pony inside the for loop in
+        races component.
+
+
+Now, per instruction, we should display the startInstant using date pipe. But where do we code for
+doing so? At this point, it's obvious that it should be inside race component because that's where the
+race with name and ponies is. Also Race component uses RaceModel which has a property startInstant
+mentioned in he instruction. plus the instruction itself says so.
+
+
+Now the only thing left to do import the DatePipe in Race component in order to use the date pipe inside
+the Race template(race.html). Next we will use the date pipe to display the start instant in a short
+format in a p tag below the title(race name):
+
+    <h2>{{ raceModel().name }}</h2>
+    <p>{{ raceModel().startInstant | date: 'short' }}</p>
