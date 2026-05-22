@@ -1,0 +1,90 @@
+slice:
+
+
+- 🔥If you want to display just a part of a list, slice is your friend. It works like the slice method
+    in JavaScript, and takes two arguments: a start index and, optionally, an end index.
+
+
+- 🔥To pass an argument to a pipe, you have to add a colon :, then the first argument, then possibly,
+    another colon and the second argument etc.
+
+        <p>{{ ponies() | slice:0:2 | json }}</p>
+    
+    This example will display the first two elements of my list of ponies
+
+
+- 🔥slice works with arrays and strings, so you can also truncate a string:
+
+        <p>{{ 'Ninja Squad' | slice:0:5 }}</p
+    
+    and that will display only 'Ninja'
+
+
+- 🔥You can give the slice pipe only one index n, and it will take the elements from n to the end.
+        
+        <p>{{ 'Ninja Squad' | slice:3 }}</p>
+        <!-- will display 'ja Squad' -->
+
+
+- 🔥If you give it a negative integer, it will take the n last elements
+
+        <p>{{ 'Ninja Squad' | slice:-5 }}</p>
+        <!-- will display 'Squad' -->
+
+
+- 🔥As we saw, you can also give the pipe an end index: it will take the elements until this index. If
+    this index is negative, it will take the elements until the index, but starting from the end.
+
+        <p>{{ 'Ninja Squad' | slice:2:-2 }}</p>
+        <!-- will display 'nja Squ' -->
+
+
+- 🔥As you can use slice in any expression, you can use it even with a @for:
+
+        import { Component, signal } from '@angular/core';
+        import { SlicePipe } from '@angular/common';
+        import { PonyModel } from '../templates/pony.model';
+        
+        @Component({
+            selector: 'ns-ponies',
+            template: `@for (pony of ponies() | slice: 0 : 2; track pony.id) {
+                <div>{{ pony.name }}</div>
+            }`,
+            imports: [SlicePipe]
+        })
+        export class Ponies {
+            protected readonly ponies = signal<Array<PonyModel>>([
+                { id: 1, name: 'Rainbow Dash' },
+                { id: 2, name: 'Pinkie Pie' },
+                { id: 3, name: 'Fluttershy' }
+            ]);
+        }
+
+    🔥🔥The component will create only two div elements here, for the first two ponies, as we have
+    applied the slice pipe to the collection.
+
+
+- 🔥🔥The pipe argument can of course be a dynamic value:
+
+        import { Component, signal } from '@angular/core';
+        import { SlicePipe } from '@angular/common';
+        import { PonyModel } from '../templates/pony.model';
+        
+        @Component({
+            selector: 'ns-ponies',
+            template: `@for (pony of ponies() | slice: 0 : size(); track pony.id) {
+                <div>{{ pony.name }}</div>
+            }`,
+            imports: [SlicePipe]
+        })
+        export class Ponies {
+            protected readonly size = signal(2);
+            protected readonly ponies = signal<Array<PonyModel>>([
+                { id: 1, name: 'Rainbow Dash' },
+                { id: 2, name: 'Pinkie Pie' },
+                { id: 3, name: 'Fluttershy' }
+            ]);
+        }
+
+    You can use this to create a dynamic display where your user chooses how many elements she/he
+    wants to see.

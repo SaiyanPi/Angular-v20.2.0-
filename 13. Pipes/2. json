@@ -1,0 +1,38 @@
+json:
+
+
+- 🔥A pipe that is not really useful in a production app, but very handy when you are debugging your
+    app, is JsonPipe. 🔥🔥Basically, this pipe applies JSON.stringify() to your data. If you have some
+    data in your component, a signal containing an array of ponies called ponies, for example, and you
+    want to quickly see what’s inside, you may want to try something like:
+
+        <p>{{ ponies() }}</p>
+
+    ⚠️Tough luck, it’s going to display [object Object]…
+
+    🔥But JsonPipe is here to rescue us. You can use it in your HTML, in any expression:
+        
+        <p>{{ ponies() | json }}</p>
+    
+    And it will display the JSON representation of your object:
+        
+        <p>[ { "name": "Rainbow Dash" }, { "name": "Pinkie Pie" } ]</p>
+    
+    🔥Note: In JS, we use JSON.stringify() to convert objects to a string
+
+
+- You can see where the name 'pipe' is coming from. 🔥To use a pipe, you have to add a pipe (|)
+    character after your data, and then the name of the pipe you want to use. The expression is
+    evaluated and the result goes through the pipe. 🔥It’s possible to chain several pipes, one after
+    another, like:
+        
+        <p>{{ ponies() | slice:0:2 | json }}</p>
+
+    We’ll come back to the slice pipe, but you can see that we are chaining the slice pipe and then the
+    json one
+
+
+- 🔥🔥You can use it in an interpolation expression or in a property expression, but ⚠️not in an event
+    statement
+
+        <p [textContent]="ponies() | json"></p>

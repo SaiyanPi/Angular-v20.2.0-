@@ -1,0 +1,72 @@
+Creating your own pipes:
+
+
+- Of course, you can also create your own pipes. That’s sometimes very useful. In AngularJS 1.x,
+    we often used custom filters. For example, we built one to display how much time elapsed since
+    an action the user did (like 12 seconds ago or 3 days ago) in several of our apps. Let’s see how
+    we would do this in Angular!
+
+    1️⃣🔥First we need to create a new class. 🔥It should implement the PipeTransform interface, which 
+    forces us to have a transform() method, the one doing the heavy lifting
+
+        import { Pipe, PipeTransform } from '@angular/core';
+
+        export class FromNowPipe implements PipeTransform {
+            transform(value: string, ..._args: Array<unknown>): string {
+                // do something here
+            }
+        }
+
+
+    2️⃣🔥We are going to use the parseISO function from date-fns(https://date-fns.org/) to parse the date,
+    and the formatDistanceToNow function to display how much time has elapsed since the date.
+    You can install date-fns using NPM if you want:
+        
+        npm install date-fns
+
+    🔥The types for date-fns are already included in the NPM dependency, so the TypeScript compiler
+    should be happy without us doing anything.
+
+        import { Pipe, PipeTransform } from '@angular/core';
+        import { formatDistanceToNowStrict, parseISO } from 'date-fns';
+
+        export class FromNowPipe implements PipeTransform {
+            transform(value: string, ..._args: Array<unknown>): string {
+                const date = parseISO(value);
+                return formatDistanceToNowStrict(date, { addSuffix: true });
+            }
+        }
+    
+
+    3️⃣🔥Now, we need to tell Angular that this class is a pipe. For this, there is a special decorator
+    we can use: @Pipe.
+
+        import { Pipe, PipeTransform } from '@angular/core';
+        import { formatDistanceToNowStrict, parseISO } from 'date-fns';
+        
+        @Pipe({
+            name: 'fromNow'
+        })
+        export class FromNowPipe implements PipeTransform {
+            transform(value: string, ..._args: Array<unknown>): string {
+                const date = parseISO(value);
+                return formatDistanceToNowStrict(date, { addSuffix: true });
+            }
+        }
+    
+    The chosen name will be the one allowing to use the pipe in the template.
+
+
+- To use the pipe in a template, 🔥the last thing you need to do is to add the pipe to the imports of the
+    component using it.
+
+        @Component({
+            selector: 'ns-race',
+            template: 'The race started {{ race().startInstant | fromNow }}', 👈
+            imports: [FromNowPipe] 👈
+        })
+        export class Race {
+            protected readonly race = signal({
+                startInstant: '2026-05-22T10:00:00.000Z'
+            });
+        }

@@ -94,9 +94,12 @@ and [alt]="ponyModel().name" in the img tag of our pony template.
 Next thing we want is our pony component to fire custon event when the user click on the element. Let's
 add a click event listener in the root element of our pony template which calls the selectPony() method
 in our component. We want this method to emit the ponyModel. Data flows out of the components via events
-and custom events are emitted by output(). So let's create an output property 'ponySelected'. Finally we
-can emit the ponyModel with value pony using the output property 'ponySelected' when the user clicks on
-the element as:
+and custom events are emitted by output(). So let's create an output property 'ponySelected'. 
+
+        readonly ponySelected = output<PonyModel>();
+
+Finally we can emit the ponyModel with value pony using the output property 'ponySelected' when the user
+clicks on the element as:
 
         protected selectPony(): void {
             this.ponySelected.emit(this.ponyModel());
@@ -108,4 +111,4 @@ ponyModel with the value pony is the value($event) of the event. In parent compo
         
         <ns-pony [ponyModel]="ponyModel()" (ponySelected)="betOnPony($event)" />
 
-here, $event is a pony.
+here, $event is a value pony.

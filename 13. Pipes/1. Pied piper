@@ -1,0 +1,15 @@
+Pied piper:
+
+
+- 🔥Sometimes the raw data is not what we want to display in the view. We often want to transform it,
+    format it, etc. ⚠️AngularJS 1.x had a very handy feature to do this, very badly named 'filters'.
+    Lessons have been learned and now these data transformers have a meaningful name! Nah, I’m just
+    kidding, they are called 'pipes' :).
+
+
+- 🔥Similarly as components, pipes can be standalone or not. The pipes that are provided by Angular
+    and that 🔥we will discuss here are all standalone, and are all part of CommonModule. So, to use
+    them in your components, you’ll have to add them, or the whole CommonModule, to their imports.
+
+
+- Let’s take an example and see how we can use pipes.

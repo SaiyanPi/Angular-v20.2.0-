@@ -1,0 +1,68 @@
+percent:
+
+- Based on the same principle as number, percent lets you display… a percentage!
+        
+        <p>{{ 0.8 | percent }}</p>
+        <!-- will display '80%' -->
+        <p>{{ 0.8 | percent:'.3' }}</p>
+        <!-- will display '80.000%' -->
+
+
+---------------------------------------------------------------------------------------------------------
+
+currency:
+
+- 🔥As you can imagine, this pipe lets you format an amount of money in the currency you want. You
+    have to give it at least one parameter:
+        • the ISO string representing the currency ('EUR', 'USD'…)
+        • optionally, an option to say if you want to use the symbol ('€', '$', CA$') with 'symbol' or
+            the ISO code with 'code', or even the narrow symbol with 'symbol-narrow'. The narrow symbol
+            is for example $, when the symbol is CA$ for Canadian dollars. The default value of this
+            option is 'symbol'.
+        • optionally also, a string to format the amount, using the same syntax as number.
+
+        <p>{{ 10.6 | currency:'CAD' }}</p>
+        <!-- will display 'CA$10.60' -->
+
+        <p>{{ 10.6 | currency:'CAD':'symbol-narrow' }}</p>
+        <!-- will display '$10.60' -->
+
+        <p>{{ 10.6 | currency:'EUR':'code':'.3' }}</p>
+        <!-- will display 'EUR10.600' -->
+
+
+- ⚠️If you don’t provide the ISO string representing the currency, then USD is used, unless you configure
+    it globally (since Angular 9). Check the Internationalization chapter if you want to learn how.
+
+
+- 🔥This pipe is way more powerful than what you might expect: it relies on the ISO 4217 specification
+    to determine the number of digits in the decimal part. For example, formatting an amount in
+    Chilean pesos results in an amount with no digits (as pesos don’t have cents), whereas formatting
+    an amount in Tunisian dinars results in an amount with 3 digits (as it has millimes).
+
+
+----------------------------------------------------------------------------------------------------------
+
+date:
+
+- 🔥The date pipe formats a date value to a string of the desired format. The date can be a Date object
+    or a number of milliseconds. The format specified can be either a pattern like 'dd/MM/yyyy', 'MM-yy'
+    or one of the predefined symbolic names available like 'short', 'longDate', etc.:
+        
+        <p>{{ birthday() | date:'dd/MM/yyyy' }}</p>
+        <!-- will display '16/07/1986' -->
+
+        <p>{{ birthday() | date:'longDate' }}</p>
+        <!-- will display 'July 16, 1986' -->
+
+    Of course, you can also display the time portion of the date:
+
+        <p>{{ birthday() | date:'HH:mm' }}</p>
+        <!-- will display '15:30' -->
+
+        <p>{{ birthday() | date:'shortTime' }}</p>
+        <!-- will display '3:30 PM' -->
+
+
+- To learn more about internationalization in general, and, in particular, about the way you can set the
+    language used to format numbers and dates, you can refer to the Internationalization chapter .

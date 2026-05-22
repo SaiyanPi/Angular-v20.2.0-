@@ -48,7 +48,7 @@ Computed signals:
         better way.
     
 
-    4️⃣✅The better way is to use a computed signal. 🔥A computed signal is a read-only signal, whose
+    4️⃣✅The better way is to use a computed signal. 🔥🔥A computed signal is a read-only signal, whose
     value is derived from another (or several other) signal(s):
 
             readonly ponyModel = input.required<PonyModel>();

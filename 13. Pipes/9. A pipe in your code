@@ -1,0 +1,21 @@
+A pipe in your code:
+
+
+- 🔥It is also possible to use the formatting functions offered by the framework directly. For example,
+    to format a number, we can use the formatNumber function:
+
+        mport { Component, computed, signal } from '@angular/core';
+        // you need to import the function you want to use
+        import { formatNumber } from '@angular/common';
+
+        @Component({
+            selector: 'ns-pony',
+            template: `<p>{{ formattedSpeed() }}</p>`
+        })
+        export class Pony {
+            protected readonly pony = signal({ name: 'Rainbow Dash', speed: 15 });
+            protected readonly formattedSpeed = computed(
+                // use the format function
+                () => formatNumber(this.pony().speed, 'en-US', '.2')
+            );
+        }

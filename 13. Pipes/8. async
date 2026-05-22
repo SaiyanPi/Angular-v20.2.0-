@@ -1,0 +1,62 @@
+async:
+
+
+- The async pipe allows data obtained asynchronously to be displayed. It can handle async data that
+    comes from a Promise or an Observable. I hope you now know what a Promise is (otherwise go
+    back to the ES2015+ chapter), and we’ll come back to Observables quickly.
+
+- 🔥The async pipe returns null until the data is finally available (i.e. until the promise is resolved,
+    in case of a promise). Once resolved, the resolved value is returned. More importantly, it triggers
+    a change detection check once the data is available.
+    The following example uses a Promise:
+
+        import { Component } from '@angular/core';
+        import { AsyncPipe } from '@angular/common';
+        
+        @Component({
+            selector: 'ns-greeting',
+            template: `<div>{{ asyncGreeting | async }}</div>`,
+            imports: [AsyncPipe]
+        })
+        export class Greeting {
+            protected readonly asyncGreeting = new Promise(resolve => {
+                // after 1 second, the promise will resolve
+                window.setTimeout(() => resolve('hello'), 1000);
+            });
+        }
+
+    🔥You can see the async pipe is applied to the variable asyncGreeting. This one is a promise,
+    resolved after 1 second. Once the promise is resolved, our browser will display:
+        
+        <div>hello</div>
+
+
+- 🔥🔥Even more interesting, if the source is an Observable, then the pipe will do the unsubscribe part
+    itself when the pipe is destroyed (for example when the user navigates to another component, or
+    because it’s part of an ngIf that becomes false).
+
+
+- 🔥And to avoid multiple subscriptions to your Observable or calling your promise multiple times, you
+    can store the result of the call with 'as':
+
+        import { Component } from '@angular/core';
+        import { AsyncPipe } from '@angular/common';
+
+        @Component({
+            selector: 'ns-user',
+            template: `@if (asyncUser | async; as user)👈 {
+                <div>{{ user.name }}</div>
+            }`,
+            imports: [AsyncPipe]
+        })
+        export class User {
+            protected readonly asyncUser = new Promise<UserModel>(resolve => {
+                // after 1 second, the promise will resolve
+                window.setTimeout(() => resolve({ name: 'Cédric' }), 1000);
+            });
+        }
+
+
+
+🧠If you want to learn more about this pipe, check the Performances chapter near the end of this
+ebook.

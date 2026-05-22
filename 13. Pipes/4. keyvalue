@@ -1,0 +1,72 @@
+keyvalue:
+
+
+- 🔥This pipe, introduced in Angular 6.1, allows you to iterate over a Map or an object, and to display
+    the keys/values in our templates.
+    
+    🔥Note that it orders the keys:
+        👉 first lexicographically if they are both strings
+        👉 then by their value if they are both numbers
+        👉 then by their boolean value if they are both booleans (false before true).
+    
+    🔥And if the keys have different types, they will be cast to strings and then compared.
+
+        @Component({
+            selector: 'ns-ponies',
+            template: `
+                <ul>
+                <!-- entry contains { key: number, value: PonyModel } -->
+                @for (entry of ponies() | keyvalue; track entry) {
+                <li>{{ entry.key }} - {{ entry.value.name }}</li>
+                }
+                </ul>
+            `,
+            imports: [KeyValuePipe]
+        })
+        export class Ponies {
+            protected readonly ponies = signal(
+                new Map<number, PonyModel>([
+                    [103, { name: 'Rainbow Dash' }],
+                    [56, { name: 'Pinkie Pie' }]
+                ])
+            );
+        }
+    
+    ⚠️If you have null or undefined keys, they will be displayed at the end.
+
+
+- 🔥It’s also possible to define your own comparator function:
+
+        @Component({
+            selector: 'ns-ponies',
+            template: `
+                <ul>
+                    <!-- entry contains { key: PonyModel, value: number } -->
+                    @for (entry of poniesWithScore() | keyvalue: ponyComparator👈; track entry) {
+                        <li>{{ entry.key.name }} - {{ entry.value }}</li>
+                    }
+                </ul>
+            `,
+            imports: [KeyValuePipe]
+        })
+        export class Ponies {
+            protected readonly poniesWithScore = signal(
+                new Map<PonyModel, number>([
+                    [{ name: 'Rainbow Dash' }, 430],
+                    [{ name: 'Rainbow Dash' }, 680],
+                    [{ name: 'Pinkie Pie' }, 125]
+                ])
+            );
+
+            /*
+            * Defines a custom comparator to order the elements by the name of the PonyModel
+            (the key)
+            */
+        👉 ponyComparator(a: KeyValue<PonyModel, number>, b: KeyValue<PonyModel, number>): -1 |
+            0 | 1 {
+                if (a.key.name === b.key.name) {
+                    return 0;
+                }
+                return a.key.name < b.key.name ? -1 : 1;
+            }
+        }

@@ -1,0 +1,68 @@
+number:
+
+
+- ⚠️The following pipes (number, percent, currency, date) can help with
+    internationalization. They have been completely overhauled in Angular 5.0, and
+    don’t use the Intl API of the browsers anymore (it caused numerous bugs). The
+    Angular team has now implemented the internationalization logic themselves. The
+    following examples use the new implementation of the pipes, which comes with
+    Angular 5, without diving into the internationalization details, as they are covered
+    in a chapter at the end of the book. The examples also use the default locale of
+    Angular, en-US.
+
+
+- This pipe lets you format a number. It takes one parameter, a string, formatted as
+    {integerDigits}.{minFractionDigits}-{maxFractionDigits}, but every part is optional. Each part
+    indicates:
+        • how many numbers you want in the integer part
+        • how many numbers you want at least in the decimal part
+        • how many numbers you want at most in the decimal part
+
+
+- Examples:
+
+    1️⃣A few examples, starting with what we have with no pipe:
+
+        <p>{{ 12345 }}</p>
+        <!-- will display '12345' -->
+    
+
+    2️⃣Using the number pipe will group the integer part, even with no digits required:
+        
+        <p>{{ 12345 | number }}</p>
+        <!-- will display '12,345' -->
+
+        <p>{{ 1234567 | number }}</p>
+        <!-- will display '1,234,567' -->
+    
+
+    3️⃣The integerDigits parameter will left-pad the integer part with zeros if needed:
+
+        <p>{{ 12345 | number:'6.' }}</p>
+        <!-- will display '012,345' -->
+
+        <p>{{ 1234567 | number:'6.' }}</p>
+        <!-- will display '1,234,567' -->
+
+        🧠Already more that 6 digit so do nothing but if fewer digits than 6 then add 0 in the left
+    
+
+    4️⃣The minFractionDigits is the minimum size of the decimal part, so it will pad zeros on the right
+        until reached:
+        
+        <p>{{ 12345 | number:'.2' }}</p>
+        <!-- will display '12,345.00' -->
+
+        <p>{{ 1234567 | number:'.3' }}</p>
+        <!-- will display '1,234,567.000' -->
+    
+
+    5️⃣The maxFractionDigits is the maximum size of the decimal part. You have to specify a
+        minFractionDigits, even at 0, if you want to use it. If the number has more decimals than that,
+        then it is rounded:
+
+        <p>{{ 12345.13 | number:'.1-1' }}</p>
+        <!-- will display '12,345.1' -->
+        
+        <p>{{ 12345.16 | number:'.1-1' }}</p>
+        <!-- will display '12,345.2' -->

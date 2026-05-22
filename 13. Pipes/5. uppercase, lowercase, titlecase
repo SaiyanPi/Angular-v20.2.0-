@@ -1,0 +1,26 @@
+uppercase:
+
+- As its name makes it clear enough, this pipe transforms a string into its uppercase version:
+        
+        <p>{{ 'Ninja Squad' | uppercase }}</p>
+        <!-- will display 'NINJA SQUAD' -->
+
+
+---------------------------------------------------------------------------------------------------
+
+lowercase:
+
+- The counterpart of the previous one, this pipe transforms a string into its lowercase version:
+        
+        <p>{{ 'Ninja Squad' | lowercase }}</p>
+        <!-- will display 'ninja squad' -->
+
+
+---------------------------------------------------------------------------------------------------
+
+titlecase:
+
+- Angular 4 introduced a new titlecase pipe. It capitalizes the first letter of all words:
+    
+        <p>{{ 'ninja squad' | titlecase }}</p>
+        <!-- will display 'Ninja Squad' -->
