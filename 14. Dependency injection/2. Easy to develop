@@ -1,0 +1,156 @@
+Easy to develop:
+
+
+- 🔥To be able to use dependency injection, we need a few things:
+        👉 a way to register a dependency, to make it available for injection into components (or other
+            services, or pipes, or directives).
+        👉 a way to specify what dependencies must be injected in the current component or service.
+    
+    The framework does the rest of the job. When we ask for a dependency in a component, it will look
+    into the registry if it can find it, will get the instance of the dependency or create one, and
+    finally inject it in our component.
+
+
+- A dependency can be a service provided by Angular, or a service we have written ourselves.
+
+- 💡Let’s take an example with a LoggingService service. In development, we want to log to the
+    browser’s console. In production, we want to aggregate logs on a remote server. Let’s start by the
+    development version.
+
+        export class LoggingService {
+            log(message: string): void {
+                console.log(message);
+            }
+        }
+
+
+    It’s easy to inject that dependency in a component or a service. We just have to use the type system
+    and the inject function of Angular.
+
+    Let’s say we want to write a RaceService that would use the LoggingService:
+
+        import { inject } from '@angular/core';
+        import { LoggingService } from './logging-service';
+        
+        export class RaceService {
+            private readonly loggingService = inject(LoggingService); 👈
+        }
+    
+    The ìnject function tells Angular to fetch the LoggingService service and returns it.
+
+    ⚠️Be careful: this inject function can not be called anywhere we want. It needs to be
+    called in an injection context. Calling it to initialize a property (as we’re doing in
+    the above example) or as part of the constructor is fine. But calling it after the
+    object has been constructed will throw an exception.
+
+
+- 🔥In fact, inject is a relatively new way of injecting dependencies. 🔥Before it was introduced in
+    Angular 14, the only way to inject a dependency was to declare the dependency as an argument of
+    the constructor. So we could also write our RaceService this way:
+
+        import { LoggingService } from './logging-service';
+
+        export class RaceService {
+            constructor(private loggingService: LoggingService) 👈 {}
+        }
+
+    ⚠️Constructor injection is still very much supported, but inject is now generally seen as a
+    preferred option, and has opened the door to interesting API improvements.
+
+
+- Now, we can add a method list() to our service, which will call our backend and log a trace using
+    the LoggingService service:
+
+        import { inject } from '@angular/core';
+        import { RaceModel } from './race.model';
+        import { LoggingService } from './logging-service';
+   
+        export class RaceService {
+            private readonly loggingService = inject(LoggingService);
+            list(): Array<RaceModel> {
+                this.loggingService.log('race-service: get races');
+                // ...
+            }
+        }
+
+-----------------------------------------------------------------------------------------------------------
+
+- 🔥🔥In Angular, all services must be decorated with @Injectable(). @Injectable() means “This class can
+    participate in Angular's DI system.”
+
+- Now let's use the LoggingService inside RaceService class:
+
+    1️⃣
+    🔥As we are using the LoggingService, we need to "register" it, to make it available for injection.
+    🔥The easiest (and recommended) way to do this is to add the @Injectable decorator on LoggingService
+    and use providedIn directly inside:
+
+        import { Injectable } from '@angular/core';
+
+        @Injectable({
+            providedIn: 'root'  // 🧠 Register Service with the Injector
+        })
+        export class LoggingService {
+            log(message: string): void {
+                console.log(message);
+            }
+        }
+
+    or,
+    🔥🔥Another way to do this is to use the providers option of bootstrapApplication() function we
+    saw earlier:
+
+        bootstrapApplication(App, 👉{ providers: [LoggingService] }).catch(err => console.error(err));
+    
+    👁️(to know the difference, read section5 of this chapter)
+
+
+    2️⃣
+    Now we can use LoggingService inside or RaceService as:
+
+        import { inject, Injectable } from '@angular/core';
+        import { RaceModel } from './race.model';
+        import { LoggingService } from './logging-service';
+        
+        @Injectable() 
+
+        export class RaceService {
+            private readonly loggingService = inject(LoggingService);
+            list(): Array<RaceModel> {
+                this.loggingService.log('race-service: get races');
+                // ...
+            }
+        }
+    
+
+    
+    3️⃣
+    🔥🔥Now, if we want to make our RaceService available for injection in other services or components,
+    we have to register it too:
+        
+        import { inject, Injectable } from '@angular/core';
+        import { RaceModel } from './race.model';
+        import { LoggingService } from './logging-service';
+        
+        @Injectable({
+            providedIn: 'root' 👈
+        })
+        export class RaceService {
+            private readonly loggingService = inject(LoggingService);
+            list(): Array<RaceModel> {
+                this.loggingService.log('race-service: get races');
+                // ...
+            }
+        }
+
+    And we’re done!
+    We can use our new service wherever we want. Let’s test it in the App component:
+
+        export class App {
+            private readonly raceService = inject(RaceService);
+            protected readonly races: Array<RaceModel> = this.raceService.list();
+        }
+
+
+- ⚠️As we want to use an API to log our traces in production, we need to provide a different
+    implementation of the LoggingService service.

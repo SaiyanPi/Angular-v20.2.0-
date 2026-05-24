@@ -1,0 +1,42 @@
+Services provided by the framework:
+
+
+- Angular comes with a few built-in services. 👁️Some of them will be discussed in dedicated chapters.
+    For now, let’s talk about two of them.
+
+
+1️⃣ Title service:
+    - One question that pops up frequently is: how can I change the title of my page? Easy! There is a
+        Title service you can inject and it offers a getter and a setter method:
+
+            import { Component, inject } from '@angular/core';
+            
+            @Component({
+                selector: 'ns-root',
+                template: `<h1>PonyRacer</h1>`
+            })
+            export class App {
+                constructor() {
+                    inject(Title).setTitle('PonyRacer - Bet on ponies');
+                }
+            }
+        
+        The service will automatically create the title element in the head if needed and correctly set
+        the value for you!
+
+
+2️⃣ Meta service:
+    - The other service we’ll talk about is somewhat similar: it allows you to get or update the "meta"
+        values of the page.
+
+            import { Component, inject } from '@angular/core';
+
+            @Component({
+                selector: 'ns-root',
+                template: `<h1>PonyRacer</h1>`
+            })
+            export class App {
+                constructor() {
+                    inject(Meta).addTag({ name: 'author', content: 'Ninja Squad' });
+                }
+            }

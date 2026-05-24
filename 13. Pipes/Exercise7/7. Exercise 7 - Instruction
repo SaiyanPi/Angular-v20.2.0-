@@ -26,7 +26,7 @@ Let's create a mental map for our compenents or how the data flows between our c
                         |                       v
                         |                   Menu component
                         |
-                        |
+                        v
                 Races component ---------> RaceModel
                 (parent to Race)
                         |

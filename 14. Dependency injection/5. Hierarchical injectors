@@ -1,0 +1,175 @@
+Hierarchical injectors:
+
+
+- One last crucial thing to understand in Angular: there are several injectors in your app.
+    🔥In fact, there is one injector per component, and 🔥🔥this injector inherits from the injector
+    of its parent.
+    Let’s say we have an app looking like:
+
+                                    Application
+                                        |
+                                        |
+                                        v
+                                       App
+                                        |
+                                        |
+                                        v
+                                      Races
+    
+    We have an application with a root component App, which has a child component Races.
+
+    🔥🔥🔥When we bootstrap the app, we create the root injector for the application. Then, every
+    component will have its own injector, inheriting its parent one.
+
+    🔥🔥🔥When you register a service using the recommended providedIn: 'root', you add these services
+    to the root injector.
+
+                                    root injector   (LoggingService, RaceService)
+                                        ^
+                                        |
+                                        |
+                                    App injector
+                                        ^
+                                        |
+                                        |
+                                    Races injector
+    
+    🧠It means that when we inject a dependency in a component, Angular begins its search in the
+    current injector. If it finds the dependency, perfect, it returns it. If not, it will do the same in
+    the parent injector, and again, until it finds the dependency. If it doesn’t find the dependency
+    anywhere, it throws an exception.
+    From this, we can deduce two things:
+        👉 the dependencies declared in the root injector are available for every component or service
+            in the app. For example, LoggingService and RaceService from previous sections(section 2 to
+            be precisely) can be used everywhere;
+        👉 we can declare dependencies at another level than the root injector. How do we do this?
+
+
+- (🤔Mental Note)
+    what we/i understood at this point is that, when i register the service using providers array in the
+    bootstrapApplication, i create a root injector for the app and every components in my app can use the
+    service.
+
+    When i register the service using providedIn: 'root', i add the service to the root injector. And every
+    components in my app can use the service.
+
+    Injectors Hierarchy has nothing to do with what component can access the service and what can't.
+    It also doesn't change based on how you register the service.Hierarchy simply answers “HOW DOES 
+    ANGULAR FIND THE SERVICE?”
+
+    Okay then what's the actual difference between registering in the providers array and registering
+    using providedIn: 'root'?
+
+            providers: [...]                                    providedIn: 'root'
+    -----------------------------------------------------------------------------------------
+    👉application registers the service.            👉The service registers itself.
+        “App, please register this service.”            “Whenever this app needs me, put me in the root 
+                                                        injector.”
+
+    👉Useful when:                                    👉Best for:
+        configuring providers                           normal app services
+        replacing implementations                       most real-world cases
+        using factories                                 singleton services
+        conditional setup
+        library configuration
+            
+
+_________________________________________________________________________________________________________
+
+
+DECLARE DEPENDENCIES AT ANOTHER LEVEL THAN THE ROOT INJECTOR:
+
+- 🔥The @Component decorator can take another configuration option, called providers. 🔥This providers
+    attribute expects an array of providers, similar the providers option of bootstrapApplication().
+    We can thus imagine a Races that would declare its own LoggingService provider:
+
+        @Component({
+            selector: 'ns-races',
+            providers: [{ provide: LoggingService, useClass: LoggingAPIService }], 👈
+            template: `<strong>Races</strong>`
+        })
+
+        export class Races {
+            constructor() {
+                inject(LoggingService).log('Races created');
+            }
+        }
+
+
+- 🔥🔥In this component, the provider with the token LoggingService will always give an instance of
+    LoggingAPIService, regardless of what was defined in the root injector. It’s really useful if you want
+    to have a different instance of a service for a given component.
+
+    Here we have:
+                    root injector   (LoggingService, RaceService)
+                        ^
+                        |
+                        |
+                    App injector
+                        ^
+                        |
+                        |
+                    Races injector  (LoggingService ------> LoggingAPIService)
+
+
+    The injection will then be resolved as:
+                                            Application ---------> (LoggingService)
+                                                |                       ^
+                                                |                       |
+                                                v                       |
+                                               App ----------------------
+                                                |
+                                                |
+                                                v
+                                              Races -------------> (LoggingAPIService)
+
+
+- ⚠️If you declare a dependency at the root of your app and in the providers attribute of your component,
+    there will be two distinct instances of this dependency created and used!
+    for example:
+
+    Service 1:
+
+        @Injectable({
+            providedIn: 'root'
+        })
+
+        export class CounterService {
+            count = 0;
+        }
+
+        💡This already registers the service in the root injector.
+
+
+    In the component:
+
+        @Component({
+            selector: 'app-test',
+            providers: [CounterService]
+        })
+
+        export class TestComponent {
+            constructor(public counter: CounterService) {}
+        }
+
+
+    🔥Now you have:
+
+        Root Injector
+        └── CounterService instance #1
+
+        TestComponent Injector
+        └── CounterService instance #2
+
+        These are not the same object.
+    
+    🔥So what happens?
+
+        If another component injects CounterService, it gets: instance #1
+        But TestComponent gets: instance #2
+        Meaning state is NOT shared.
+
+
+- 🔥🔥If the service contains state that belongs to a specific component instance, then it should be
+    provided by that component. For stateless services, or services that contain global state, they should
+    be provided in root.

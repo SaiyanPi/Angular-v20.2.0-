@@ -1,6 +1,7 @@
 import { Menu } from './menu/menu';
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Races } from './races/races';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'pr-root',
@@ -9,5 +10,11 @@ import { Races } from './races/races';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('ponyracer');
+  // protected readonly title = signal('ponyracer');
+
+  // Chapter 14: DI/Built-in services
+  constructor() {
+    inject(Title).setTitle('PonyRacer - Bet on ponies');
+    inject(Meta).addTag({ name: 'author', content: 'SaiyanPi' });
+  }
 }

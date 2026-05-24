@@ -1,0 +1,19 @@
+Dependency injection:
+
+
+- Dependency injection is a well-known design pattern. Let’s take a component of our application.
+    This component may need some features offered by other parts of our app (let’s say a service).
+    That’s what we call a dependency. Instead of letting the component create its dependencies, the
+    idea is to let the framework create them, and provide them to the component. That is known as
+    "inversion of control".
+
+
+- It has several interesting advantages:
+    • it allows easy development, by just saying what we want and where we want it;
+    • it allows easy testing, by replacing dependencies with mock ones;
+    • it allows easy configuration, by letting us replace an implementation of a service by another
+        one.
+
+
+- It’s a concept vastly used on the server side, 💡but not so much on the frontend side, except in
+    Angular.

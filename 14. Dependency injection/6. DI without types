@@ -1,0 +1,72 @@
+DI without types:
+
+
+- 🔥We’ve seen in the previous chapters that we can define tokens to identify services(section 3 mainly).
+    We’ve also seen that there are two ways to get a dependency: calling the inject function, or
+    declaring the dependency as an argument of the constructor(section 2).
+
+
+- 🔥When a token is used to identify a service, we can pass this token as argument to the inject
+    function to get the associated service. we've already seen it in section 3 lines 55 and 58.
+
+
+- 🔥🔥It’s also possible to get the service associated with the token when using constructor injection,
+    thanks to the @Inject() decorator.
+
+        import { Inject, Injectable } from '@angular/core';
+        import { BACKEND_URL } from './tokens';
+
+        @Injectable({
+            providedIn: 'root'
+        })
+        export class RaceService {
+            constructor(@Inject(BACKEND_URL) private url: string)👈 {}
+        }
+
+
+    🔥The above example uses a token BACKEND_URL which identifies a simple value stored in the injector.
+    This token is defined like this:
+        
+        import { InjectionToken } from '@angular/core';
+        export const BACKEND_URL = new InjectionToken<string>('API URL');
+    
+
+    🔥We then use this token in the providers of the application to define its value:
+        
+        { provide: BACKEND_URL, useValue: 'http://localhost:8080' }
+    
+
+    🔥Or you can register it directly with providedIn:
+
+        export const BACKEND_URL_PROVIDED = new InjectionToken<string>('API URL', {
+            providedIn: 'root',
+            factory: () => 'http://localhost:8080'
+        });
+    
+
+    😲Angular itself uses this token mechanism, and allows us to define the locale of the application for
+    example, by using the token LOCALE_ID:
+        
+        bootstrapApplication(App, {
+            providers: [
+                { provide: LOCALE_ID, useValue: 'fr-FR' }
+            ]
+        }).catch(err => console.error(err));
+
+        @Component({
+            selector: 'ns-locale',
+            template: `
+                <p>The locale is {{ locale }}</p>
+                <!-- will display 'fr-FR' -->
+                131
+                <p>{{ 1234.56 | number }}</p>
+                <!-- will display '1 234,56' -->
+                `,
+            imports: [DecimalPipe]
+        })
+
+        export class CustomLocale {
+            protected readonly locale = inject(LOCALE_ID);
+        }
+
+    But we’ll talk about it later when we see how to internationalize your application!

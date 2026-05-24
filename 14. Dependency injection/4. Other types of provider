@@ -1,0 +1,54 @@
+Other types of provider:
+
+
+- In our example, 🤔we might want to use LoggingService when we are developing our app, and use the
+    real LoggingAPIService when we are in production. One way of doing that is to use another type of
+    provider: useFactory.
+
+        // 🔥we just have to change this constant when going to prod
+        const IS_PROD = false; 👈
+
+        // in our bootstrapApplication function
+        providers: [
+            RaceService,
+            // we provide a factory
+            {
+                provide: LoggingService,
+                useFactory: () => (IS_PROD ? new LoggingAPIService() : new LoggingService()) 👈
+            }
+        ]
+
+    🔥 In this example, we are using useFactory instead of useClass. 🔥A factory is a function with one
+    job, creating an instance. Our example tests a constant and returns the race service with the
+    development or production logging service
+
+
+- 🔥🔥Of course, this example is just to demonstrate the use of useFactory and its dependencies. You
+    could, ⚠️and should, write:
+
+        const IS_PROD = false;
+
+        // in our bootstrapApplication function
+        providers: [RaceService, { provide: LoggingService, useClass: IS_PROD ?
+            LoggingAPIService : LoggingService }]
+
+
+- 🤔🔥Declaring a constant for IS_PROD is really bothering: maybe we can use dependency injection too?
+    I’m pushing things a bit as you can see :) 🔥You don’t necessarily need to force all things in DI,
+    but this is just to show you another provider type: useValue.
+
+        // declaring token(previous section line 50)
+        export const IS_PROD = new InjectionToken<boolean>('IsProd'); 👈🔥 
+
+        // in our bootstrapApplication function
+        providers: [
+            { provide: IS_PROD, 👉useValue: true },
+            RaceService,
+            {
+                provide: LoggingService,
+                useFactory: () => {
+                    const isProd = inject(IS_PROD);
+                    return isProd ? new LoggingAPIService() : new LoggingService();
+                }
+            }
+        ]

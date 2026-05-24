@@ -1,0 +1,116 @@
+Easy to configure:
+
+
+- I’ll come back to the testability advantages brought by dependency injection in a following chapter.
+    We can give an example of how DI makes the application easy to configure, though. 💡We want to call
+    a logging API in production instead of simply logging to the console. DI provides a nice way to do
+    this.
+
+- 🔥We can represent the relations between component and services like this, where the arrows mean
+    depends on:
+                                   App
+                                    |
+                                    |
+                                    v
+                                RaceService
+                                    |
+                                    |
+                                    v
+                                LoggingService
+    
+    🔥In fact, what we wrote was the short form of:
+
+        bootstrapApplication(App, {
+            providers: [{ provide: LoggingService, useClass: LoggingService }]
+        }).catch(err => console.error(err));
+
+    🔥🔥We are telling the Injector that we want to create a link between a token (the type
+    LoggingService) and the class LoggingService. 🔥The Injector is a service which keeps track of the
+    injectable elements by maintaining a registry and is actually injecting them when needed. 🔥For the
+    moment, you can see this registry as a map that associates keys, called tokens, with classes. 🔥A
+    token can be anything. But it is usually a class reference (as in the above example) or an instance
+    of InjectionToken.
+    
+    🔥Since, in our example, the token and the class to inject are the same, you can write the same thing
+    in the shorter form:
+        
+        bootstrapApplication(App, { providers: [LoggingService] }).catch(err => console.error(err));
+
+    🔥The token has to uniquely identify the dependency
+
+    🔥We can use the inject function to test how the injector works:
+
+        // in our bootstrapApplication function
+        providers: [
+            { provide: LoggingService, useClass: LoggingService },
+
+                // let's add another provider to the same class
+                // with another token
+                // A token can be declared like this:
+                // 🔥const token = new InjectionToken<LoggingService>('LoggingServiceToken');
+            { provide: token, useClass: LoggingService }
+        ]
+
+
+        🧠console.log(inject(LoggingService));
+        // logs "LoggingService"
+
+        🧠console.log(inject(token));
+        // logs "LoggingService" again
+
+        🧠console.log(inject(LoggingService) === inject(LoggingService));
+        // logs "true", as the same instance is returned every time for a token
+
+        🧠console.log(inject(LoggingService) === inject(token));
+        // logs "false", as the providers are different,
+        // so there are two distinct instances
+
+    As you can see, we can ask the injector for a dependency with a token. I have provided the
+    LoggingService twice, with two different tokens. 🔥The injector will create an instance of
+    LoggingService the first time it is asked to for a specific token, and then return the same instance
+    for this token every time.
+
+
+    🔥🧠This whole example was just to point out a few things:
+        🧠 a provider links a token to a service;
+        🧠 the injector returns the same instance every time it is asked for the same token;
+        🧠 the token used to identify a service does not have to be the class of the service.
+
+
+- 🔥The fact that the same service instance is used every time we ask for a service is also a well-known
+    design pattern: it’s called a singleton. This is really useful, because it allows a service to hold
+    state that you want to share between several components.
+
+
+- Now, back to our LoggingService. I can write a new class, doing the same job as LoggingService but
+    this time calling an API to aggregate the logs:
+        
+        @Injectable()
+        export class LoggingAPIService {
+            log(message: string): void {
+                // ... calls the logging API
+            }
+        }
+    
+    🔥🧠We can use the provider declaration to replace LoggingService with our LoggingAPIService:
+        
+        // in our bootstrapApplication function
+        providers: [
+            // we provide a different implementation of the service
+            { provide: LoggingService, useClass: LoggingAPIService }
+        ]
+
+    Now we have a relation like this:
+
+                                   App
+                                    |
+                                    |
+                                    v
+                                RaceService
+                                    |
+                                    |
+                                    v
+                                LoggingService
+    
+    🔥That can be really useful to replace an implementation with another in certain environments and,
+    as we will see soon, when you are writing automated tests.
