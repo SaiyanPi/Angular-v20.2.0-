@@ -148,7 +148,7 @@ Let's project this concept into visual
                     RaceService
                     👉 races data and logic
                             |
-                            |
+                            | inject(RaceService)
                             |
                             v
                     Races component <-----------------> races.html
