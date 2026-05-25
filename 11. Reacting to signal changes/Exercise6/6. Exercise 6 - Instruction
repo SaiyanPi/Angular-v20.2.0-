@@ -93,7 +93,7 @@ and [alt]="ponyModel().name" in the img tag of our pony template.
 
 Next thing we want is our pony component to fire custon event when the user click on the element. Let's
 add a click event listener in the root element of our pony template which calls the selectPony() method
-in our component. We want this method to emit the ponyModel. Data flows out of the components via events
+in our component. We want this method to emit the ponyModel. 🧠Data flows out of the components via events
 and custom events are emitted by output(). So let's create an output property 'ponySelected'. 
 
         readonly ponySelected = output<PonyModel>();
@@ -105,7 +105,7 @@ clicks on the element as:
             this.ponySelected.emit(this.ponyModel());
         }
 
-For now, parent component doesn't listen to our custom event but it soon it will. Just for the idea, our
+⚠️For now, parent component doesn't listen to our custom event but it soon it will. Just for the idea, our
 output property 'ponySelected' is the actual event fired when uses clicks the on the element and
 ponyModel with the value pony is the value($event) of the event. In parent component's template:
         

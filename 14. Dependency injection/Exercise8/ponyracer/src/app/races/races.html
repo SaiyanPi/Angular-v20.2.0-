@@ -1,16 +1,5 @@
-@for (race of races(); track race.id) {
+@for (race of races; track race.id) {
   <div>
-    <!-- <h2>{{ race.name }}</h2> -->
-    <!-- Exercise 4 -->
-
     <pr-race [raceModel]="race" />
-    <!-- Exercise 5:  -->
-    <!-- 🔥This is input(), Inputs allows directives/components to receive information from its
-     parent component. Here inside races template, we are using the <pr-race> selector from race
-      component therefore, Race component is a child component and Races component is a parent
-      component. And as per the definition, we are passing the information/value 'race' from the
-      parent(Races) component and assign it to the child(Race) component input named raceModel
-      using property binding.
-    -->
   </div>
 }

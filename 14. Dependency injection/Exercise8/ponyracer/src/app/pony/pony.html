@@ -1,12 +1,4 @@
 <figure (click)="selectPony()">
   <img [src]="ponyImageUrl()" [alt]="ponyModel().name" />
   <figcaption>{{ ponyModel().name }}</figcaption>
-  <!-- Exercise 6 -->
-  <!-- 2️⃣The template of the component should consist in a simple figure tag containing an img with a
-    dynamic src attribute and will use a computed signal of our component named ponyImageUrl()
-    to get it. You must also generate the alt attribute of the image and the figcaption text to be the
-    pony’s name.-->
-  <!-- 4️⃣Our component must also fire a custom event ponySelected when the user clicks on the element.
-    To achieve that, add a click listener on the root element of the template, calling a method of the
-    component. This method will emit the pony using an output<PonyModel>() named ponySelected. -->
 </figure>

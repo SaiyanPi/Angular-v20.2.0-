@@ -27,19 +27,22 @@ Let's create a mental map for our compenents or how the data flows between our c
                         |                   Menu component
                         |
                         v
-                Races component ---------> RaceModel
+                Races component ---------> RaceModel(id, name, ponies, startInstant)
+                (races containing ponies using for loop on race template selector)
                 (parent to Race)
                         |
                         |
                         |
                         v
-                Race component ----------> RaceModel
+                Race component ----------> RaceModel(id, name, ponies, startInstant)
+                (single race with ponies using for loop on pony template selector)
                 (parent to Pony)
                         |
                         |
                         |
                         v
-                Pony component ----------> PonyModel
+                Pony component ----------> PonyModel(id, name, color)
+                (single pony with name and gif)
 
 
 In the above map, We should remember that:
