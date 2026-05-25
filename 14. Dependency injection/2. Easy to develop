@@ -102,7 +102,7 @@ Easy to develop:
 
         bootstrapApplication(App, 👉{ providers: [LoggingService] }).catch(err => console.error(err));
     
-    👁️(to know the difference, read section5 of this chapter)
+    👁️(to know the difference, read section 5 of this chapter)
 
 
     2️⃣

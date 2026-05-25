@@ -51,7 +51,6 @@ Easy to configure:
             { provide: token, useClass: LoggingService }
         ]
 
-
         🧠console.log(inject(LoggingService));
         // logs "LoggingService"
 
@@ -92,7 +91,7 @@ Easy to configure:
             }
         }
     
-    🔥🧠We can use the provider declaration to replace LoggingService with our LoggingAPIService:
+    We can use the provider declaration to replace LoggingService with our LoggingAPIService:
         
         // in our bootstrapApplication function
         providers: [

@@ -1,0 +1,46 @@
+------------------------------------- Custom pipe with date-fns -----------------------------------------
+
+- BUILD OUR OWN PIPE USING THE THIRD PARTY LIBRARY date-fns TO DISPLAY PRETTY DATES.
+
+- Instruction: Angular Prerequisite "Pipes" chapter
+
+1️⃣ Install date-fns: npm install date-fns
+
+
+2️⃣ Generate a custom pipe named PrettyDate inside the folder shared/pipes:
+
+        ng g p shared/pipes/pretty-date
+
+
+3️⃣ Implement the pipe:
+    Earlier in the chapter 13: Pipes/section 10. creating our own pipe, we saw how to create our
+    custom pipe.
+
+        transform(value: string, ..._args: Array<unknown>): string {
+            const date = parseISO(value);
+            return formatDistanceToNowStrict(date, { addSuffix: true });
+        }
+       
+    
+    ⚠️ But there are some drawback to this:
+    ❌ transform(value: string) only accepts strings but doesn't handle the Date object, null/undefined.
+        Angular templates frequently receive undefined values during initialization. So the better code
+        would be:
+        
+        transform(value: string | Date | null | undefined): string {
+            if (!value) {
+                return '';
+            }
+            const date = typeof value === 'string' ? parseISO(value) : value;
+            return formatDistanceToNowStrict(date, {
+                addSuffix: true
+            });
+        }
+
+
+4️⃣ Import and use the pipe:  <p>{{ raceModel().startInstant | prettyDate }}</p>
+
+
+⚠️Note: Unfortunately, the course book i am following no longer has free exercise trial. But will do my
+best to include exercise and hopefully we complete building the ponyracer app. So there will be no
+more resources for test files as we don't know how to write it yet.
