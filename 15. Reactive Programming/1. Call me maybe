@@ -1,0 +1,71 @@
+Call me maybe:
+
+
+- 🔥The basic principle of reactive programming is to try to define the logic in a declarative way,
+    by defining events and telling how to react to those events, instead of doing it in an imperative
+    way. This sounds very abstract, and it is. So let’s try to illustrate this with a basic example
+
+    🤔Let’s say you have a circle, and you need to store its radius as well as its circumference. And
+    you want to be able to change the radius of the circle. Doing that should of course change its
+    circumference accordingly
+
+    1️⃣One way (the imperative way) of doing this is to use two properties:
+
+            private radius = 0;
+            private circumference = 0;
+            
+            setRadius(r: number) {
+                this.radius = r;
+                this.circumference = 2 * Math.PI * r;
+            }
+        
+        🧠Every time you change the radius, you need to remember that you also need to change the
+        circumference accordingly
+    
+
+    2️⃣Another way of doing this is to rely on a reactive primitive: 🔥🔥declaratively specify that the
+    circumference must be recomputed every time the radius changes. Changing the radius can thus be
+    seen as an event, and we can react to this event by changing the circumference. 🔥🔥The reactive
+    primitive we could use here is a signal:
+
+            private readonly radius = signal(0);
+            private readonly circumference = computed(() => 2 * Math.PI * this.radius());
+
+            setRadius(r: number) {
+                this.radius.set(r);
+            }
+
+
+- 🤔🤔What if we had a component taking the ID of a race as input, and we wanted this component to
+    show the details of that race? Things get more complicated here, because getting the details of the
+    race is an asynchronous operation. 🤔We can’t just use a computed signal to "compute" a race based
+    on its ID. 🤔Besides, if the ID changes two times in a row, the fetching of the first race should
+    be cancelled before fetching the second one: we’re not interested anymore in the first one.
+
+    We might also have to send two different HTTP requests to get the full details of the race, and we
+    would then need to wait until we have both responses before displaying it.
+
+    Being able to declaratively express that every time an input changes, we have to make two
+    asynchronous calls, cancel the two previous ones if any, wait for the two calls to complete, and
+    finally display the result, would be great.
+    (🧠Above paragraphs is explaining why signals alone are not enough for async workflows, and why
+    RxJS still exists in Angular.)
+
+
+- 🔥That’s the kind of stuff for which RxJS shines. 🔥It provides another reactive primitive: an
+    Observable, which represents a stream of synchronous or asynchronous events. It also comes with
+    plenty of functions and operators that allow transforming, filtering, combining these streams of
+    events.
+
+
+- Angular, since its first version, has chosen to depend on RxJS, and uses observables to represent
+    events and things that change over time. 🔥For example, the result of a call to the HttpClient is
+    an Observable. 🔥The changes of parameters of a route are modeled as an Observable. 🔥The changes
+    of the value of a form are modeled as an Observable.
+
+
+- 🔥RxJS is not a free meal though. It’s quite complex to learn and master. Thinking in a reactive way
+    doesn’t come naturally to most developers. 🔥🔥And Angular has signals now, which provide another
+    reactive primitive that sometimes overlaps with what RxJS provides. 🧠So the general direction that
+    Angular has decided to follow is to try not to depend on RxJS anymore, 🧠but to make the usage of
+    RxJS inside Angular applications as smooth as possible, by providing interoperability functions.

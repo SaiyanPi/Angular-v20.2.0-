@@ -1,0 +1,116 @@
+Signals and RxJS interoperability:
+
+
+- ⁉️Now, how can we use RxJS to declaratively display the details of a race whenever the race ID
+    changes?
+    🤔The race ID is an input, which is a signal. But to use RxJS, we would need to have an
+    Observable, not a signal. No issue. 
+    
+    1️⃣
+    🔥🔥Angular provides a toObservable() function that
+    transforms a Signal<T> into an Observable<T>. Internally, it uses an effect to know when the
+    signal changes, and make the observable emit its new value.
+    So we can do:
+
+        import { Component, input } from '@angular/core';
+        import { toObservable } from '@angular/core/rxjs-interop';
+        import { Observable } from 'rxjs';
+
+        @Component({
+            selector: 'ns-race',
+            template: '...'
+        })
+        export class Race {
+            readonly raceId = input.required<number>();
+            private readonly raceId$: Observable<number> = toObservable(this.raceId); 👈
+        }
+    
+
+    2️⃣
+    🔥🔥We now need to fetch the details of the race whenever the observable emits, and cancel the
+    previous ongoing fetch if any. That’s a job for the switchMap operator. We’ll talk about it in more
+    details in a future chapter.
+
+        import { Component, inject, input } from '@angular/core';
+        import { toObservable } from '@angular/core/rxjs-interop';
+        import { Observable, of, switchMap } from 'rxjs';
+
+        @Component({
+            selector: 'ns-race',
+            template: '...'
+        })
+        export class Race {
+            private raceService = inject(RaceService); 👈 Do not forget to inject RaceService
+            readonly raceId = input.required<number>();
+            private readonly race$: Observable<RaceModel> = toObservable(this.raceId)
+                .pipe(switchMap(raceId => this.raceService.get(raceId)) 👈
+            );
+        }
+    
+
+    3️⃣
+    🤔Now that’s fine, but how can we display the race? 🔥🔥We’ll need to subscribe to the
+    observable, and store the emitted race in a signal so that the template can display it. We could
+    do that:
+    (INCORRECT WAY)
+
+        import { Component, inject, input, signal } from '@angular/core';
+        import { toObservable } from '@angular/core/rxjs-interop';
+        import { Observable, of, switchMap } from 'rxjs';
+        
+        @Component({
+            selector: 'ns-race',
+            template: '...'
+        })
+        export class Race {
+            private raceService = inject(RaceService);
+            readonly raceId = input.required<number>();
+            private readonly race$: Observable<RaceModel> = toObservable(this.raceId).pipe(
+                switchMap(raceId => this.raceService.get(raceId))
+            );
+            // ❌ don't do this
+            protected readonly race = signal<RaceModel | undefined>(undefined);
+            constructor() {
+                this.race$.subscribe(race => this.race.set(race));
+            }
+        }
+    
+    🔥But then we should also unsubscribe when the component is destroyed. 🔥🔥There’s a better way.
+    Angular also provides a function to transform an Observable<T> into a Signal<T | undefined>. You
+    guessed it, it’s named toSignal.
+    (CORRECT WAY)
+
+        import { Component, inject, input, Signal } from '@angular/core';
+        import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+        import { Observable, of, switchMap } from 'rxjs';
+        
+        @Component({
+            selector: 'ns-race',
+            template: '...'
+        })
+        export class Race {
+            private raceService = inject(RaceService);
+            readonly raceId = input.required<number>();
+            private readonly race$: Observable<RaceModel> = toObservable(this.raceId).pipe(
+                switchMap(raceId => this.raceService.get(raceId))
+            );
+            // ✅ Do this instead
+            protected readonly race: Signal<RaceModel | undefined> = toSignal(this.race$);
+        }
+    
+    🔥🔥Internally, toSignal subscribes to the observable. And it automatically unsubscribes when the
+    component is destroyed.
+
+    ⁉️Are you wondering why it creates a Signal<RaceModel | undefined> and not a Signal<RaceModel>?
+    🔥Well, the answer is logical. An observable is usually asynchronous. It’s the case here. 🔥🔥So
+    it only emits its first race once it has received the response from the HTTP server. Meanwhile,
+    there’s no race that can be stored in the signal, so its value is undefined.
+    You can pass an option to toSignal if You prefer a having something else than undefined as the
+    default value, or if you know that the observable emits synchronously
+
+
+- ⚠️⚠️Beware: toObservable and toSignal need to be called in an injection context,
+    because they call inject. So, just as inject, you can only call them while the
+    component is being constructed. You can actually call them from anywhere, but
+    then you’ll have to pass an Injector as an option. The Injector can be obtained,
+    you guessed it, using dependency injection.

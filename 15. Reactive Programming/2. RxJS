@@ -1,0 +1,125 @@
+RxJS:
+
+
+- 🔥An Observable is a stream of events, that has a well-defined, albeit flexible lifecycle.
+
+
+- 🔥🔥When you subscribe to an observable, it starts emitting events. It can emit 0, 1, N or even
+    an infinity of events. The emission can be synchronous or asynchronous. The events can be
+    anything(an HTTP response, a form value, etc.): it depends on the type of the Observable.
+
+
+- 🔥🔥An observable can signal its completion. After the completion, you know that it won’t emit any
+    event anymore. And you’re thus also unsubscribed: why would you keep listening to something
+    that won’t say anything anymore?
+
+
+- 🔥🔥In case something goes wrong (for example, you subscribed to send an HTTP request and get an
+    HTTP response but the server is down), an observable can also signal an error. After an error, you
+    also have the guarantee that it won’t emit any event anymore (nor signal a completion). And you’re
+    thus also unsubscribed.
+
+
+- 🔥🔥You can create various kinds of observables using RxJS functions. Many RxJS functions are used
+    to transform an observable into another one. Those functions are called operators.
+    For example:
+        👉 take(n) creates an observable that only emits the first n events of the source observable
+            and then completes;
+        👉 map(fn) creates an observable that transforms each event of the source observable (using
+            the function fn) and emits the result;
+        👉 filter(predicate) creates an observable that only emits the events of the source observable
+            that fulfill the predicate.
+
+    There are much more operators than these. We would need a whole book to go through all of them.
+    But hopefully you get an idea of what operators can do. If you want to have a good visual
+    representation of what the RxJS functions and operators do, go to https://rxmarbles.com/, or
+    consult the https://rxjs.dev/
+
+
+    🤔So, if you have an observable of numbers and want to multiply each by 2, then filter those under
+    5, and print them, you can do:
+
+        import { filter, from, map, Observable } from 'rxjs';
+
+        const numbers$: Observable<number> = from([1, 2, 3, 4, 5]).pipe(
+            map(x => x * 2),
+            filter(x => x > 5)
+        );
+        numbers$.subscribe(x => console.log(x));
+        // Logs 6, 8, 10
+    
+    🔥The $ suffix is a common convention that allows remembering that the variable is an Observable.
+
+
+- 🔥The observable in the above example emits synchronously: as soon as we subscribe, the numbers
+    are emitted one by one. When the call to subscribe returns, all the numbers have already been
+    printed to the console.
+    🔥🔥But observables are usually asynchronous. They can for example represent DOM events that
+    will happen in the future:
+
+        import { fromEvent } from 'rxjs';
+
+        const input = document.querySelector('input')!;
+        fromEvent(input, 'keyup').subscribe(() => console.log('keyup!'));
+        input.trigger('keyup'); // Logs "keyup!"
+        input.trigger('keyup'); // Logs "keyup!"
+    
+    🔥🔥When subscribing to such an observable, the function you pass will be executed later, every
+    time the user releases a key in the text field.
+    🔥🔥 If you’re not interested anymore in those events, you’ll have to unsubscribe. The simplest
+    way to do that is to call unsubscribe on the Subscription returned by subscribe. There are other
+    ways to unsubscribe, that will be discussed later.
+
+        const subscription = fromEvent(input, 'keyup').subscribe(() => console.log('keyup!'));
+        // later, when not interested anymore
+        subscription.unsubscribe();
+    
+    🔥🔥You might also have to handle errors. The subscribe method accepts an object as an argument
+    instead of a simple callback function. 🔥🔥This object can define a callback to handle events
+    (named next), and a callback to handle errors (named error).
+    Here the mapping function throws an exception, so the error callback will log it.
+
+        range(1, 5)
+        .pipe(
+            map(x => {
+                if (x % 3 === 0) {
+                    throw new Error('something went wrong');
+                } else {
+                    return x;
+                }
+            })
+        )
+        .subscribe({
+            next: x => console.log(x),
+            error: error => console.log(error)
+        });
+        // Logs 1, 2, something went wrong
+    
+    🔥And in RxJS, streams have only 3 kinds of notifications:
+        next
+        error
+        complete
+
+    🔥🔥A stream can emit many nexts. But it can emit only ONE: error OR complete. So after either
+    happens, stream is terminated. And this is the reason, 4 and 5 never emits and complete never
+    happens.
+
+
+    🔥🔥Finally, if the observable completes, you can know about it too by providing a third handler.
+    Here, the range function creates an observable which emits events events from 1 to 5 and then
+    signals its completion:
+
+        range(1, 5)
+        .pipe(
+            map(x => x * 2),
+            filter(x => x > 5)
+        )
+        .subscribe({
+            next: x => console.log(x),
+            error: error => console.log(error),
+            complete: () => console.log('done')
+        });
+        // Logs 6, 8, 10, done
+    
+    🔥Here, error never happens so based on filter, next gets executed emiting the value 6, 8, 10
+    and finally the complete.
