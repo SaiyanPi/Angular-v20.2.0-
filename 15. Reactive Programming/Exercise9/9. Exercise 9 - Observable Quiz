@@ -1,0 +1,126 @@
+----------------------------------- Observable Quiz --------------------------------------------------
+
+1️⃣ Lazy execution: What gets logged?
+
+    import { of, tap } from 'rxjs';
+
+    const obs$ = of(1, 2, 3).pipe(
+        tap(x => console.log('tap', x))
+    );
+    console.log('before');
+    console.log('after');
+
+
+    answer:     before  ✅
+                after
+    
+    (🔥Because Observables in RxJS are lazy. Creating an Observable does nothing by itself unless we
+    subscribe to it)
+
+
+
+2️⃣ Subscription trigger: What gets logged?
+
+    import { of, tap } from 'rxjs';
+
+    const obs$ = of(1, 2, 3).pipe(
+        tap(x => console.log('processing', x))
+    );
+    console.log('A');
+    obs$.subscribe();
+    console.log('B');
+
+
+    answer:     A
+                processing 1
+                processing 2
+                processing 3
+                B
+
+
+
+3️⃣ Cold observable: What gets logged?
+
+    import { Observable } from 'rxjs';
+
+    const obs$ = new Observable(subscriber => {
+        console.log('Observable executed');
+        subscriber.next(1);
+    });
+    obs$.subscribe(x => console.log('sub1', x));
+    obs$.subscribe(x => console.log('sub2', x));
+
+
+    answer:     Observable executed
+                sub1 1
+                Observable executed
+                sub2 1
+    
+    (🔥A cold Observable runs its producer function once per subscription.)
+
+
+
+4️⃣ If an observable users$ emits a UserModel, how do you get the emitted value and store it in a signal
+of the component called user?
+
+        users$.subscribe((event: Event<UserModel>) => this.user.set(event.data))
+
+        users$.subscribe((user: UserModel) => this.user.set(user))  ✅
+
+        this.user = toSignal(users$)    ✅
+
+        this.user = toObservable(users$)
+
+        this.user = users$.subscribe()
+
+
+
+5️⃣ How do you switch a boolean signal called error when a potential error arises in the observable?
+
+        users$.subscribe({ next: user => this.user.set(user), error: () => this.error.set(true) })  ✅
+
+        try { users$.subscribe(user => this.user.set(user)) } catch (e) { this.error.set(true) }
+
+        this.user = toSignal(users$.pipe(tap({ error: () => this.error.set(true) })))   ✅
+
+
+
+6️⃣ How do you filter the users with an ID greater than 1000 emitted by an observable users$?
+
+        users$.pipe(filter(user => user.id > 1000)) ✅
+
+        users$.filter(user => user.id > 1000)   
+
+        filter(users$, user => user.id > 1000)
+
+
+
+7️⃣ How do you extract the ID of a user emitted by an observable users$?
+
+        users$.pipe(map(user => user.id))   ✅
+
+        users$.map(user => user.id)
+
+        map(users$, user => user.id)
+
+
+
+8️⃣ How do you extract the IDs of users with an ID greater than 1000 emitted by an observable users$?
+
+        users$.pipe(map(user => user.id), filter(id => id > 1000))  ✅
+
+        users$.map(user => user.id).filter(id => id > 1000)
+
+        filter(map(users$, user => user.id), id => id > 1000)
+
+        users$.pipe(filter(user => user.id > 1000), map(user => user.id)) ✅
+
+
+
+9️⃣ Observables are used by Angular itself for
+
+        The HTTP client ✅
+
+        The forms support   ✅
+
+        The router  ✅

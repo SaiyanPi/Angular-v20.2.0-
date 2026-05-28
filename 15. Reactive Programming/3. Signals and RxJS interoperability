@@ -7,9 +7,9 @@ Signals and RxJS interoperability:
     Observable, not a signal. No issue. 
     
     1️⃣
-    🔥🔥Angular provides a toObservable() function that
-    transforms a Signal<T> into an Observable<T>. Internally, it uses an effect to know when the
-    signal changes, and make the observable emit its new value.
+    🔥🔥Angular provides a toObservable() function that transforms a Signal<T> into an Observable<T>.
+    Internally, it uses an effect to know when the signal changes, and make the observable emit its
+    new value.
     So we can do:
 
         import { Component, input } from '@angular/core';

@@ -1,0 +1,41 @@
+------------------------------ Observables with RxJS ------------------------------------------------
+
+- LEARN MORE ABOUT REACTIVE PROGRAMMING AND USE OBSERVABLES IN THE SERVICE.
+
+- Instruction: Angular Prerequisite "Reactive Programming" chapter
+
+1️⃣ 🔥🔥Eventually, the race service will get the races from the server. This request will use the
+    HTTP client provided by Angular and, as any AJAX request, it will be asynchronous. The result
+    will thus not be immediately available, and can’t thus be returned directly by the method.
+    🔥🔥 Instead, an Observable will be returned, and the component will have to subscribe to
+    this Observable.
+
+    Transform the service to make it return an Observable instead of an array. 🔥🔥Wrapping a
+    value into an Observable is easy, using the of function.
+
+        🔥🔥🔥Note: of([1, 2, 3, 4])
+        This is different from the from function. of will only emit one event which will be the
+        complete array ([1, 2, 3, 4] in the previous example). from would emit one event per item
+        of the array (1, then 2 then 3, then 4). Here we want to use of because, in the long run,
+        this will be replaced by an HTTP request which will return an array of races in one request.
+    
+    🔥🔥But of() will return right away. In real life, the results will take some time to fetch,
+    so let’s add an operator called delay, to…​ delay the results for half a second.
+
+        export class RaceService {
+            list(): Observable<Array<RaceModel>> {
+                return of([....]).pipe(delay(500));
+            }
+        }
+    
+
+ 2️⃣ modify the Races component. 🔥🔥It must now subscribe to the Observable to get the list of races.
+    The cleanest way to do this is to use toSignal!
+
+        protected readonly races = toSignal(inject(RaceService).list());
+
+    Previously we had races as a simple array so in the template we used @for (race of races; ...)
+    But now races is a signal so template should be @for (race of races(); ...)
+
+
+3️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.

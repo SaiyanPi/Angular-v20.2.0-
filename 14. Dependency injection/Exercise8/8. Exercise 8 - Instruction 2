@@ -9,7 +9,9 @@
         ng g s services/race-service
 
 
-2️⃣ Move race-related logic/data OUT of components into the RaceService:
+2️⃣ This service should have a method named list(), which will eventually get the races from the backend.
+    In the meantime, it will just return the hard-coded list of 2 races that is currently defined in the
+    Races component. (⚠️Note that it's not a signal but raw)
 
         export class RaceService {
             private readonly races = signal<Array<RaceModel>>([
@@ -61,11 +63,12 @@
         }
 
 
-3️⃣ Register the service and use it in the component:
+3️⃣ Inject this service in the Races component, and initialize its array of races by calling the list()
+    method of the service.
 
-        @Injectable({
-            providedIn: 'root'
-        })
+
+4️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
+
 
 
 ---------------------------------------------------------------------------------------------------------
@@ -107,12 +110,9 @@ Services are:
     centralized
     injectable
 
-Now it's clear i should realocate the signal variable races containing the array of races with ponies into
-the RaceService and we should get the list of races with ponies from RaceService by injecting it in my 
-component
 
-🤔Okay great!! I've created realocated the signal property 'races' into RaceService. Now in which 
-component should i inject the RaceService in order to get the race list?
+
+🤔Okay great! But where should i inject the RaceService in order to get the race list?
 The answer should be obvious, we should inject the RaceService inside Races component because originally
 races data were in a Race component. ⚠️⚠️And we need to remember that other components still depends on
 the Races component for races data. So we just need to reallocate the races data and logic into the

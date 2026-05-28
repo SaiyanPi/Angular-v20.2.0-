@@ -7,7 +7,7 @@
 1️⃣ Install date-fns: npm install date-fns
 
 
-2️⃣ Generate a custom pipe named PrettyDate inside the folder shared/pipes:
+2️⃣ Generate a custom pipe named PrettyDate inside the folder shared/pipes or wherever you want:
 
         ng g p shared/pipes/pretty-date
 
@@ -44,3 +44,12 @@
 ⚠️Note: Unfortunately, the course book i am following no longer has free exercise trial. But will do my
 best to include exercise and hopefully we complete building the ponyracer app. So there will be no
 more resources for test files as we don't know how to write it yet.
+
+
+________________________________________________________________________________________________________
+
+Well good new folks!! I now have full access to exercise😁. Hopefully we'll make every penny worth💰.
+Let's straight jump into exercise.
+
+Turns out what we did in this exercise is even better than the code official exercise. So let's only add
+the test files. All the tests should pass.

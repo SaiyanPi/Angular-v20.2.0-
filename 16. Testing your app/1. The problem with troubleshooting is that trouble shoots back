@@ -1,0 +1,24 @@
+The problem with troubleshooting is that trouble shoots back:
+
+
+- I hope you do care about tests too, as they are the only safety net we have when we write code.
+    Nothing is more tedious than manually testing code.
+
+- Angular does a great job to let us easily write tests. So did AngularJS 1.x, and that’s partly why
+    I loved using it. As in AngularJS 1.x, we can write two types of tests:
+    • unit tests
+    • end-to-end tests
+
+- 🔥Unit tests are there to verify that a small unit of code (a component, a service, a pipe…)
+    works correctly in isolation, i.e. without considering its dependencies. Writing such a unit test
+    requires you to execute each of the component/service/pipe methods, and check that the outputs are
+    what we expected regarding the inputs we fed it. We can also check that the dependencies used by
+    this unit are correctly called: for example we can check that a service will do the correct HTTP
+    request.
+
+- 🔥We can also write end-to-end tests. Their purpose is to emulate a real user interacting with your
+    app, by starting a real instance and then driving the browser to enter values in inputs, click on
+    buttons, etc. We’ll then check that the rendered page is in the state we expect, that the URL is
+    correct - whatever you can think of.
+
+- We’re going to cover all this, but let’s begin with the unit test part.

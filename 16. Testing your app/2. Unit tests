@@ -1,0 +1,107 @@
+Unit tests:
+
+
+- As we saw earlier, unit tests are there to check a small unit of code in isolation. These tests can
+    only verify a small part of your app works as intended, but they have several advantages:
+    👉 they are really fast - you can run several hundreds in a few seconds.
+    👉 they are a very efficient way to test (nearly) all your code, especially the tricky cases, which
+        can be hard to manually test in the real app.
+
+- 🔥One of the core concepts of unit testing is isolation: we don’t want our test to be biased by
+    its dependencies. So we usually use "mock" objects as dependencies. These are fake objects that we
+    create just for testing purposes.
+
+- 🔥To do this, we are going to rely on a few tools. First we need a library to write tests. One of the
+    most popular (if not the most popular) is Jasmine https://jasmine.github.io/, so we are going to
+    use it!
+
+
+___________________________________________________________________________________________________________
+
+Jasmine and Karma:
+
+
+- Jasmine gives us a few methods to declare our tests:
+    🔥 describe() declares a test suite (a group of tests)
+    🔥 it() declares a test
+    🔥 expect() declares an assertion
+
+- A basic JavaScript test using Jasmine looks like:
+        class Pony {
+            constructor(
+                public name: string,
+                public speed: number
+            ) {}
+            isFasterThan(speed: number): boolean {
+                return this.speed > speed;
+            }
+        }
+        describe('My first test suite', () => {
+            it('should construct a Pony', () => {
+                const pony = new Pony('Rainbow Dash', 10);
+                expect(pony.name).toBe('Rainbow Dash');
+                expect(pony.speed).not.toBe(1);
+                expect(pony.isFasterThan(8)).toBe(true);
+            });
+        });
+    
+    🔥The expect() call can be chained with a lot of methods like toBe(), toBeLessThan(),
+    toBeUndefined(), etc. 🔥Every method can be negated with the not attribute of the object returned
+    by expect()
+
+
+- The test file is a separate file from the code you want to test, usually with an extension like
+    .spec.ts. The test for a Pony class written in a pony.ts file will likely be in a file named
+    pony.spec.ts. 🔥You can either put your test right next to the file you’re testing, or in a
+    dedicated directory with all your tests. I tend to put the code and test in the same directory,
+    but both approaches are perfectly valid: pick your team.
+
+
+- 🔥🔥One cool trick is that if you use fdescribe() instead of describe() then only this test
+    suite will run (f stands for focus). 🔥🔥Same thing if you want to run only one test: use
+    fit() instead of it(). 🔥🔥If you want to exclude a test, use xit(), or xdescribe() for a
+    suite.
+
+
+- 🔥🔥You can also use the beforeEach() method to set up a context before each test: the fixture.
+    If I have several tests on the same pony, it makes sense to use beforeEach() to initialize the
+    pony, instead of copy/pasting the same thing in every test.
+
+        describe('Pony', () => {
+            let pony: Pony;
+            beforeEach(() => {
+                pony = new Pony('Rainbow Dash', 10);
+            });
+            it('should have a name', () => {
+                expect(pony.name).toBe('Rainbow Dash');
+            });
+            it('should have a speed', () => {
+                expect(pony.speed).not.toBe(1);
+                expect(pony.speed).toBeGreaterThan(9);
+            });
+        });
+
+    There is also an afterEach method, but I basically never use it…
+
+
+- 🔥🔥One last trick: Jasmine lets us create fake objects (mocks or spies, as you want), or even spy on
+    a method of a real object. 🔥🔥We can then do some assertions on these methods, like with
+    toHaveBeenCalled() that checks if the method has been called, or with 🔥🔥toHaveBeenCalledWith()
+    that checks the exact parameters of the call to the spied method. 🔥🔥You can also check how many
+    times the method has been called, or check if it has ever been called, etc.
+
+    For example, let’s say we have a Race class with a start() method, that calls run() on every pony
+    in the race, and filters the ponies that did not started running (run() returns a boolean).
+
+    Race.ts
+    class Race {
+        constructor(private ponies: Array<Pony>) {}
+        start(): Array<Pony> {
+            return (
+                this.ponies
+                // start every pony
+                // and only keeps the ones that started running
+                .filter(pony => pony.run(10))
+            );
+        }
+    }
