@@ -1,0 +1,29 @@
+Send and receive data through HTTP:
+
+
+- It won’t come as a surprise, but a big part of our job consists in asking a backend server to send
+    data to our webapp, and then sending data back.
+
+- Usually this is done over HTTP, even though you have other alternatives nowadays, like WebSockets.
+    Angular provides an http module, but doesn’t force you to use it. If you prefer, you can use your
+    favorite library to send HTTP requests.
+
+- 🔥One of the possibilities is the fetch API https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API,
+    which is a standard API provided by the browsers. 
+    You can perfectly build your app using fetch or another library. In fact, that’s what I used
+    before the Http part was done in Angular. It works great, with no need of special calls to make
+    the framework aware that we have received data and that it needs to run the change detection
+    (unlike in AngularJS 1.x, where you would have to call $scope.apply() if you were using an external
+    library: that’s the magic of Angular and its zones!).
+
+- 🔥🔥But most Angular developers will rather use a service coming with Angular: HttpClient.
+    If you want to use it, you have to use the classes and functions from the @angular/common/http
+    package.
+
+⁉️Why prefer this service over, say, fetch? The answer is simple: testing. As we will show, the Http
+    client allows you to mock your backend server and return fake responses. That’s really, really
+    useful.
+
+- ⚠️⚠️A last thing before we dive into the API: the Http client heavily uses the reactive programming
+    paradigm. So if you skipped the Reactive Programming chapter, now might be a good time to go
+    back and read it ;).

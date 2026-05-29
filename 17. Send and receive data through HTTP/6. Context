@@ -1,0 +1,32 @@
+Context:
+
+
+- 🔥Sometimes you want to give some context to an interceptor. Since Angular v12, it is possible
+    thanks to HttpContext. 🔥🔥The context uses a type safe token (HttpContextToken), so you can
+    define something like this in your interceptor:
+
+        export const SHOULD_NOT_HANDLE_ERROR = new HttpContextToken<boolean>(() => false);
+
+    And change the interceptor to:
+
+        export const errorHandlerInterceptor: HttpInterceptorFn = (
+            req: HttpRequest<unknown>,
+            next: HttpHandlerFn
+        ): Observable<HttpEvent<unknown>> => {
+            const router = inject(Router);
+            const errorHandler = inject(ErrorHandler);
+
+            // if there is a context specifically asking for not handling the error, we don't
+            handle it
+            if (req.context.get(SHOULD_NOT_HANDLE_ERROR)) { 👈
+                return next(req);
+            }
+            return next(req).pipe(
+                // ...
+
+
+- 🔥All HTTP methods accept a context option, which is a Map that you can build in a type-safe way by
+    using the token defined previously:
+
+        const context = new HttpContext().set(SHOULD_NOT_HANDLE_ERROR, true);
+        return http.get(`${baseUrl}/api/users`, { context });

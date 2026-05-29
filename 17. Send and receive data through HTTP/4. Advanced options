@@ -1,0 +1,33 @@
+Advanced options:
+
+
+- Of course, you can tune your requests more finely. 🔥Every method takes an options object as an
+    optional parameter, where you can configure your request. A few options are really useful and you
+    can override everything in the request.
+
+- 🔥params represents the URL search parameters (also known as the query string) to add to the URL.
+
+      👉const params = {
+            sort: 'ascending',
+            page: '1'
+        };
+        http
+            .get<Array<RaceModel>>(`${baseUrl}/api/races`, { 👉params })
+
+            // will call the URL ${baseUrl}/api/races?sort=ascending&page=1 ✅
+            .subscribe(response => {
+
+                // will return the races sorted
+                this.races = response;
+            });
+
+
+- 🔥The headers option is often useful to add a few custom headers to your request. 🔥🔥It happens
+    to be necessary for some authentication techniques like JSON Web Token for example:
+
+     👉const headers = { Authorization: `Bearer ${token}` };
+        http.get<Array<RaceModel>>(`${baseUrl}/api/races`, { 👉headers }).subscribe(response =>
+        {
+            // will return the races visible for the authenticated user ✅
+            this.races = response;
+        });

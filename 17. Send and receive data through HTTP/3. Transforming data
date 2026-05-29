@@ -1,0 +1,24 @@
+Transforming data:
+
+
+- 🔥This kind of work will usually be done in a dedicated service. 🔥I tend to create a service, like
+    RaceService, where all the job is done. Then, my component just needs to subscribe to my service
+    method, without knowing what’s going on under the hood.
+
+        @Injectable({
+            providedIn: 'root'
+        })
+        export class RaceService {
+            private readonly http = inject(HttpClient);
+            list() {
+                return this.http.get<Array<RaceModel>>(`${baseUrl}/api/races`);
+            }
+    
+    🔥You can also leverage the power of RxJS to retry a failed request a few times, for example.
+        
+        raceService
+            .list()
+            .pipe(
+                // if the request fails, retry 3 times
+                retry(3)
+            )

@@ -1,0 +1,69 @@
+Tests:
+
+
+- ⁉️We now have a service calling an HTTP endpoint to fetch the races. How do we test it?
+
+        @Injectable({
+            providedIn: 'root'
+        })
+        export class RaceService {
+            private readonly http = inject(HttpClient);
+
+            list(): Observable<Array<RaceModel>> {
+                return this.http.get<Array<RaceModel>>('/api/races');
+            }
+        }
+
+
+- In a unit test, you don’t want to really call the HTTP server: that’s not what we are testing.
+    🔥We want to "fake" the HTTP call to return fake data. To do this, we can replace the dependency
+    to the HttpClient service with a fake implementation by importing the HttpClientTestingModule. 
+    🔥We can then use a class provided by the framework called HttpTestingController to fake the
+    HTTP responses.
+    🔥And you can also add a few assertions on the underlying HTTP request.
+
+        import { TestBed } from '@angular/core/testing';
+        import { HttpTestingController, provideHttpClientTesting } from
+        '@angular/common/http/testing';
+        import { HttpClient } from '@angular/common/http';
+        
+        describe('RaceService', () => {
+            let raceService: RaceService;
+            let http: HttpTestingController; 
+
+            beforeEach(() =>
+                TestBed.configureTestingModule({
+                providers: [provideHttpClientTesting()]
+                })
+            );
+
+            beforeEach(() => {
+                raceService = TestBed.inject(RaceService);
+                http = TestBed.inject(HttpTestingController);
+            });
+
+            afterEach(() => {
+                http.verify();
+            });
+
+            it('should return an Observable of 2 races', () => {
+                // fake response
+                const hardcodedRaces = [{ name: 'London' }, { name: 'Lyon' }];
+
+                // call the service
+                let actualRaces: Array<RaceModel> = [];
+                raceService.list().subscribe(races => (actualRaces = races));
+                
+                // check that the underlying HTTP request was correct
+                http
+                    .expectOne('/api/races')
+
+                    // return the fake response when we receive a request
+                    .flush(hardcodedRaces);
+
+                // check that the returned array is deserialized as expected
+                expect(actualRaces.length).toBe(2);
+            });
+        });
+
+    And we’re done!

@@ -1,0 +1,63 @@
+Interceptors:
+
+
+- 🔥🔥Interceptors are interesting when you want to… intercept requests or responses in your
+    application.
+    💡For example, if you want to intercept every request to add a specific header to some of them,
+    you can now write an interceptor like this one:
+
+        export const githubAPIInterceptor: HttpInterceptorFn = (
+            req: HttpRequest<unknown>,
+            next: HttpHandlerFn
+        ): Observable<HttpEvent<unknown>> => {
+            // if it is a Github API request
+            if (req.url.includes('api.github.com')) {
+
+                // we need to add an OAUTH token as a header to access the Github API
+                const clone = req.clone({ setHeaders: { Authorization: `token ${OAUTH_TOKEN}` }});
+                return next(clone);
+            }
+            // if it's not a Github API request, we just hand it to the next handler
+            return next(req);
+        };
+
+        ⚠️⚠️Note that you have to clone the request to update it (requests are immutable).
+    
+    🔥Then configure the HTTP client provider so that it uses the interceptor with provideHttpClient():
+
+        providers: [
+            provideHttpClient(withInterceptors([githubAPIInterceptor])),
+        ]
+    
+    ✅Now every request will go through the interceptor, and receive the custom header if needed
+    (here the requests to the Github API).
+
+
+- 🔥🔥You can also intercept the response, which can be handy to handle errors in a generic way:
+
+        export const errorHandlerInterceptor: HttpInterceptorFn = (
+            req: HttpRequest<unknown>,
+            next: HttpHandlerFn
+        ): Observable<HttpEvent<unknown>> => {
+            const router = inject(Router);
+            const errorHandler = inject(ErrorHandler);
+            return next(req).pipe(
+                // we catch the error
+                tap({
+                    error: (errorResponse: HttpErrorResponse) => {
+                        // if the status is 401 Unauthorized
+                        if (errorResponse.status === HttpStatusCode.Unauthorized) {
+                            // we redirect to login
+                            router.navigateByUrl('/login');
+                        } else {
+                            // else we notify the user
+                            errorHandler.handle(errorResponse);
+                        }
+                    }
+                })
+            );
+        };
+    
+    🔥This is one of the cases where the inject() function needs to be used: ❌since the interceptor
+    is defined as a function, there is no constructor allowing to inject the dependencies, ✅but the
+    inject() function allows getting them.

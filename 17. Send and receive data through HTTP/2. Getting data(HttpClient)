@@ -1,0 +1,108 @@
+Getting data (HttpClient):
+
+
+- 🔥The @angular/common/http package offers a service called HttpClient that you can inject.
+        
+        @Injectable({
+            providedIn: 'root'
+        })
+        export class RaceService {
+            private readonly http = inject(HttpClient);
+            .
+            .
+        }
+    
+    💡🔥Before Angular v21, it was necessary to add the provider provideHttpClient() in the
+    configuration of the application. Since v21, the HttpClient is already provided. You only need
+    provideHttpClient() if you want to customize the configuration of the HTTP client, as we’ll see
+    later.
+
+
+- 🔥By default, the HttpClient service will do AJAX requests using XMLHttpRequest
+
+- 🔥It offers several methods, matching the most common HTTP verbs:
+    • get
+    • post
+    • put
+    • delete
+    • patch
+    • head
+    • jsonp
+
+- 🔥If you used the $http service in AngularJS 1.x, you might remember that it heavily relied on
+    Promises. In Angular, however, all these methods return an Observable object.
+    🔥🔥A few advantages come with the use of Observables for HttpClient like the ability to cancel
+    requests, to retry, to easily compose them, etc.
+
+- Let’s start by fetching the races available in PonyRacer. We’ll assume that a backend is already up
+    and running, providing a RESTful API. To fetch the races, we’ll send a GET request to a URL like
+    'http://backend.url/api/races'.
+
+- 🔥Usually, the base URL of your HTTP calls will be stored in a variable or a service, that you can
+    easily configure depending on your environment. Or, if the REST API is served by the same server
+    as the Angular application, you can simply use a relative URL: '/api/races'.
+
+- Using the HttpClient service, such a request is straightforward:
+        
+        http
+            .get<Array<RaceModel>>(`${baseUrl}/api/races`)
+    
+    🔥This returns an Observable, to which you can subscribe to receive the response.
+
+    🔥Note that you don’t need to deserialize the response body from a string to a JavaScript array
+    or object. That is done automatically by Angular. ⚠️⚠️However, Angular won’t make any check to
+    verify that the JSON in the response indeed conforms to the generic type you specified. It’s up
+    to you to make sure that you’re using the correct generic type, and that the RaceModel interface
+    indeed matches with the JSON that the server sends back.
+
+
+- 🔥The response body is the most interesting part, and it is directly emitted by the Observable:
+
+        http.get<Array<RaceModel>>(`${baseUrl}/api/races`).subscribe((response: Array
+        <RaceModel>) => {
+            console.log(response);
+            // logs the array of races
+        });
+
+
+- 🔥🔥The most typical use case is to have a service with methods that return an observable:
+
+        @Injectable({
+            providedIn: 'root'
+        })
+        export class RaceService {
+            private readonly http = inject(HttpClient);
+            list() {
+                return this.http.get<Array<RaceModel>>(`${baseUrl}/api/races`);
+            }
+
+    🔥🔥And then subscribe to this observable in a component using toSignal:
+        
+        protected readonly races = toSignal(inject(RaceService).list());
+
+
+- 🔥🔥Of course, you can also have access to the full HTTP response. The object returned is then an
+    HttpResponse object, with a few fields like the status code, headers, etc.
+
+        http
+            .get<Array<RaceModel>>(`${baseUrl}/api/races`, { observe: 'response' })
+            .subscribe((response: HttpResponse<Array<RaceModel>>) => {
+                console.log(response.status); // logs 200
+                console.log(response.headers.keys()); // logs []
+            });
+    
+    ⚠️⚠️The observable will throw an error if the response status is different from 2xx or 3xx, and
+    the error is then of type HttpErrorResponse.
+
+
+- 🔥🔥Sending data is fairly easy too. Just call the post() or put() method, with the URL and the
+    object to post:
+
+        http
+            .post<RaceModel>(`${baseUrl}/api/races`, newRace)
+    
+    🔥🔥Once again, no need to serialize the race object being sent to JSON. Angular does that for
+    you. The generic type RaceModel here is, just as with the get() method, the type of the response
+    body. So this example endpoint takes a RaceModel as input and returns the created RaceModel.
+
+
