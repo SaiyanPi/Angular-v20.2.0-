@@ -1,0 +1,114 @@
+Going further with Vitest browser mode:
+
+
+- 🔥Tests can be written and executed in two modes: the standard mode, which runs the tests in
+    Node.js, and the browser mode, which runs the tests in a browser. ⚠️Since component tests use
+    the DOM, you might think that we obviously need to use the browser mode. ⚠️That’s not actually
+    true, because we can use a Node.js implementation of the DOM (jsdom or happy-dom) in standard
+    mode.
+
+- ⚠️Using the standard mode has limitations though, because Node.js and jsdom/happy-dom are not the
+    actual environment where your code will run in production, and those DOM implementations don’t
+    support everything that a real browser DOM implementation supports. 🔥So my preference would
+    definitely go to using the browser mode.
+
+- And once you have opted for the browser mode, and for zoneless change detection, you’ll benefit
+    from two killer features of Vitest.
+
+___________________________________________________________________________________________________
+
+
+Retried assertions:
+
+- 🔥Retried assertions eliminate, most of the time, the need to call await fixture.whenStable().
+
+- Let’s say you want to check that the title of the page contains "Hello". If you write:
+        
+        expect(title).toHaveTextContent('Hello');
+    
+    that will just make that check, immediately, and only once.
+    🔥In order for that test to pass, you need to make sure that the asynchronous task that sets the
+    title is done, and that the framework has detected the changes and updated the DOM. That’s why
+    we litter the code with 
+        
+        await fixture.whenStable(). 
+
+    🔥🔥But Vitest allows doing the following:
+        
+        await expect.element(title).toHaveTextContent('Hello');
+
+    A small change, but with big implications! 🔥This time Vitest will execute the assertion, and
+    retry it, again and again (every N milliseconds), until it passes or until the test times out.
+    🔥So if you haven’t waited for the fixture to be stable, no problem: the assertion will fail
+    once, but on the second attempt, Angular will have stabilized and updated the DOM, and the test
+    will pass.
+
+________________________________________________________________________________________________________
+
+
+Locators, their interactivity and assertion API:
+
+- 🔥Instead of using the DOM API and interacting directly with DOM elements, in a Vitest browser
+    test, you use locators. A locator is an object which allows getting zero, one or several
+    elements on the page (or inside the element of another locator).
+
+- 🔥Every time you interact with the locator, it executes the query to find the element(s).
+    🔥🔥This means that you can use the same locator throughout the tests of a component without
+    worrying that it might be null, or stale, or not in the DOM anymore.
+
+- Vitest heavily promotes writing tests that work as if you were a user in front of the screen.
+    🔥🔥So instead of locating elements by their ID or element names, you locate them by their text,
+    role, label, etc.
+
+- 🔥🔥Locators, in addition to querying components, also offer an API to test the state of their
+    element(s) with rich (and extensible) assertions. And they also have an interaction API to
+    manipulate them as a user would: click, fill, select, etc.
+
+- All this combined allows writing really expressive and simple tests suites like the following:
+
+        class LoginTester {
+            readonly fixture = TestBed.createComponent(LoginPage);
+            readonly root = page.elementLocator(this.fixture.nativeElement);
+            readonly login = page.getByLabelText('Login');
+            readonly password = page.getByLabelText('Password');
+            readonly signIn = page.getByRole('button', { name: 'Sign in' });
+            readonly error = page.getByText('Wrong credentials, try again');
+        }
+        describe('LoginPage', () => {
+            let tester: LoginTester;
+
+            beforeEach(() => {
+                TestBed.configureTestingModule({
+                    providers: [provideRouter([])]
+                });
+                tester = new LoginTester();
+            });
+
+            it('should display an empty form and no error initially', async () => {
+                await expect.element(tester.login).toHaveDisplayValue('');
+                await expect.element(tester.password).toHaveDisplayValue('');
+                await expect.element(tester.error).not.toBeInTheDocument();
+            });
+
+            it('should validate', async () => {
+                await tester.signIn.click();
+                await expect.element(tester.root).toHaveTextContent('The login is required');
+                await expect.element(tester.root).toHaveTextContent('The password is required');
+            });
+
+            it('should display an error when login fails', async () => {
+                await tester.login.fill('john');
+                await tester.password.fill('wrong-password');
+                await tester.signIn.click();
+                await expect.element(tester.error).toBeVisible();
+            });
+
+            it('should navigate away when login succeeds', async () => {
+                const router = TestBed.inject(Router);
+                vi.spyOn(router, 'navigate').mockResolvedValue(true);
+                await tester.login.fill('john');
+                await tester.password.fill('correct-password');
+                await tester.signIn.click();
+                expect(router.navigate).toHaveBeenCalled();
+            });
+        });

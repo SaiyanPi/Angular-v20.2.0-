@@ -1,0 +1,75 @@
+Fake dependencies:
+
+
+- 🔥The TestBed class will help us to declare fake dependencies.
+
+- 🔥Even though Angular allows creating applications without defining Angular modules, its TestBed
+    utility is still designed around the concept of a testing module, that can be configured pretty much
+    the same way as an Angular module. 🔥Since we’re using standalone components, the main purpose
+    of that testing module will be to provide fake dependencies instead of the actual ones. 
+
+- 🔥🔥The TestBed.configureTestingModule method allows you to specify an array of providers, that will
+    supersede the actual dependencies injected in our component, pipe, directive or service under test.
+
+    For the sake of the example, let’s say that my RaceService uses the local storage to store the races,
+    with a key 'races'. Your colleagues have developed a service called LocalStorageService that deals
+    with the JSON serialization, etc. that our RaceService uses.
+
+        @Injectable({
+            providedIn: 'root'
+        })
+        export class RaceService {
+            private readonly localStorage = inject(LocalStorageService); 👈
+            list(): Array<RaceModel> {
+                return this.localStorage.get('races'); 👈
+            }
+        }
+    
+    Now, 💡we don’t really want to test the LocalStorageService service: we just want to test our
+    RaceService. 🔥That can easily be done by leveraging the dependency injection system to give a fake
+    LocalStorageService:
+
+        export class MockLocalStorage {
+            get(_key: string): Array<RaceModel> {
+                return [{ name: 'Lyon' }, { name: 'London' }];
+            }
+        }
+    
+    to RaceService in our test, using provide:
+
+        import { TestBed } from '@angular/core/testing';
+        describe('RaceService', () => {
+            beforeEach(() =>
+             👉 TestBed.configureTestingModule({
+                    providers: [{ provide: LocalStorageService, useClass: MockLocalStorage }]
+                })
+            );
+            it('should return 2 races from localStorage', () => {
+                const service = TestBed.inject(RaceService);
+                const races = service.list();
+                expect(races.length).toBe(2);
+            });
+        });
+
+    Great! But I’m not completely satisfied with this test. 🫩Creating a fake service by hand is tedious,
+    and 🔥🔥Vitest can help us spy on the service and replace its implementation with a fake one. It
+    also allows you to verify that the get() method has been called with the proper key 'races'.
+
+        import { TestBed } from '@angular/core/testing';
+        describe('RaceService', () => {
+            const localStorage = {
+                get: vi.fn().mockName('LocalStorageService.get') 👈
+            };
+            beforeEach(() =>
+                TestBed.configureTestingModule({
+                    providers: [{ provide: LocalStorageService, useValue: localStorage }]
+                })
+            );
+            it('should return 2 races from localStorage', () => {
+                localStorage.get.mockReturnValue([{ name: 'Lyon' }, { name: 'London' }]);
+                const service = TestBed.inject(RaceService);
+                const races = service.list();
+                expect(races.length).toBe(2);
+                expect(localStorage.get).toHaveBeenCalledWith('races'); 👈
+            });
+        });

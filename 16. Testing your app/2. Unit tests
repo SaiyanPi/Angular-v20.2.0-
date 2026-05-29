@@ -85,23 +85,141 @@ Jasmine and Karma:
 
 
 - 🔥🔥One last trick: Jasmine lets us create fake objects (mocks or spies, as you want), or even spy on
-    a method of a real object. 🔥🔥We can then do some assertions on these methods, like with
-    toHaveBeenCalled() that checks if the method has been called, or with 🔥🔥toHaveBeenCalledWith()
-    that checks the exact parameters of the call to the spied method. 🔥🔥You can also check how many
-    times the method has been called, or check if it has ever been called, etc.
+    a method of a real object.
+    🔥🔥We can then do some assertions on these methods, like with toHaveBeenCalled() that checks if
+    the method has been called,
+    or with 🔥🔥toHaveBeenCalledWith() that checks the exact parameters of the call to the spied method.
+    🔥🔥You can also check how many times the method has been called, or check if it has ever been
+    called, etc.
 
     For example, let’s say we have a Race class with a start() method, that calls run() on every pony
     in the race, and filters the ponies that did not started running (run() returns a boolean).
 
-    Race.ts
-    class Race {
-        constructor(private ponies: Array<Pony>) {}
-        start(): Array<Pony> {
-            return (
-                this.ponies
-                // start every pony
-                // and only keeps the ones that started running
-                .filter(pony => pony.run(10))
-            );
+        Race.ts:
+        class Race {
+            constructor(private ponies: Array<Pony>) {}
+            start(): Array<Pony> {
+                return (
+                    this.ponies
+                    // start every pony
+                    // and only keeps the ones that started running
+                    .filter(pony => pony.run(10))
+                );
+            }
         }
-    }
+
+    We want to test the start() method, and see if it properly calls run(). So we spy on the run()
+    method of all the ponies in the race:
+
+        Race.spec.ts:
+        describe('Race', () => {
+            let rainbowDash: Pony;
+            let pinkiePie: Pony;
+            let race: Race;
+            beforeEach(() => {
+                rainbowDash = new Pony('Rainbow Dash');
+                // first pony agrees to run
+                vi.spyOn(rainbowDash, 'run').mockReturnValue(true);
+
+                pinkiePie = new Pony('Pinkie Pie');
+                // second pony refuses to run
+                vi.spyOn(pinkiePie, 'run').mockReturnValue(false);
+
+                // create a race with these two ponies
+                race = new Race([rainbowDash, pinkiePie]);
+            });
+        });
+    
+    and test if the methods are called:
+
+        Race.spec.ts:
+        it('should make the ponies run when it starts', () => {
+            // start the race
+            const runningPonies: Array<Pony> = race.start();
+
+            // should have called `run()` on the ponies
+            expect(pinkiePie.run).toHaveBeenCalled();
+
+            // with a speed of 10
+            expect(rainbowDash.run).toHaveBeenCalledWith(10);
+
+            // as one pony refused to start, the result should be an array of one pony
+            expect(runningPonies).toEqual([rainbowDash]);
+        });
+
+
+- 🔥When you write unit tests, keep in mind that they should be small and readable. And don’t forget to
+    make them fail at first, to be sure you’re testing the right thing.
+
+
+- The next step is to run our tests. Vitest is also in charge of that. We can execute all the tests at
+    once or only execute some of them. And Vitest can also watch the files and re-execute the tests
+    that need to be re-executed after every save. As running the tests is really fast, it’s actually
+    really nice to do this and have (almost) instant feedback on your code.
+
+
+- So we now know how to write a unit test in TypeScript. Let’s add Angular to the mix.
+
+________________________________________________________________________________________________________
+
+
+Using dependency injection:
+
+
+- Let’s say I have an Angular application with a simple service like RaceService, containing a method
+    returning a hard-coded races list.
+
+        @Injectable({
+            providedIn: 'root'
+        })
+        export class RaceService {
+            list(): Array<RaceModel> {
+                const race1: RaceModel = { name: 'London' };
+                const race2: RaceModel = { name: 'Lyon' };
+                return [race1, race2];
+            }
+        }
+    
+    Let’s write a test for this.
+
+        describe('RaceService', () => {
+            it('should return races when list() is called', () => {
+                const raceService = new RaceService();
+                expect(raceService.list().length).toBe(2);
+            });
+        });
+
+    That works great.🔥But we can also rely on the dependency injection offered by Angular to grab
+    the RaceService and inject it in our test. 🔥🔥It’s especially useful if our RaceService has some
+    dependencies itself: instead of having to instantiate these dependencies ourselves, we could just
+    rely on the injector to do it for us by saying: "hey, we want the RaceService, go figure out what
+    you need to create it and give it to me".
+    🔥🔥To use the dependency injection system in our test, the framework has a utility method in
+    TestBed called inject. This method allows you to get a specific dependency from the injector inside
+    a test function.
+
+        import { TestBed } from '@angular/core/testing';
+        describe('RaceService', () => {
+            it('should return races when list() is called', () => {
+                const raceService = TestBed.inject(RaceService); 👈
+                expect(raceService.list().length).toBe(2);
+            });
+        });
+
+    That works, because the service is declared with providedIn: 'root', which make it available in the
+    test. It will be instantiated and injected lazily when needed in the test.
+
+
+- 🔥we can maybe move the RaceService initialization into a beforeEach method. We can also use
+    TestBed.inject in a beforeEach, so let’s do it:
+
+        import { TestBed } from '@angular/core/testing';
+        describe('RaceService', () => {
+            let service: RaceService;
+            beforeEach(() => (service = TestBed.inject(RaceService)));
+            it('should return races when list() is called', () => {
+                expect(service.list().length).toBe(2);
+            });
+        });
+
+    ✅now our test is pretty clean.

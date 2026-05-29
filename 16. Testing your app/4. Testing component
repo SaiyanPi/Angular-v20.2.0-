@@ -1,0 +1,210 @@
+Testing components:
+
+
+- The next step after testing a simple service is to test a component. 🔥A component test is slightly
+    different because we want to test not only the code inside the TypeScript class, but also the
+    template of the component.
+
+
+- Let’s start by writing a component to test. Why not our Pony component? It takes a pony as an input
+    and emits an event ponyClicked when the component is clicked.
+
+        @Component({
+            selector: 'ns-pony',
+            template: ` <img [src]="ponyImageUrl()" [alt]="ponyModel().name"
+            (click)="clickOnPony()" /> `
+        })
+        export class Pony {
+            readonly ponyModel = input.required<PonyModel>();
+            readonly running = input(false);
+            protected readonly ponyImageUrl = computed(
+                () => `/images/pony-${this.ponyModel().color.toLowerCase() + (this.running() ? '
+                -running' : '')}.png`
+            );
+            readonly ponyClicked = output<PonyModel>();
+            protected clickOnPony(): void {
+                this.ponyClicked.emit(this.ponyModel());
+            }
+        }
+
+    It comes with a fairly simple template: an image with a dynamic source depending on the pony
+    color, and a click handler.
+
+
+- To test such a component, 🔥🔥you first need to create an instance. As our component has inputs, it
+    is fairly common to create a wrapper component in the test, and to create an instance of this test
+    component (so we can easily pass inputs to test the outputs). 🔥To do this, we use the TestBed. This
+    class comes with a utility method, named createComponent, to create a component. 🔥The method
+    returns a ComponentFixture, a representation of our component.
+
+        import { TestBed } from '@angular/core/testing';
+        import { Component, signal } from '@angular/core';
+        import { Pony, PonyModel } from './pony';
+        @Component({
+            imports: [Pony],
+            template: `<ns-pony [ponyModel]="ponyModel()" (ponyClicked)="betOnPony($event)" />`
+        })
+        class PonyTest {
+            readonly ponyModel = signal<PonyModel>({ id: 1, name: 'Rainbow Dash', color: 'BLUE'});
+            readonly betPony = signal<PonyModel | undefined>(undefined);
+            betOnPony(event: PonyModel) {
+                this.betPony.set(event);
+            }
+        }
+        describe('Pony', () => {
+            beforeEach(() => {
+                TestBed.configureTestingModule({});
+            });
+
+            it('should have an image', async () => {
+                // given a pony component
+                const fixture = TestBed.createComponent(PonyTest);
+                await fixture.whenStable();
+
+                // when we get the image displayed
+                const element = fixture.nativeElement as HTMLElement;
+                const imageElement = element.querySelector('img')!;
+
+                // then we should have an image with the correct source attribute
+                // depending on the pony color
+                expect(imageElement.getAttribute('src')).toContain('/images/pony-blue.png');
+                expect(imageElement.getAttribute('alt')).toBe('Rainbow Dash');
+            });
+        });
+
+    🔥🔥Here, we follow the "Given/When/Then" pattern to write the unit test. You’ll find a whole
+    literature on the subject, but it boils down to:
+        👉a "Given" phase, where we set up the test context.🔥 We get the test component instance created
+        with a pony. It emulates an input that would come from a parent component in the real app. 🔥We
+        have configured the test to automatically detect changes using ComponentFixtureAutoDetect. 🔥In
+        the test, we can then wait for the DOM to synchronize when there is a change, using the
+        whenStable() method.
+
+        👉a "When" phase, where we get the image element.
+
+        👉and a "Then" phase, containing the expectations. We can get the native element and query the
+        DOM as you would do with the browser (using querySelector() for example). Here we test if the
+        image source is the correct one.
+    
+
+    🔥🔥We can also test if the component really emits an event:
+
+        it('should emit an event on click', async () => {
+            // given a pony component
+            const fixture = TestBed.createComponent(PonyTest);
+            await fixture.whenStable();
+
+            // when we click on the pony
+            const element = fixture.nativeElement as HTMLElement;
+            const image = element.querySelector('img')!;
+            image.dispatchEvent(new Event('click'));
+
+            // and we wait for the template to synchronize
+            await fixture.whenStable();
+
+            // then the event emitter should have fired an event
+            expect(fixture.componentInstance.betPony()).toBe(fixture.componentInstance.ponyModel());
+        });
+
+
+- 👁️Let’s have a look at another component:
+
+        @Component({
+            selector: 'ns-race',
+            template: `
+                <div>
+                    <h1>{{ raceModel().name }}</h1>
+                    @for (currentPony of raceModel().ponies; track currentPony.id) {
+                        <ns-pony [ponyModel]="currentPony" />
+                    }
+                </div>
+            `,
+            imports: [Pony]
+        })
+        export class Race {
+            protected readonly raceModel = input.required<RaceModel>();
+        }
+    
+    and its test:
+
+        @Component({
+            imports: [Race],
+            template: `<ns-race [raceModel]="raceModel()" />`
+        })
+        class RaceTest {
+            readonly raceModel = signal<RaceModel>({
+                name: 'Paris',
+                ponies: [{ id: 1, name: 'Rainbow Dash', color: 'BLUE' }]
+            });
+        }
+
+        describe('Race', () => {
+            beforeEach(() => {
+                TestBed.configureTestingModule({});
+            });
+
+            it('should have a name and a list of ponies', async () => {
+                const fixture = TestBed.createComponent(RaceTest);
+
+                // given a component instance with a race input initialized
+                fixture.componentInstance.raceModel.set({
+                    name: 'London',
+                    ponies: [{ id: 1, name: 'Rainbow Dash', color: 'BLUE' }]
+                });
+
+                // when we wait for the template to be synchronized
+                await fixture.whenStable();
+
+                // then we should have a title with the race name
+                const element = fixture.nativeElement as HTMLElement;
+                expect(element.querySelector('h1')!.textContent).toBe('London');
+
+                // and a list of ponies
+                const ponies = fixture.debugElement.queryAll(By.directive(Pony)); 🏷️
+                expect(ponies.length).toBe(1);
+                
+                // we can check if the pony is correctly initialized
+                const rainbowDash = ponies[0].componentInstance.ponyModel();
+                expect(rainbowDash.name).toBe('Rainbow Dash');
+            });
+        });
+
+
+    🏷️Here we query all the directives of type Pony and test if the first pony is correctly initialized.
+
+
+    🔥🔥You can get the components inside your component with children or query them with query() and
+    queryAll(). These methods take a predicate as argument that can be either By.css or By.directive.
+    That’s what we do to get the ponies displayed, as they are instances of Pony.
+    ⚠️Keep in mind that this is different from a DOM query using querySelector(): it will only find
+    the elements handled by Angular, and will return a ComponentFixture, not a DOM element (so you’ll
+    have access to the componentInstance of the result, for example in code above line 159 and 149).
+
+
+- 🔥🔥Since Angular v20.1, it is possible to directly bind inputs and outputs of a component when
+    creating it with TestBed.createComponent():
+
+        it('should emit an event on click', async () => {
+            const betPony = signal<PonyModel | undefined>(undefined);
+
+            // given a pony component
+            const fixture = TestBed.createComponent(Pony, {
+            bindings: [
+                // 👇 bind inputs/outputs
+                inputBinding('ponyModel', ponyModel),
+                outputBinding('ponyClicked', (event: PonyModel) => betPony.set(event))
+            ]
+            });
+            await fixture.whenStable();
+
+            // when we click on the pony
+            const element = fixture.nativeElement as HTMLElement;
+            const image = element.querySelector('img')!;
+            image.dispatchEvent(new Event('click'));
+
+            // and we wait for the template to synchronize
+            await fixture.whenStable();
+            
+            // then the event emitter should have fired an event
+            expect(betPony()).toBe(fixture.componentInstance.ponyModel());
+        });

@@ -1,0 +1,101 @@
+End-to-end tests (e2e):
+
+
+- End-to-end tests are the other type of tests we can run. 🔥An end-to-end test consists in really
+    launching your app in a browser and emulating a user interacting with it (clicking on buttons,
+    filling forms, etc.). They have the advantage of really testing the application as a whole, but:
+    👉 they are slower (several seconds per test)
+    👉 it can be hard to test the edge cases.
+
+- 🔥As you may guess, you don’t have to choose between unit tests and e2e tests: you will combine both
+    to have great coverage, and some guarantees that your complete application runs as intended.
+
+- ⚠️Angular CLI doesn’t have a default solution for E2E tests. 💡After all, these tests don’t even
+    need to know that the application is built with Angular, so you can choose the tool you want.
+    🔥Some tools can be integrated inside the CLI though, so that you can run ng e2e to serve the app
+    and then run the end-to-end tests.
+    The most popular tools are probably Cypress and Playwright. Nowadays, our preference goes to
+    Playwright, which is free, well maintained by Microsoft, and can run tests in parallel on the three
+    major browsers (Chrome, Firefox and Safari).
+
+_______________________________________________________________________________________________________
+
+Playwright:
+
+- Playwright is full of really nice features:
+    • easy to set up
+    • easy to mock HTTP responses
+    • easy to test different viewports (awesome️ for responsive applications)
+    • nice API
+    • UI mode or headless mode
+    • downloads and tests on the 3 major browsers
+    • tests run in parallel and in isolation
+    • automatic retries
+
+- 🔥🔥The time-travel debugging is the feature that won my heart: Playwright takes a snapshot at
+    each step of your tests, so you can debug very easily. Just by hovering the step of the failing
+    test in the Playwright UI, you see exactly the state of the application and can play with it.
+
+- 🔥🔥Playwright tests provide a page object, with a few utility methods like goto(), to navigate
+    to a URL.
+    🔥🔥Then you have locator() to select elements using various strategies: by CSS selector, by
+    text contained in the element, by associated label, by role, etc.
+    🔥🔥Once you have a locator for an element, you can interact with it: click(), check(), fill(),
+    etc.
+    🔥🔥And of course you can also perform assertions: toBeVisible(), toBeEnabled(), toContainText(),
+    etc
+
+
+- Here is what a test for a login page could look like:
+
+        test('should display an alert if login fails', async ({ page }) => {
+            // mock the http response to the login request (optional)
+            await page.route('**/api/users/authentication', async route => {
+                await route.fulfill({
+                    status: 401
+                });
+            });
+
+            // navigate to the login page
+            await page.goto('/login');
+
+            // get the login input, the password input and the submit button
+            const loginInput = page.locator('input').first();
+            const passwordInput = page.locator('input[type=password]');
+            const submitButton = page.locator('form > button');
+
+            // fill in the form
+            await loginInput.fill('ced');
+            await passwordInput.fill('pa');
+
+            // submit the form and await the response
+            const response = page.waitForResponse('**/api/users/authentication');
+            await submitButton.click();
+            await response;
+
+            // test the URL of the page and the presence of an alert message
+            await expect(page).toHaveURL('/login');
+            await expect(page.locator('.alert-danger')).toContainText('Nope, try again');
+        });
+    
+    These tests can be quite long to write, but they are really useful, and cover a lot of things at
+    once.
+
+
+- 🔥🔥They can also be great for things that aren’t easily doable in unit tests, like taking a
+    screenshot of a chart or map and comparing it with a reference image, pixel by pixel:
+
+        test('should display the history of the user score in a chart ', async ({ page }) => {
+            // navigate to the score page
+            await page.goto('/score-history');
+
+            // take a screenshot of the canvas and compare it with a reference screenshot
+            await expect(page.locator('canvas')).toHaveScreenshot('user-score.png', {
+            maxDiffPixelRatio: 0.005 });
+        });
+
+
+- You can also use the Axe plugin(https://playwright.dev/docs/accessibility-testing) to perform all
+    kinds of automated accessibility tests on the page you’re visiting, such as checking that the
+    contrast is sufficient, or that all form elements have a proper label, etc.
+    With unit tests and e2e tests, you have the keys to build a robust and maintainable application!

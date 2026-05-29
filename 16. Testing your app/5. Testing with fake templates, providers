@@ -1,0 +1,84 @@
+Testing with fake templates, providers…
+
+
+- 🔥When testing a component, we sometimes want to create a test host component that uses it. That
+    allows testing that the properties and outputs bindings work well.
+
+    Let’s take our pony component for example. 🔥🔥In order to test that we can provide a running
+    input, or that we can omit it to use its default value, we should test it with a parent
+    component passing the running input, and also test it with a parent component not passing it.
+    
+    🔥🔥Fortunately, the TestBed allows overriding the template of the test host component (or any
+    other component, by the way):
+
+        import { Component, signal } from '@angular/core';
+        import { ComponentFixture, TestBed } from '@angular/core/testing';
+        import { Pony, PonyModel } from './pony';
+
+        @Component({
+            selector: 'ns-test-host',
+            template: '',
+            imports: []
+        })
+
+        class TestHost {
+            protected readonly pony = signal<PonyModel>({
+                id: 1,
+                name: 'Rainbow Dash',
+                color: 'BLUE'
+            });
+        }
+        describe('Pony', () => {
+            let fixture: ComponentFixture<TestHost>;
+            beforeEach(() => {
+                TestBed.configureTestingModule({});
+            });
+
+            it('should display a non-running pony by default', async () => {
+                // 👇given a test host component where the running input is not passed
+                TestBed.overrideTemplate(TestHost, '<ns-pony [ponyModel]="pony()" />');
+                TestBed.overrideComponent(TestHost, {
+                    add: {
+                        imports: [Pony]
+                    }
+                });
+                fixture = TestBed.createComponent(TestHost);
+
+                // when we trigger the change detection
+                await fixture.whenStable();
+
+                // then we should have a not running pony
+                const element = fixture.nativeElement as HTMLElement;
+                expect(element.querySelector('img')!.src).toContain('/images/pony-blue.png');
+            });
+
+            it('should display a running pony if the running input is set to true', async () =>
+            {
+                // 👇given a test host component where the running input is passed
+                TestBed.overrideTemplate(TestHost, '<ns-pony [ponyModel]="pony()" [running]="true"
+                />');
+                TestBed.overrideComponent(TestHost, {
+                    add: {
+                        imports: [Pony]
+                    }
+                });
+                fixture = TestBed.createComponent(TestHost);
+
+                // when we trigger the change detection
+                await fixture.whenStable();
+
+                // then we should have a running pony
+                const element = fixture.nativeElement as HTMLElement;
+                expect(element.querySelector('img')!.src).toContain('/images/pony-bluerunning.png');
+            });
+        });
+
+
+- We can go further than that. 🔥It’s also possible to call TestBed.overrideComponent() to set, add,
+    or remove any property of the decorator of a component (template, providers, imports, etc.).
+    That is sometimes useful, for example to test a parent component with a stub child component
+    instead of an actual child component, in order to make the test simpler. We could for example
+    replace the Pony in the imports of Race by a PonyStub which has the same selector, inputs and
+    outputs, but which does nothing.
+
+- Now you’re ready to test your app!
