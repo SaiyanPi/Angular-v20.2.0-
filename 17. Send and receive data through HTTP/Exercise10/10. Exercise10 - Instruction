@@ -1,0 +1,20 @@
+-------------------------------------- HTTP ----------------------------------------------------------
+
+- FETCH DATA OVER HTTP FROM THE PONYRACER REST API.
+
+- Instruction: Angular Prerequisite "Http" chapter
+
+1️⃣ Now let’s try to get real data from a web server.
+    To do that, we will use a REST API that we have created and that is available at
+    https://ponyracer.ninja-squad.com. The documentation of this API is available here
+    (https://ponyracer.ninja-squad.com/apidoc).
+    Use the HttpClient service in RaceService to get the list of pending races. 
+
+
+2️⃣ The resource that we’re interested in right now is the one that allows getting the list of
+    pending races.
+    Hint: the get method accept options as a second parameter. You can use these options to add
+    query parameters to the URL with { params: { status: 'PENDING' } }.
+
+
+3️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK. 

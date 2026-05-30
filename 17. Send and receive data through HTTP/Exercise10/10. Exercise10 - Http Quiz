@@ -1,0 +1,77 @@
+---------------------------------------- HTTP quiz ----------------------------------------------------
+
+
+1️⃣ What methods does the HttpClient offer?
+
+        get     ✅
+
+        post    ✅
+
+        put     ✅
+
+        delete  ✅
+
+        connect
+
+        head    ✅
+
+        trace
+
+        patch   ✅
+
+
+
+2️⃣ What does this.http.get<Array<RaceModel>>('/api/races') return?
+
+        Array<RaceModel>
+
+        Observable<Array<RaceModel>>    ✅
+
+        HttpResponse<Array<RaceModel>>
+
+
+
+3️⃣ What options can you pass to HTTP methods?
+
+        headers ✅
+
+        params  ✅
+
+        timeout ✅
+
+
+
+4️⃣ An interceptor can handle requests and responses
+
+        true    ✅
+
+        false
+
+
+
+5️⃣ You need to register an interceptor with
+
+        provideHttpClient(myInterceptor)
+
+        provideHttpClient([myInterceptor])
+
+        provideHttpClient(withInterceptors([myInterceptor]))    ✅
+
+
+
+6️⃣ You need a backend to test Angular code that sends HTTP request
+
+        true
+
+        false   ✅
+
+
+
+7️⃣ What method of HttpTestingController can you use to check that no other requests were sent during
+    the test?
+
+        verify()
+
+        check()
+
+        checkNoOtherRequests()  ✅

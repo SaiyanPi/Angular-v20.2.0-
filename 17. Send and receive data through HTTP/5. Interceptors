@@ -23,7 +23,8 @@ Interceptors:
 
         ⚠️⚠️Note that you have to clone the request to update it (requests are immutable).
     
-    🔥Then configure the HTTP client provider so that it uses the interceptor with provideHttpClient():
+    🔥🔥Then configure the HTTP client provider so that it uses the interceptor with provideHttpClient()
+    in other words register the interceptor:
 
         providers: [
             provideHttpClient(withInterceptors([githubAPIInterceptor])),
