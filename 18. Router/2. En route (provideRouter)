@@ -1,0 +1,91 @@
+En route (provideRouter):
+
+
+- Let’s start using the router. 🔥It is an optional module, that is thus not included in the core
+framework.
+
+- 🔥Similarly to the HTTP client, you have to provide the router in your application if you want to
+    use it. But for that, we need a configuration to define the mapping between URLs and components.
+    We can do this with a dedicated file, generally named like app.routes.ts, and containing an
+    array representing the configuration:
+
+        import { Routes } from '@angular/router';
+        import { Home } from './home/home';
+        import { Races } from './races/races';
+      🏷️export const routes: Routes = [
+            { path: '', component: Home },
+            { path: 'races', component: Races }
+        ];
+
+    🔥Then we need to provide the router in our application, initialized with the proper
+    configuration:
+
+        import { bootstrapApplication } from '@angular/platform-browser';
+        import { provideRouter } from '@angular/router';
+        import { routes } from './app.routes';
+        bootstrapApplication(App, {
+            providers: [provideRouter(routes)]
+        }).catch(err => console.error(err));
+    
+    🔥🔥 Registering router configuration inside the rpoviders array of bootstrapApplication in main.ts
+    file works but it is messy and not scalable. ✅So the better place for registering is inside the
+    providers array of app.config.ts file. 
+
+        import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+        import { provideRouter } from '@angular/router';
+        import { routes } from './app.routes';
+
+        export const appConfig: ApplicationConfig = {
+            providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes)]
+        };
+
+    🏷️As you can see, the Routes is an array of objects, each one being a… route. A route
+    configuration is usually a pair of properties:
+    • path: what URL will trigger the navigation
+    • component: which component will be initialized and inserted
+
+
+- ⁉️You may be wondering where the component will be inserted in the page, and that’s a good
+    question. 🔥🔥For a component to be included in our app, like the Races in the example above,
+    we must use a special tag in the template of the primary component: <router-outlet>
+
+         _______________________________________________________________
+        |   App                                                         |
+        |                                                               |
+        |     ______________________________________________            |
+        |    |                                              |           |
+        |    |  Header                                      |           |
+        |    |______________________________________________|           |
+        |                                                               |
+        |     ______________________________________________            |
+        |    |                                              |           |
+        |    |  RouterOutlet                                |           |
+        |    |  -> where our component goes                 |           |
+        |    |______________________________________________|           |
+        |                                                               |
+        |     ______________________________________________            |
+        |    |                                              |           |
+        |    |  Footer                                      |           |                    
+        |    |______________________________________________|           |
+        |                                                               |
+        |_______________________________________________________________|
+
+    This is, of course, an Angular directive, whose only job is to act as a placeholder for the
+    template of the component of the current route. Our app template would look like:
+
+        <header>
+            <nav>...</nav>
+        </header>
+        <main>
+            <router-outlet />
+            <!-- the component's template will be inserted here-->
+        </main>
+        <footer>made with &lt;3 by Ninja Squad</footer>
+    
+    🔥🔥When we navigate, everything will stay (the header, main and footer here) and the
+    component matching the current route will be inserted just after the RouterOutlet directive.
+
+
+- ⚠️All the directives of the router module, including RouterOutlet, are standalone directives.
+    In order to be able to use them in the template, the component must have them in the imports of
+    its decorator.

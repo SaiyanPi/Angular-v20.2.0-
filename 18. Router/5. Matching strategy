@@ -1,0 +1,46 @@
+Matching strategy:
+
+
+- In the previous example illustrating a redirect, I applied a strategy for matching the route: 'full'.
+    🔥🔥The default strategy is 'prefix', which matches a route with a URL when the URL starts with the
+    path of the route. ⚠️⚠️If we used this default strategy here, all URLs would redirect to /breaking,
+    since all URLs start with an empty string.
+
+    (💡Explanation)
+    pathMatch: 'prefix' (default)
+    prefix means: “Match if the URL STARTS WITH this path.”
+
+    So with: { path: '', redirectTo: '/breaking' }
+
+    Angular interprets it like:
+
+        Does '/users' start with '' ?
+        YES
+
+        Does '/breaking' start with '' ?
+        YES
+
+        Does '/admin/settings' start with '' ?
+        YES
+
+    Because every string starts with "". So Angular would redirect EVERYTHING to /breaking.
+    That creates a disaster.
+
+
+
+- 🔥⚠️The matching strategy consists in finding the first route that matches the complete URL. So, for
+    example, if you define routes like
+
+        { path: 'races/:id', component: Race },
+        { path: 'races/new', component: RaceCreation }
+    
+    and the ⚠️⚠️URL is races/new, the component that the router will activate is in fact the Race.
+    🔥🔥Because Angular route parameters are wildcards for a single path segment. Route races/new does
+    not mean: “match only numeric IDs”. It means: “match any URL that starts with races/ followed by one
+    segment”
+    ⚠️⚠️Indeed, races/:id matches with races/new and comes first in the list of routes. ✅To solve
+    this problem, change the order of the routes:
+        
+        { path: 'races/new', component: RaceCreation },
+        { path: 'races/:id', component: Race }
+    

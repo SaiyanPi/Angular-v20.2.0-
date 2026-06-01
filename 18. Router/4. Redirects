@@ -1,0 +1,13 @@
+Redirects:
+
+
+- 🔥A common use-case is to have a URL simply redirect to another URL in the application. This can
+    happen because you want, for example, the root URL of your news app to redirect to the /breaking
+    news category, or an old URL to redirect to a new one after a refactoring. This is possible using
+        
+        { path: '', pathMatch: 'full', redirectTo: '/breaking' },
+
+    👉 This means “If the URL is exactly empty (/), redirect to /breaking.”
+    👉 full means: “The ENTIRE URL must exactly match this path.”
+
+

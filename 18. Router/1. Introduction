@@ -1,0 +1,14 @@
+Router:
+
+
+- It is fairly common to want to map a URL to a state of the application. That makes sense: you want
+    your user to be able to bookmark a page and come back, and it provides a better experience
+    overall.
+
+- The piece in charge of doing this job is called a router, and every framework has its own (or
+    several ones).
+
+- 🔥The router in Angular has a simple goal: the creation of meaningful URLs reflecting the state of
+    our app, and each URL knowing what component should be initialized and inserted in the page.
+   🔥🔥 It will execute all this without refreshing the page and without triggering a new request to
+    our backend server: this is the whole point of having a Single Page Application.

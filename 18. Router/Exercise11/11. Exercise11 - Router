@@ -1,0 +1,59 @@
+------------------------------------------------ Router ------------------------------------------------
+
+- HAVE NICE URLS THAT MIRROR THE CONTENT DISPLAYED USING THE ROUTER.
+
+- Instruction: Angular Prerequisite "Router" chapter
+
+1️⃣ Until now, we have added our components directly inside the main component. Now, we would like to
+    create a new page in the application. We want to view the Races at the URL /races, and we want the
+    home page to display another component Home.
+    Modify the template app.html so that it only contains the menu and the routerOutlet:
+
+        <pr-menu />
+        <main class="container" style="margin-top: 70px">
+            <router-outlet />
+        </main>
+
+
+2️⃣ First, we need to build the router configuration. Create a file app.routes.ts inside src/app. It
+    will contain a constant of type Routes, named routes, representing an array of routes. Export that
+    constant. Add a route in that array that maps the URL /races to the component Races.
+
+
+3️⃣ We then just have to use this constant inside the app.config.ts file: add provideRouter(routes) to
+    the providers and all the configuration is done.
+
+        export const appConfig: ApplicationConfig = {
+            providers: [provideBrowserGlobalErrorListeners(), provideRouter(routes)]
+        };
+
+
+4️⃣ By the way, we should create a component for the home page of the application. This component would
+    display the title, and the link to navigate to the races.
+    Let’s do that! Create a component Home  with Angular CLI.
+    For the template, use:
+
+    home.html:
+        <div class="text-center" style="margin-top: 100px">
+            <h1>Ponyracer <small>Always a pleasure to bet on ponies</small></h1>
+        </div>
+
+        <div class="text-center">
+            <!-- insert the link with the routerLink here -->
+        </div>
+    
+    and complete it with a link <a class="btn btn-primary" routerLink="??">Races</a>, allowing to
+    navigate to Races, using routerLink to generate the link (don’t forget to add RouterLink to the
+    imports of the component).
+
+
+5️⃣ Finally, configure the routes in app.routes.ts to add a route mapping the URL '/' to the component
+    Home.
+
+
+6️⃣ We also would like our menu to be more functional.
+    Thanks to routerLink, make sure that a click on Ponyracer goes to the home page, and that a click on
+    Races goes to the list of races. You can also remove the field title from app.ts which is not used.
+
+
+7️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.

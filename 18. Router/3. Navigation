@@ -1,0 +1,141 @@
+Navigation:
+
+
+- ⁉️How can we navigate between the different components? 
+    🤔Well, you can manually type the URL and reload the page, but that’s not very convenient.
+    🙅And we don’t want to use "classic" links, with <a href="…"></a>. Indeed, clicking on that
+    link makes the browser load the page at that URL, and restart the whole Angular application.
+    But the goal of Angular is to avoid such page reloads: we want to create a Single Page Application.
+    Of course, there is a built-in solution.
+
+- 🔥In a template, you can insert a link with the directive RouterLink pointing to the path you
+    want to go to. The RouterLink directive can receive a constant representing the path you want
+    to go to or an array of strings, representing the path and its params.
+    For example in our Races template, if we want to navigate to the Home, we can imagine something
+    like:
+        <a routerLink="/">Home</a>
+        <!-- same as -->
+        <a [routerLink]="['/']">Home</a>
+
+    🔥🔥At runtime, the link href will be computed by the router and will point to /.
+
+    ⚠️⚠️The leading slash in the path is necessary. If not included, RouterLink builds the URL
+    relatively to the current path (which can be useful with nested components, as we’ll see later).
+    Adding a slash indicates that the URL must be computed from the application base URL.
+
+
+- 🔥🔥The RouterLink directive can be used with the RouterLinkActive directive which can set a CSS
+    class automatically if the link points to the current route. This allows you, for example, to
+    style a menu item as selected when it points to the current page.
+
+        <a routerLink="/" routerLinkActive="selected-menu">Home</a>
+    
+    (💡explanation)
+        If the current URL is /, Angular automatically adds the class:
+            
+            class="selected-menu"
+        
+        Then your CSS can style it like:
+
+            .selected-menu {
+                font-weight: bold;
+                color: red;
+            }
+    
+    🔥🔥We can even put a reference on this directive, to know if the route is active, and use it in
+    the template:
+        
+        <a routerLink="/" routerLinkActive #route="routerLinkActive">Home {{ route.isActive ?
+        '(here)' : '' }}</a>
+
+    (💡explanation)
+        creates a local template variable named route. It is referencing the RouterLinkActive directive
+        instance attached to that element.
+        Then in the template: {{ route.isActive ? '(here)' : '' }}, you are reading a property from the
+        directive. Active is a boolean exposed by the RouterLinkActive directive.
+
+
+- 🔥It’s also possible to navigate from the code, by using the Router service and its method
+    navigate(). 🔥🔥It’s often handy when you want to redirect your user after an action:
+        
+        export class Races {
+            private readonly router = inject(Router);
+            protected saveAndMoveBackToHome(): void {
+                // ... save logic ...
+                this.router.navigate(['']);
+            }
+        }
+    
+    The method takes an array of parameters, with the path you want to navigate to as the first element.
+
+
+- 🔥🔥It is also possible to have parameters in the URL, and it’s really useful to define dynamic URLs.
+    For example, we want to display a detail page for a pony, with a meaningful URL for this page, like
+    races/id-of-the-race/ponies/id-of-the-pony.
+    To do so, let’s define a route in the configuration with one (or several) dynamic parameters.
+
+        export const routes: Routes = [
+            { path: '', component: Home },
+            { path: 'races', component: Races },
+            { path: 'races/:raceId/ponies/:ponyId', component: Pony } 👈
+        ];
+    
+    We can then define dynamic links with routerLink:
+        
+        <a [routerLink]="['/races', raceModel().id, 'ponies', ponyModel().id]">See pony</a>
+    
+    Of course, the target component needs to access those parameters to be able to load and display the
+    pony with the given identifier. 🔥🔥To get the value of the parameters, the router provides a
+    service, that you can of course inject in the component, named ActivatedRoute. 🔥🔥This object has
+    a handy property: snapshot. This property has all the parameters of the URL in paramMap!
+
+        export class Pony {
+            protected readonly ponyModel: Signal<PonyModel | undefined>;
+            constructor() {
+                const route = inject(ActivatedRoute);   👈
+                const id = route.snapshot.paramMap.get('ponyId')!;  👈
+                const ponyService = inject(PonyService);
+                this.ponyModel = toSignal(ponyService.get(id));
+            }
+        }
+    
+    As you may have spotted, we are using snapshot. 🔥🔥Is there a non snapshot version? Yes there is.
+    And it provides a way to subscribe to parameter changes, with, you guessed it, an observable. This
+    observable is called paramMap.
+
+    🔥⚠️This is very important: the router will reuse your component if it can! Let’s say our app has
+    a "Next" button to see the next pony. The URL will change from /ponies/1 to /ponies/2 for example
+    when the user clicks. The router will then reuse our component instance: that means neither the
+    constructor, nor ngOnInit will be called again! If you want your component to update for this kind
+    of navigation, you have no other way than using the paramMap observable!
+
+        export class PonyReusable {
+            protected readonly ponyModel: Signal<PonyModel | undefined>;
+
+            constructor() {
+                const route = inject(ActivatedRoute);
+                const ponyService = inject(PonyService);
+            👉 this.ponyModel = toSignal(
+                    route.paramMap.pipe(
+                    map((params: ParamMap) => params.get('ponyId')!),
+                        switchMap(id => ponyService.get(id))
+                    )
+                );
+            }
+        }
+    
+    ✅Here we subscribe to the observable offered by ActivatedRoute. Now, every time the URL changes
+    from /ponies/1 to /ponies/2 for example, the paramMap observable will emit an event, and we’ll fetch
+    the correct pony to display on screen.
+
+
+- What you have just learnt should cover your basic routing needs. But the router goes well beyond
+    this and offers many additional features. Covering them all in detail is quite a big task, and you
+    can feel overwhelmed when trying to learn them all.
+
+- This section will try to present most of the additional features as concisely as possible, by
+    explaining what they’re useful for.
+
+
+🔥Try exercise11 Router to learn how to configure the router, navigate between components, and test
+all this.
