@@ -27,7 +27,7 @@ Modules:
         bet(race, pony1);
         start(race);
 
-- That’s what is called a named export. Here we are importing the two functions, and we have to
+- 🔥That’s what is called a named export. Here we are importing the two functions, and we have to
     specify the filename containing these functions - here 'races-service'. Of course, you can import
     only one method if you need, and you can even give it an alias:
         
@@ -35,7 +35,7 @@ Modules:
         // later
         startRace(race);
 
-- And if you want to use all the exported symbols (functions, constants, classes etc.) from the module,
+- 🔥And if you want to use all the exported symbols (functions, constants, classes etc.) from the module,
     you can use a wildcard '*'.
 
         import * as racesService from './races-service';
@@ -43,11 +43,12 @@ Modules:
         racesService.bet(race, pony1);
         racesService.start(race);
 
-- If your module exposes only one function or value or class, you don’t have to use named export,
+- 🔥If your module exposes only one function or value or class, you don’t have to use named export,
     and you can leverage the default keyword. It works great for classes for example:
         
         // pony.js
         export default class Pony {}
+        
         // races-service.js
         import Pony from './pony';
 

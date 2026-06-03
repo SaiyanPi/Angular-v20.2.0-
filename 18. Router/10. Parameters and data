@@ -1,0 +1,114 @@
+Parameters and data:
+
+
+1️⃣ Matrix paramaters:
+
+- We’ve seen before that routes can have parameters. For example, the route races/:raceId has one
+    parameter named raceId, and the value of this parameter, when navigating to /races/42 is the
+    string '42'. 🔥But this route can actually have additional parameters named matrix parameters.
+
+- 💡Matrix parameters are not an Angular-specific feature. Although rarely used and thus lesser-known
+    than query parameters, they’re a standard part of URIs, which are supported by many server-side
+    frameworks, too
+
+
+
+- If you navigate to the URL: 
+        
+        /races/42;foo=bar;baz=wiz
+
+    🔥🔥then the params and paramMap properties of the activated route will contain two additional
+    parameters 'foo' and 'baz' having the values 'bar' and 'wiz'.
+
+
+
+- 🔥🔥Those matrix parameters are specific to the route. So, for example, if the URL is
+
+        /races/42;foo=bar;baz=wiz/ponies
+    
+    then the component associated with the ponies segment won’t have foo nor baz in the parameters of
+    its activated route. Only the component associated with the races/42 segment will.
+    🧠🧠Meaning you can access those parameters only inside the component associated with the route
+    segment i.e, Race component in this case but cannot access inside Ponies component.
+    
+    ✅ Inside race component:
+
+        this.route.params.subscribe(params => {
+            console.log(params);
+        });
+
+        o/p:    {
+                    raceId: '42',
+                    foo: 'bar',
+                    baz: 'wiz'
+                }
+    
+    ❌ Inside ponies component:
+
+        this.route.params.subscribe(params => {
+            console.log(params);
+        });
+
+        o/p:    { }
+
+
+    🔥🔥To navigate to such a URL, you would use the following code:
+        
+        router.navigate(['/races', 42, { foo: 'bar', baz: 'wiz' }, 'ponies']);
+
+    or an equivalent router link:
+        
+        <a [routerLink]="['/races', 42, { foo: 'bar', baz: 'wiz' }, 'ponies']">Link</a>
+
+
+
+
+2️⃣ Query parameters:
+
+- 🔥🔥Query parameters, on the other hand, are shared by all the route segments. They look like this
+    in the URL:
+        
+        /races/42/ponies?foo=bar&baz=wiz
+
+    🧠🧠These query parameters are accessible from any route, using the queryParams or queryParamMap
+    property.
+
+    ✅ Inside race component:
+
+        this.route.queryParamMap.subscribe(params => {
+            console.log(params.get('foo')); // bar
+            console.log(params.get('baz')); // wiz
+        });
+    
+    ✅ Inside ponies component:
+
+        this.route.queryParamMap.subscribe(params => {
+            console.log(params.get('foo')); // bar
+            console.log(params.get('baz')); // wiz
+        });
+
+
+
+    🔥🔥To navigate to such a URL, you would use the following code
+        
+        router.navigate(['/races', 42, 'ponies'], { queryParams: { foo: 'bar', baz: 'wiz' }
+        });
+
+    or the equivalent router link:
+        
+        <a [routerLink]="['/races', 42, 'ponies']" [queryParams]="{ foo: 'bar', baz: 'wiz' }" >Link</a>
+
+----------------------------------------------------------------------------------------------------------
+
+Finally,🔥we’ve seen that resolvers allowed adding properties to the data property of the activated
+route, before the route is activated(section 8 Resolvers). 🔥It’s also possible to add additional data
+to a route directly from its configuration. This can be useful when the same component can be used in
+two different contexts for example:
+
+        {
+            path: 'races',
+            component: Races,
+            data: {
+                allowDeletion: false
+            }
+        }

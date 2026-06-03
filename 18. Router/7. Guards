@@ -1,0 +1,87 @@
+Guards:
+
+
+- Some routes of the application should not be accessible to all users, depending on their
+    permissions. Of course, you should hide or disable links pointing to these routes if the user may
+    not access them. ⚠️You should also make sure that the backend doesn’t allow accessing or modifying
+    resources that the user isn’t authorized to access or modify. ⚠️⚠️But that still won’t prevent users
+    from accessing routes that they’re not allowed to access, who can simply enter their URL in the
+    address bar.
+    That’s where guards come into play. There are 4 kinds of guards:
+
+    1️⃣canActivate: 
+        🔥when set on a route, the guard can disable the activation of this route. 🔥Note that the
+        guard can also return a URL to navigate elsewhere (to be more accurate, it can return an Angular
+        type called UrlTree - keep reading for an example). 💡This can be useful for showing an error
+        page, or to navigate to the login page when an unauthenticated user tries accessing a route
+        that requires authentication;
+
+    2️⃣canActivateChild:
+        🔥when set on a route, the guard can disable the activation of children of that route. 💡This
+        can be useful to disable access to many child routes at once, based on their URL;
+
+    3️⃣canDeactivate:
+        this guard is different from the three other ones. 🔥It’s used to prevent navigation from
+        outside of the currently activated route. 💡This can be useful for asking for confirmation
+        before leaving a route containing a large form, for example
+    
+    4️⃣canMatch: 
+        introduced in Angular v14.1, 🔥this guard indicates to the router if the route can be matched or
+        not. 🔥If the guards returns false, then the route is simply ignored, and the router looks for
+        another to match. 💡A typical usage of CanMatch is to have several routes matching the same
+        path with different components, and use CanMatch to let the router know which one should be
+        displayed based on the user profile for example.
+
+
+- 🔥🔥Here’s how you would add a CanActivate guard on a route. The three other guards are added in a
+    similar way:
+
+        { path: 'races', component: Races, canActivate: [loggedInGuard] }
+    
+    🔥🔥In the above example, loggedInGuard is a function.
+    👁️In earlier versions of Angular (before v15.2), guards were defined as services, but this is now
+    deprecated.
+
+    🔥🔥The function consists of deciding whether the route can be activated or not (by checking if the
+    user is logged in or not), and in returning a boolean, a Promise<boolean|UrlTree>, an
+    Observable<boolean|UrlTree> or a UrlTree.
+
+    🔥🔥The router will navigate to the route if the returned value is true, or if the returned
+    promise is resolved as true, or if the returned observable emits true. If the returned value is a
+    UrlTree, it cancels the current navigation and triggers a navigation to the returned UrlTree.
+
+    🔥🔥Here’s what the loggedInGuard function might look like:
+        
+        export const loggedInGuard: CanActivateFn = (
+            _route: ActivatedRouteSnapshot,
+            _state: RouterStateSnapshot
+        ): boolean | UrlTree => {
+            const userService = inject(UserService);
+            const router = inject(Router);
+
+            // returns `true` if the user is logged in or redirects to the login page
+            // note that you can also use `router.createUrlTree()` to build a `UrlTree` with parameters
+            
+            return userService.isLoggedIn() || router.parseUrl('/login');
+        };
+
+
+- 🔥🔥Hierarchical routes combined with empty-path routes can be very handy when you want to apply
+    a guard on several routes at once. For example, if you want both the races and the ponies routes
+    to be accessible only to logged in users, instead of
+        
+        { path: 'ponies/:ponyId', component: Pony, canActivate: [loggedInGuard] },
+        { path: 'races', component: Races, canActivate: [loggedInGuard] }
+    
+    🔥🔥you can introduce an empty-path, 🔥🔥🔥componentless route as a parent. 🔥🔥🔥This route
+    won’t consume any URL segment, 🔥🔥🔥and won’t activate any component, but its guards will be
+    called when navigating to any of its children:
+
+        {
+            path: '',
+            canActivate: [loggedInGuard],
+            children: [
+                { path: 'ponies/:ponyId', component: Pony },
+                { path: 'races', component: Races }
+            ]
+        }

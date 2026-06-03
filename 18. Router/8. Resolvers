@@ -1,0 +1,105 @@
+Resolvers:
+
+
+- 🔥In a good old multi-page application where the pages are generated server-side, when clicking on a
+    link, here’s what happens: a request is sent to the server, the browser typically shows a spinning
+    icon on the tab, and when the response finally comes back from the server, the URL in the address
+    bar changes and the content of the new page is displayed.
+
+
+- 🔥🔥In an Angular single-page application, it doesn’t exactly work that way. The user clicks on a
+    link to display a pony race (for example). 🔥The router creates an instance of the Race, and the
+    🔥component sends an AJAX request to load the race. 🔥The router immediately inserts the component
+    template at the router-outlet location and changes the URL in the address bar. At this time,
+    🔥immediately after the click, the user sees the new page, but without any race. 🔥When the response
+    to the AJAX request comes back, the race is stored in the component and the DOM is updated.
+    
+    This has advantages and drawbacks:
+
+    👉 the navigation to the new page feels faster;
+
+    👉 the user can be confused if loading the race is too long, because the page appears blank, which
+        looks like a bug;
+
+    👉 the template must be coded carefully, in order to work fine during the small period of time
+        when the race is null or undefined;
+
+    👉 the template can however provide an immediate feedback by displaying a message or a spinning
+        animation indicating that the race is being loaded;
+        
+    👉 if loading the race fails (because the connectivity is lost, for example), then the navigation
+        has been made and the URL has changed, although the page can’t display any race, instead of
+        staying on the previous page.
+
+
+- 🔥🔥A resolver allows making the application behave almost like a traditional multi-page application.
+    Instead of letting the race component load the race, you apply a resolver on the route, and the
+    resolver loads the race on behalf of the component.
+
+
+- 🔥🔥Like a guard, a resolver can return data synchronously (by returning a race) or asynchronously
+    (by returning a promise or observable of a race). 🔥🔥The router only navigates to the route once
+    the promise has been resolved, or once the observable has completed with at least an emitted race.
+    Here’s what a resolver for a race would look like:
+        
+        export const raceResolver: ResolveFn<RaceModel> = (route: ActivatedRouteSnapshot):
+        Observable<RaceModel> => {
+            const id = route.paramMap.get('raceId')!;
+            const raceService = inject(RaceService);
+            return raceService.get(id);
+        };
+    
+    As you can see, it’s a simple function, which 🔥🔥uses the activated route snapshot passed by the
+    router to get the value of the raceId parameter, and returns an Observable<RaceModel>.
+    Here’s how the resolver would be applied to the route:
+       
+        {
+            path: 'races/:raceId',
+            component: Race,
+            resolve: {
+                race: raceResolver
+            }
+        }
+
+    As you can see, 🔥🔥the resolver is associated with an object key that I choose to name race. 
+    🔥🔥This is the key that the router will use to store the loaded race into the data of the
+    activated route snapshot. 🔥🔥So the race component can simply obtain the race the following way:
+
+        export class Race {
+            protected readonly race = signal(inject(ActivatedRoute).snapshot.data['race']);
+        }
+    
+    ⚠️Note that, if you navigate from a route to the same route, but with different parameters (for
+    example, if you have a Next race link on the page), 🔥🔥then the guards and the resolvers applied
+    to the route are called again. 🔥🔥The component, in that case, will still be reused, and should
+    still subscribe to an observable to get the race (🧠or just store the observable in the component
+    and use the async pipe in the template):
+        
+        export class Race {
+            private readonly route = inject(ActivatedRoute);
+            protected readonly raceModel = toSignal(this.route.data.pipe(map(data => data['race'])));
+        }
+
+
+
+- 🔥Resolvers have many advantages over loading data from the activated component:
+
+    ✅ they make the navigation more traditional;
+
+    ✅ they can be shared and reused by several routes;
+
+    ✅ they make the code of the component and its template simpler: no need to load data, no need to
+        care about the temporary undefined or null model, no need to apply somewhat complex RxJS
+        operators to get the data from the parameters;
+
+    ✅ if the navigation fails, the current page is preserved and the user can just click on the link
+        again to retry it.
+
+
+
+- ⚠️⚠️The only drawback I can find is that, when you know that loading the data is slow (because it
+    requires substantial computations or external service calls by the server), then the application can
+    feel a bit unresponsive: you click on a link, and nothing happens until the data has been loaded.
+    💡💡This is where loading the data from the activated component and displaying a loading message or
+    animation can be more user-friendly. 💡💡Another workaround would be to rely on router events to
+    display this loading message.

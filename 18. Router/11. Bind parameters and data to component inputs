@@ -1,0 +1,30 @@
+Bind parameters and data to component inputs:
+
+
+- In the previous section We saw that the 🧠parameters and data of the route are accessible from the
+    component associated with the route, via observables on the ActivatedRoute object.
+
+- 🔥🔥Since Angular v16, it’s possible to automatically bind the route parameters and data to the
+    component inputs. To do so, you need to configure the router with withComponentInputBinding:
+
+    app.config.ts:
+        
+        provideRouter(routes, withComponentInputBinding())
+    
+    🔥🔥With this option, a component can declare an input with the same name as a route parameter or
+    data, and Angular will automatically bind the value of the parameter or data to this input.
+
+    race.ts:
+
+        export class Race {
+            readonly raceId = input.required<string>();
+
+    🔥🔥We can then use this input as a regular input, and react to its change with toObservable and
+    toSignal:
+
+    race.ts:
+
+        private readonly raceService = inject(RaceService);
+        private readonly raceModel$ = toObservable(this.raceId).pipe(switchMap(id => this
+        .raceService.get(id)));
+        protected readonly raceModel = toSignal(this.raceModel$);

@@ -1,0 +1,33 @@
+Router events:
+
+
+- 🔥The router emits several events when navigating to a route. 🔥You can be notified of these events
+    by injecting the Router service and subscribing to its events observable. The emitted events have
+    several types that you can filter using event instanceof NavigationStart (for example). Here are the
+    various types of router events:
+
+    👉 NavigationStart:
+    emitted when a navigation is requested (when clicking on a link, for example). It can be used, for
+    example, to start displaying a spinner;
+
+    👉 NavigationEnd: 
+    emitted when a navigation ends successfully. It can be used to stop displaying the spinner. Another
+    use-case is to send a hit to an analytics service (like Google Analytics for example), which allows
+    analyzing the browsing habits and popular pages in your application;
+
+    👉 NavigationError:
+    emitted when a navigation fails due to an unexpected error (like a resolver returning an empty or
+    error observable). It can be used to stop displaying a spinner, or to try sending an error log to
+    the server;
+
+    👉 NavigationCancel:
+    emitted when a navigation is cancelled, because a guard prevented the navigation for example. If a
+    spinner has been shown when the navigation started, it should be hidden when this event is emitted.
+
+
+- 🔥🔥There are other kinds of events for the route configuration loading (RouteConfigLoadStart,
+    RouteConfigLoadEnd, RoutesRecognized) and, since version 4.3, for the resolvers (ResolveStart,
+    ResolveEnd) and guards (GuardsCheckStart, GuardsCheckEnd). Version 5.0 added more fine-grained
+    navigation events (ChildActivationStart, ChildActivationEnd). Version 6.1 added a Scroll event,
+    along with the scrollPositionRestoration configuration option that allows you to restore the scroll
+    position when navigating back to a component.

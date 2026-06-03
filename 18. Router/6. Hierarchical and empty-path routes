@@ -1,0 +1,88 @@
+Hierarchical and empty-path routes:
+
+
+- 🔥Routes can have children. This can be useful for several reasons:
+    • applying guards to several routes at once (see later);
+    • applying resolvers to several routes at once (see later);
+    • sharing a common template between several routes.
+
+- 🔥🔥As we have seen before, when the router activates a route, the component of the route is
+    inserted in the page at the location marked by the router-outlet directive.
+    🔥🔥This mechanism can in fact be used in nested components, too. Suppose you have a complex page
+    to display the profile of a pony. This page would display its name and portrait at the top, and
+    would have several tabs at the bottom: one to display its birth certificate, one to display its
+    track record, and one to display journalist reviews about this pony. 🔥🔥You want to have a URL for
+    each tab, in order to be able to directly link to them. But you don’t want to reload the pony and
+    repeat its name and portrait on every on these three tab components.
+
+    ✅The solution is to use a nested router-outlet in the template of the Pony, and to define a
+    parent pony route, this way:
+
+        {
+            path: 'ponies/:ponyId',
+            component: Pony,
+            children: [
+                { path: 'birth-certificate', component: BirthCertificate },
+                { path: 'track-record', component: TrackRecord },
+                { path: 'reviews', component: Reviews }
+            ]
+        }
+
+    🔥When going to the URL ponies/42/reviews, for example, the router will insert the Pony at the
+    location indicated by the main router-outlet, in the root component. 🔥🔥The template of Pony,
+    besides the name and the portrait of the pony, contains a second router-outlet. This is where the
+    child Reviews will be inserted.
+
+         ____________________________________________________________________________
+        |    app.html                                                               |
+        |___________________________________________________________________________|
+        |                                                                           |
+        |   ...                                                                     |
+        |       router-outlet                                                       |
+        |       ______________________________________________________________      |
+        |      |                         pony.html                            |     |
+        |      |______________________________________________________________|     |
+        |      |  ...                                                         |     |
+        |      |       router-outlet                                          |     |
+        |      |       __________________________________________________     |     |
+        |      |      |                  reviews.html                    |    |     |
+        |      |      |__________________________________________________|    |     |
+        |      |      |                                                  |    |     |
+        |      |      |                                                  |    |     |         
+        |      |      |__________________________________________________|    |     |
+        |      |                                                              |     |
+        |      |______________________________________________________________|     |
+        |                                                           |               |
+        |___________________________________________________________________________|
+
+    🔥🔥When going to the URL ponies/42, the pony component will be displayed, but none of the three
+    children components will. You might want to display the birth certificate tab by default. That can
+    be achieved using an empty-path route, redirecting to the birth-certificate route:
+
+        {
+            path: 'ponies/:ponyId',
+            component: Pony,
+            children: [
+                { path: '', pathMatch: 'full', redirectTo: 'birth-certificate' }, 👈
+                { path: 'birth-certificate', component: BirthCertificate },
+                { path: 'track-record', component: TrackRecord },
+                { path: 'reviews', component: Reviews }
+            ]
+        }
+
+    🧠 Suppose the user visits: /ponies/42. Now Angular enters the children routes. Inside children, 
+    the first route matches because after /ponies/42, there is nothing else. So Angular redirects to:
+    birth-certificate
+
+    🔥🔥Instead of redirecting, you might want to display the birth certificate at the URL ponies/42.
+    This can also be achieved using a child empty-path route:
+
+        {
+            path: 'ponies/:ponyId',
+            component: Pony,
+            children: [
+                { path: '', component: BirthCertificate },
+                { path: 'track-record', component: TrackRecord },
+                { path: 'reviews', component: Reviews }
+            ]
+        }
