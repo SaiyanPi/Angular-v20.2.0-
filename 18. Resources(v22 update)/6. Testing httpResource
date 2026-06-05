@@ -1,0 +1,53 @@
+Testing httpResource:
+
+
+- Testing an httpResource() is very similar to testing a service that uses HttpClient. 🔥You provide
+    the testing backend with provideHttpClientTesting(), inject HttpTestingController, expect the
+    request, and flush the response.
+
+- 🔥🔥If the resource is created by a service method, the call must happen in an injection context.
+    You can use TestBed.runInInjectionContext() for that. Then call TestBed.tick() to let the resource
+    start its request, flush the response, and wait for the application to be stable before asserting
+    the resource value:
+
+        const userService = TestBed.inject(UserService);
+        const http = TestBed.inject(HttpTestingController);
+        const usersResource = TestBed.runInInjectionContext(() => userService.list()); 👈
+        TestBed.tick(); 👈
+        http.expectOne('/users').flush([{ id: 1, name: 'Cédric' }]); 👈
+        await TestBed.inject(ApplicationRef).whenStable();
+        expect(usersResource.value()).toEqual([{ id: 1, name: 'Cédric' }]);
+        http.verify();
+
+
+- 🔥🔥When testing a component that consumes a service returning a ResourceRef, you usually don’t
+    need to involve HTTP at all. Instead, mock the service method and return a fake resource. One
+    convenient way to create one is to use rxResource():
+
+        class UserListTester {
+            readonly fixture = TestBed.createComponent(UserList);
+            readonly users = page.getByRole('listitem');
+            readonly loading = page.getByRole('status');
+        }
+        describe('TestingHttpResourceComponent', () => {
+            let userService: Pick<Mocked<UserService>, 'list'>;
+            beforeEach(() => {
+                userService = { list: vi.fn().mockName('UserService.list') };
+                TestBed.configureTestingModule({
+                    providers: [{ provide: UserService, useValue: userService }]
+                });
+            });
+            it('should mock a resource returned by a service', async () => {
+                const users$ = new Subject<Array<UserModel>>();
+                userService.list.mockImplementation(() =>
+                    rxResource({
+                    stream: () => users$
+                    })
+                );
+                const tester = new UserListTester();
+                await expect.element(tester.loading).toBeVisible();
+                users$.next([{ id: 1, name: 'Cédric' }]);
+                users$.complete();
+                await expect.element(tester.users).toHaveTextContent('Cédric');
+            });
+        });

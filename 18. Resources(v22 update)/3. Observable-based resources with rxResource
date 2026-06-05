@@ -1,0 +1,38 @@
+Observable-based resources with rxResource:
+
+
+- 🔥🔥You can use the rxResource() function to create a resource from a function returning an
+    observable rather than a promise. This function is really similar to resource(), but its stream
+    option must return an observable instead of a promise. This allows you to use our good old
+    HttpClient service to fetch data from a server, using all your interceptors, error handling, etc:
+
+        protected readonly sortOrder = signal<'asc' | 'desc'>('asc');
+        protected readonly usersResource = rxResource({
+            params: () => ({ sort: this.sortOrder() }),
+
+            // 👇 RxJS powered loader
+            stream: ({ params }) => this.httpClient.get<Array<UserModel>>('/users', { params: {
+            sort: params.sort } })
+        });
+    
+    💡Note that the rxResource() function is from the @angular/core/rxjs-interop package,💡whereas
+    the resource() function is from @angular/core. 
+    
+
+- 🔥🔥You can have a stream of values by returning an observable that emits several times, and the
+    resource will be updated every time a new value is emitted:
+
+        protected readonly sortOrder = signal<'asc' | 'desc'>('asc');
+        protected readonly usersResource = rxResource({
+            params: () => ({ sort: this.sortOrder() }),
+
+            // 👇 stream that fetches the value now and every 10s
+            stream: ({ params }) =>
+                timer(0, 10000).pipe(
+                    switchMap(() => this.httpClient.get<Array<UserModel>>('/users', { params: {
+                    sort: params.sort } }))
+                )
+        });
+
+    🔥🔥But if you just want to fetch data from a server, the httpResource()(next section)function is
+    probably what you are looking for.

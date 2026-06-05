@@ -1,0 +1,7 @@
+Summary:
+
+
+- Resources are a new set of APIs that allow you to handle asynchronous data fetching operations in
+a more straightforward way. 🔥They are built on top of signals and provide a simple way to fetch data
+from a server and display it in the UI. 🔥The httpResource() function is a great way to fetch data
+from a server and should be your go-to solution for that use case in Angular applications.

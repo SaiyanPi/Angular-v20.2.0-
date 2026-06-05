@@ -1,0 +1,120 @@
+Async resources with resource:
+
+
+- Most applications need to fetch data from a server, depending on some parameters, and display the
+    result in the UI: resource aims to help with that.
+
+- 🔥🔥The resource() function allows you to define a resource that represents an asynchronous
+    operation. The function takes an object with a mandatory loader function that returns a promise:
+
+        list(): ResourceRef<Array<UserModel> | undefined> {
+            return resource({
+                loader: async () => {
+                    const response = await fetch('/users');
+                    return (await response.json()) as Array<UserModel>;
+                }
+            });
+        }
+    
+    📝This example doesn’t use the HTTP client, but the native fetch() function, which
+        returns a promise. 🔥Indeed, the resource() function is not linked to RxJS, and can
+        thus use any client that returns promises. 🔥rxResource, that we will discuss in a few
+        seconds, is the alternative to resource that can be used with an Observable-based
+        client. 🔥This is another example of Angular decoupling itself from RxJS, but still
+        providing interoperability functions allowing you to use it smoothly.
+
+
+- 🔥🔥You can also define a defaultValue option that will be used as the initial value of the
+    resource (instead of undefined by default).
+
+        return resource({
+            defaultValue: [],
+            loader: async () => {
+                const response = await fetch('/users');
+                return (await response.json()) as Array<UserModel>;
+            }
+        });
+
+
+- 🔥resource() returns a ResourceRef, an object containing:
+    👉 an isLoading signal that indicates if the resource is loading;
+    👉 a value signal that contains the result of the promise;
+    👉 an error signal that contains the error if the promise is rejected;
+    👉 a hasValue method that checks if the resource has a value;
+    👉 a status signal that contains the status of the resource.
+
+    🧠You can then use these signals in your template, making it very easy to display a loading
+    spinner, an error message, or the result of the request:
+
+        @if (usersResource.isLoading()) {
+            <p role="status">Loading...</p>
+        } @else if (usersResource.hasValue()) {
+            <ul>
+                @for (user of usersResource.value(); track user.id) {
+                    <li>{{ user.name }}</li>
+                }
+            </ul>
+        } @else if (usersResource.error()) {
+            <p role="status">Error while loading users...</p>
+        }
+    
+    ⚠️⚠️value() throws an exception if no value is available. Keep calls to value() guarded
+    by a previous call to hasValue().
+
+
+- 🔥🔥The resource also has a reload method that allows you to manually reload the resource. In that
+    case, its status will be set to 'reloading'.
+    🔥🔥But the reloading can also be automatic, thanks to the params option. When provided, the
+    resource will automatically reload if one of the signals used in the params changes. Here, for
+    example, the component has a sortOrder option that is used in the request:
+
+        protected readonly sortOrder = signal<'asc' | 'desc'>('asc');
+        protected readonly usersResource = resource({
+
+            // 👇 The `sortOrder` signal is used to trigger a reload
+            params: () => ({ sort: this.sortOrder() }),
+            loader: async loaderParams => {
+
+                // 👇 loaderParams also contains the `abortSignal` to cancel the request
+                // and the previous status of the resource
+                // here we are only interested in the params
+                const params = loaderParams.params;
+                const response = await fetch(`/users?sort=${params.sort}`);
+                return (await response.json()) as Array<UserModel>;
+            }
+        });
+    
+    If the sortOrder signal changes, the resource will automatically reload! 🔥🔥You can also cancel
+    the previous request if needed when the resource is reloaded using the abortSignal parameter of
+    the loader. 🔥🔥You can choose to avoid loading or reloading by returning undefined from the
+    params function.
+
+
+- 🔥Last but not least, the returned ResourceRef is in fact writable. You can use its set or update
+    methods to change the value of the resource (on the value or on the resource itself, both work).
+    In that case, its status will be set to 'local'. If you’re only interested in reading the
+    resource, you can use the asReadonly method to get a read-only version of the resource (the
+    Resource type).
+
+- 🔥Finally, the ResourceRef has a destroy method that can be used to stop the resource.
+
+- Angular v19.2 added the possibility to create resources with streamed response data. 🔥A streaming
+    resource is defined with a stream option instead of a loader option. 🔥This stream function returns
+    a promise of a signal (yes, I needed to read it twice as well). 🔥The signal value must be of type
+    ResourceStreamItem: an object with a value or an error property. 🔥When the promise is resolved,
+    the loader can continue to update that signal over time, and the resource will update its value
+    and error every time the signal’s item changes.
+
+- 🔥🔥You can build this stream yourself, using a WebSocket for example. We can also imagine that
+    some libraries such as Firebase could provide a stream function that would be directly usable,
+    but rxResource() is probably a better fit for such a scenario.
+
+        list(): ResourceRef<Array<UserModel> | undefined> {
+            return resource({
+                // firebaseCollection does not exist in real-life
+                stream: async ({ abortSignal }) => await firebaseCollection('users', abortSignal)
+            });
+        }
+
+
+- Now, let’s see how we can use an observable-based resource instead of a promised-based one.

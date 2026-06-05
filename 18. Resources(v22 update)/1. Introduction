@@ -1,0 +1,9 @@
+Resources:
+
+
+- 🔥🔥After years of using RxJS for asynchronous operations in our applications, Angular introduced
+    a new set of APIs to handle asynchronous operations in a more straightforward way: resources.
+    These APIs have been added as an experiment in v19 and are stable since Angular v22.
+    Nowadays, the easiest way to fetch data from a server is to use the httpResource() function.
+    But before that, let’s see how to use the more low-level resource() function, and its RxJS
+    counterpart rxResource().

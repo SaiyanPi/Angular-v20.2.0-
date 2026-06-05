@@ -1,0 +1,31 @@
+Using httpResource in a service:
+
+
+- A common pattern is to expose resources from a service. The service method returns the resource,
+    and the component stores it in a field. 🔥🔥You must pass the signal itself to the service
+    method, not its value.
+
+        list(sortOrder: () => 'asc' | 'desc'): ResourceRef<Array<UserModel> | undefined> {
+            return httpResource<Array<UserModel>>(() => `/users?sort=${sortOrder()}`);
+        }
+    
+    The component can then use the resource signals directly in its template:
+        
+        @Component({
+            template: `
+                @if (users.isLoading()) {
+                    <p role="status">Loading...</p>
+                } @else {
+                <ul>
+                    @for (user of users.value(); track user.id) {
+                        <li>{{ user.name }}</li>
+                    }
+                    </ul>
+                }
+            `
+        })
+        export class UserList {
+            private readonly userService = inject(UserService);
+            protected readonly sortOrder = signal<'asc' | 'desc'>('asc'); 👈
+            protected readonly users = this.userService.list(this.sortOrder); 👈
+        }

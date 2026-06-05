@@ -1,0 +1,29 @@
+------------------------------------- Resource API ------------------------------------------------
+
+- LOAD THE RACES USING THE RESOURCE API.
+
+
+1️⃣ We already have a RaceService.list() method to fetch the pending races. Let’s now migrate it to 
+    Angular’s resource API.
+    🔥httpResource() lets us expose HTTP data as a resource rather than an Observable. So
+    RaceService.list() should now return a resource,
+    for example a ResourceRef<Array<RaceModel> | undefined>. Update the method accordingly.
+    (see section 4)
+
+
+2️⃣ You should then update the Races component to use the resource directly. 🔥Since RaceService.list()
+    returns a resource, the component no longer needs toSignal().
+
+
+3️⃣ In the Races template, display <div role="status">Loading.</div> while the request is pending.
+    Then display <div class="alert alert-danger" role="alert">An error occurred while loading races.
+    </div> if the resource is in error.( see section 4 and then section 2)
+    Let's also add a bootstrap loading animation to make it look nicer:
+
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Loading...
+        </button>
+
+
+4️⃣ Last step, render the races with races.value() in the @for loop once the resource has loaded.

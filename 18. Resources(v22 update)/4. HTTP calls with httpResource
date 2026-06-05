@@ -1,0 +1,71 @@
+HTTP calls with httpResource:
+
+
+- 🔥Angular v19.2 introduced a dedicated function to create resources that use HTTP requests:
+    httpResource() in the @angular/common/http package.
+
+- 🔥🔥This function uses HttpClient under the hood, allowing us to use our usual interceptors,
+    testing utilities, etc.
+
+
+- 🔥The most basic usage is to call this function with a function that returns the URL from
+    which you want to fetch data:
+        
+        protected readonly usersResource = httpResource<Array<UserModel>>(() => '/users');
+
+    🔥🔥httpResource() returns an HttpResourceRef, which has the same properties as ResourceRef
+    (section 2), but also a few more properties specific to HTTP resources:
+
+    👉 statusCode is a signal that contains the status code of the response as a number;
+    👉 headers is a signal that contains the headers of the response as HttpHeaders;
+    👉 progress is a signal that contains the download progress of the response as a
+        HttpProgressEvent;
+
+
+
+- 🔥🔥It is also possible to define a reactive resource by reading a signal in the function that
+    defines the URL. The resource will automatically reload when the signal changes:
+
+        protected readonly sortOrder = signal<'asc' | 'desc'>('asc');
+        protected readonly sortedUsersResource = httpResource<Array<UserModel>>(() =>
+        `/users?sort=${this.sortOrder()}`);
+    
+    🔥🔥When using a reactive request, the resource will automatically reload when a signal used in
+    the request changes. If you want to skip the reload, you can return undefined from the request
+    function(as for resource).
+
+    🔥🔥If you need more fine-grained control over the request, you can also pass a function that
+    returns an HttpResourceRequest object to the httpResource() function.
+    🔥🔥This object must have a url property and can have other options like method (GET by default),
+    params, headers, reportDownloadProgress, etc. If you want to make the request reactive, you can
+    use signals in the url, params or headers properties.
+    The above example would then look like:
+        
+        protected readonly sortedUsersResource = httpResource<Array<UserModel>>(() => ({
+            url: `/users`,
+            params: { sort: this.sortOrder() },
+            headers: new HttpHeaders({ 'X-Custom-Header': this.customHeader() })
+        }));
+    
+
+
+- 🔥You can of course send a body with the request, for example for a POST/PUT request, using
+    the body property of the request object.
+
+        protected readonly query = signal('');
+        protected readonly filterUsersResource: HttpResourceRef<Array<UserModel> | undefined>
+        = httpResource<Array<UserModel>>(() => {
+            const query = this.query();
+            return query
+            ? {
+                url: `/users`,
+                method: 'POST',
+                body: { query }
+            }
+            : undefined;
+        });
+
+    ⚠️⚠️Note that this is not intended to be used to send data to the server, but rather to
+        fetch data from the server. For the submission of data or when you want to trigger
+        actions, you should still use HttpClient. In the future, we may have a "mutation"
+        API that would be more suitable for that use case, but this is not the case yet.
