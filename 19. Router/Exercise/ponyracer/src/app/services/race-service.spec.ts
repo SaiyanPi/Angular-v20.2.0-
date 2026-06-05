@@ -1,4 +1,5 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { RaceModel } from '../models/race-model';
 import { RaceService } from './race-service';
@@ -17,16 +18,17 @@ describe('RaceService', () => {
 
   afterAll(() => http.verify());
 
-  it('should list races', () => {
+  it('should list races', async () => {
     // fake response
     const hardcodedRaces = [{ name: 'Paris' }, { name: 'Tokyo' }, { name: 'Lyon' }] as Array<RaceModel>;
 
-    let actualRaces: Array<RaceModel> = [];
-    raceService.list().subscribe((races: Array<RaceModel>) => (actualRaces = races));
+    const actualRaces = TestBed.runInInjectionContext(() => raceService.list());
+    TestBed.tick();
 
     http.expectOne('https://ponyracer.ninja-squad.com/api/races?status=PENDING').flush(hardcodedRaces);
+    await TestBed.inject(ApplicationRef).whenStable();
 
-    expect(actualRaces, 'The `list` method should return an array of RaceModel wrapped in an Observable').not.toHaveLength(0);
-    expect(actualRaces).toStrictEqual(hardcodedRaces);
+    expect(actualRaces.value(), 'The `list` method should expose the races via the resource value').not.toHaveLength(0);
+    expect(actualRaces.value()).toStrictEqual(hardcodedRaces);
   });
 });
