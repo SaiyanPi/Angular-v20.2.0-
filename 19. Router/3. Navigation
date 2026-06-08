@@ -24,6 +24,7 @@ Navigation:
     Adding a slash indicates that the URL must be computed from the application base URL.
 
 
+
 - 🔥🔥The RouterLink directive can be used with the RouterLinkActive directive which can set a CSS
     class automatically if the link points to the current route. This allows you, for example, to
     style a menu item as selected when it points to the current page.
@@ -55,6 +56,7 @@ Navigation:
         directive. Active is a boolean exposed by the RouterLinkActive directive.
 
 
+
 - 🔥It’s also possible to navigate from the code, by using the Router service and its method
     navigate(). 🔥🔥It’s often handy when you want to redirect your user after an action:
         
@@ -67,6 +69,7 @@ Navigation:
         }
     
     The method takes an array of parameters, with the path you want to navigate to as the first element.
+
 
 
 - 🔥🔥It is also possible to have parameters in the URL, and it’s really useful to define dynamic URLs.
@@ -103,7 +106,7 @@ Navigation:
     And it provides a way to subscribe to parameter changes, with, you guessed it, an observable. This
     observable is called paramMap.
 
-    🔥⚠️This is very important: the router will reuse your component if it can! Let’s say our app has
+    🔥🔥⚠️This is very important: the router will reuse your component if it can! Let’s say our app has
     a "Next" button to see the next pony. The URL will change from /ponies/1 to /ponies/2 for example
     when the user clicks. The router will then reuse our component instance: that means neither the
     constructor, nor ngOnInit will be called again! If you want your component to update for this kind

@@ -1,0 +1,131 @@
+Template-driven:
+
+- With this method, 🔥we are going to use a bunch of directives in our form, and let the framework
+    build the necessary FormControl and FormGroup instances. For example, 🔥the NgForm directive
+    transforms the form element into its powerful Angular version - think of it as the difference
+    between Bruce Wayne and Batman.
+
+- 🔥🔥All the directives we need are included in the FormsModule module, so we need to import it in
+    each component using a template-driven form.
+
+        ⚠️⚠️Unlike the directives from CommonModule and RouterModule, which are standalone,
+        the directives of the FormsModule are not. So you can’t import them one by one in
+        your components. The whole FormsModule must be imported.
+        1️⃣
+        import { Component } from '@angular/core';
+        import { FormsModule } from '@angular/forms';
+        @Component({
+            selector: 'ns-register',
+            template: `
+                <h2>Sign up</h2>
+                <form></form>
+            `,
+            imports: [FormsModule]
+        })
+        export class RegisterForm {}
+    
+    🔥🔥FormsModule contains the directives for the "template-driven" way. We’ll see later that
+    🔥🔥there exists another module, ReactiveFormsModule, in the same package @angular/forms, which
+    is needed for the "code-driven" way
+
+    Let’s add the submit button:
+        2️⃣
+        import { Component } from '@angular/core';
+        import { FormsModule } from '@angular/forms';
+        @Component({
+            selector: 'ns-register',
+            template: `
+                <h2>Sign up</h2>
+                <form (ngSubmit)="register()">
+                <button type="submit">Register</button>
+                </form>
+            `,
+            imports: [FormsModule]
+        })
+        export class RegisterForm {
+            protected register(): void {
+                // we will have to handle the submission
+            }
+        }
+    
+    I 💡added a button, and defined an event handler for ngSubmit on the form tag. 💡The ngSubmit
+    event is emitted by the NgForm directive when submit is triggered. It calls the register() method
+    of our controller, which will be implemented later.
+
+    ⁉️You might wonder why there is an NgForm directive available on the form element, even though it
+    doesn’t have any specific attribute. It’s simply that the selector of the NgForm directive is form
+    (it is actually a bit more specific than that), which means that 🔥🔥every standard HTML form
+    element actually triggers the creation of an NgForm directive, as long as the FormsModule has been
+    imported.
+
+    Last thing: our template will quickly grow, so let’s extract it to a dedicated file, using
+    templateUrl:
+        3️⃣
+        import { Component } from '@angular/core';
+        import { FormsModule } from '@angular/forms';
+        @Component({
+            selector: 'ns-register',
+            templateUrl: './register-form.html',
+            imports: [FormsModule]
+        })
+        export class RegisterForm {
+            protected register(): void {
+                // we will have to handle the submission
+            }
+        }
+
+    🔥🔥In the "template-driven" way, most of the logic is in the template. There isn’t much code to
+    write in the TypeScript part of the component.
+    In its simplest form, 🔥you just add ngModel directives to your form template and that’s all.
+    🔥🔥The NgModel directive creates the FormControl for you, and the form automatically creates the
+    FormGroup. ⚠️Note that you have to give a name to the input, which will be used by the framework to
+    create the FormGroup.
+        5️⃣
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()">
+            <div>
+                <label>Username</label><input name="username" ngModel>
+            </div>
+            <div>
+                <label>Password</label><input type="password" name="password" ngModel>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+
+    Now of course 🔥we need to do something for the submission, and to get hold of the user name and
+    password. 🔥🔥To achieve that, we can define a local variable and assign it to the NgForm object
+    created by Angular for the form. Remember these from the Chapter 9 section 8? Here, 🔥🔥we are going
+    to define a variable, userForm, referencing the form. We can do that because the form directive exports
+    the NgForm directive instance, which has the same methods as the FormGroup class. We’ll see the
+    exporting part in more detail when we study how to build advanced directives.
+        6️⃣
+        <h2>Sign up</h2>
+        <!-- we use a local variable #userForm -->
+        <!-- and give its value to the register method🧠 -->
+        <form (ngSubmit)="register(userForm.value)"👈 #userForm="ngForm"2️⃣>
+            <div>
+                <label>Username</label><input name="username" ngModel>
+            </div>
+            <div>
+                <label>Password</label><input type="password" name="password" ngModel>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+    
+    Our register method is now called with the form value as the argument:
+
+        import { Component } from '@angular/core';
+        import { FormsModule } from '@angular/forms';
+        @Component({
+            selector: 'ns-register',
+            templateUrl: '../code/register-form.html',
+            imports: [FormsModule]
+        })
+        export class RegisterForm {
+            protected register(user: { username: string; password: string })👈: void {
+                console.log(user);
+            }
+        }
+
+    ⚠️This is quite limiting though: we have no way to populate the form fields. But ngModel is more
+    powerful than you think!

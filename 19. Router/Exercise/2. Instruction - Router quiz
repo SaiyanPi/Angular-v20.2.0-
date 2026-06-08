@@ -1,0 +1,66 @@
+---------------------------------------------- Router quiz -----------------------------------------
+
+- Let's check your knowledge of the router!
+
+
+1️⃣ Which of the following route declarations are valid?
+
+        { path: '/', component: Home }
+
+        { path: '', component: Home }   ✅
+
+        { path: '', component: Home, canActivate: [AuthGuard] } ✅
+
+        { path: '', outlet: Home }
+
+
+
+2️⃣ How do you initialize the router in your application?
+
+        imports: [provideRouterModule(routes)]
+
+        providers: [provideRouterModule(routes)]
+
+        providers: [provideRouter(routes)]  ✅
+
+
+
+3️⃣ What types of guard can be used? (see section 7)
+
+        CanActivate ✅
+
+        CanMatch    ✅
+
+        CanAuthenticate
+
+        CanDeactivate   ✅
+
+
+
+4️⃣ How can you access a route param called id and store it in a signal of the component? (see section 3)
+
+        this.id.set(route.snapshot.id)
+
+        this.id.set(route.snapshot.paramMap.get('id'))  ✅
+
+        this.id = toSignal(route.paramMap.pipe(map(params => params.get('id')))) ✅
+
+
+
+5️⃣ How can you add a link to the Races page in the template? (see section 3)
+
+        <a routerLink="/races"> ✅
+
+        <a href="races">
+
+        <a [routerLink]="['/races']"    ✅
+
+
+
+6️⃣ How can you navigate to the Races page from the code? (see section 3)
+
+        router.navigate(['/races']) ✅
+
+        router.goTo('/races')
+
+        router.navigateByUrl('/races')  ✅

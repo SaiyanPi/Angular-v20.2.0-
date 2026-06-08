@@ -1,0 +1,116 @@
+Forms, dear forms:
+
+
+- Forms have always been extra polished in Angular. That’s one of the features that was the most
+    demoed in 1.x, and, as pretty much every app has forms, it won the hearts of a lot of developers.
+
+- Forms are hard: you have to validate the inputs of your user, display errors, you can have fields
+    required or not, or depending on another field, you want to react to some field changes, etc.
+    🔥We also need to test these forms, and that was impossible to achieve with a unit-test in
+    AngularJS 1.x. 🔥It was only feasible with an end-to-end test, which can be slow.
+
+
+- In Angular, the same care has been applied to forms, and the framework gives us a nice way to
+    write our forms. In fact, it gives us several ways!
+
+    1️⃣You can either write your form using only directives in your template: that’s the "template-driven"
+    way. From our experience, it shines when you have a simple form, with not much validation.
+
+    2️⃣The other way is the "code-driven" way, where you will write a description of the form in your
+    component, then use directives to bind this form to the inputs/textareas/selects in your template.
+    It’s more verbose, but also more powerful, especially if you want to do add custom validation,
+    or to generate dynamic forms
+
+    Let’s go through the same use case twice, using each way, and see the differences.
+
+
+- We are going to write a simple form, to be able to register new users in our awesome PonyRacer
+    app. We need a base component for each use case, so let’s begin with this:
+
+        import { Component } from '@angular/core';
+        @Component({
+            selector: 'ns-register',
+            template: `
+                <h2>Sign up</h2>
+                <form></form>
+            `
+        })
+        export class RegisterForm {}
+
+    Nothing fancy: a component with a simple template containing a form. In the next few minutes, we
+    will build a form allowing you to register a user with a username and a password.
+
+    🔥For both methods, Angular will create a representation of our form.
+    
+    🔥🔥In the "template-driven" way, it’s pretty much automatic: we just need to add the proper
+    directives in the template and the framework takes care of the form representation creation.
+
+    🔥🔥In the "code-driven" way, we create this form representation manually, and then bind the
+    form representation to the inputs using directives
+
+
+- 🔥Behind the scenes, a form field, like an input or a select, is represented by a FormControl in
+    Angular. It is the smallest part of a form, and it encapsulates the state of the field and its
+    value.
+
+    A FormControl has several attributes:
+    • valid: if the field is valid, regarding the requirements and validations applied on it.
+    • invalid: if the field is invalid, regarding the requirements and validations applied on it.
+    • errors: an object containing the field errors
+    • dirty: false until the user has modified its value.
+    • pristine: the opposite of dirty.
+    • touched: false until the user has entered it.
+    • untouched: the opposite of touched.
+    • value: the value of the field.
+    • valueChanges: an Observable emitting every time the value of the control changes.
+    • statusChanges: an Observable emitting every time the status of the control changes.
+    • events: an Observable emitting every time the state or value of the control changes. This has
+                been introduced in Angular v18 and allows to handle value, status, pristine, touched
+                changes or to know when the form has been reset or submitted.
+    
+    🔥🔥It also offers some methods like hasError() to check if the control has a specific error.
+    So you can do something like this:
+      
+        const password = new FormControl('');
+        console.log(password.dirty); // false until the user enters a value
+        console.log(password.value); // '' until the user enters a value
+        console.log(password.hasError('required')); // false
+        password.disable(); // disables the control
+        password.reset(); // resets the value
+
+    ⚠️🔥Note that you can pass an argument to the constructor, and that this argument will be the
+    value.
+
+        const password = new FormControl('Cédric');
+        console.log(password.value); // logs "Cédric"
+
+
+
+- 🔥These controls can be grouped in a FormGroup to represent a part of the form and have dedicated
+    validation rules. The form itself is a group.
+    A FormGroup has the same properties as a FormControl, with a few differences:
+    • valid: if all fields are valid, then the group is valid.
+    • invalid: if one of the fields is invalid, then the group is invalid.
+    • errors: an object containing the group errors or null if the group is valid. Each error is a key,
+                whose value is an array containing every control affected by this error.
+    • dirty: false until one of the controls gets dirty.
+    • pristine: the opposite of dirty.
+    • touched: false until one of the controls gets touched.
+    • untouched: the opposite of touched.
+    • value: the value of the group. To be more accurate, it’s an object with key/values representing
+                the controls and their values.
+    • valueChanges: an Observable emitting every time there is a change on the group
+
+    🔥🔥It offers the same methods as FormControl like hasError(). It also has a method get() to
+    retrieve a control in the group.
+    You can create one like this:
+        
+        const form = new FormGroup({
+            username: new FormControl('Cédric'),
+            password: new FormControl('')
+        });
+        console.log(form.dirty); // logs false until the user enters a value
+        console.log(form.value); // logs Object {username: "Cédric", password: ''}
+        console.log(form.controls.username); // logs the Control
+    
+    Let’s begin with a "template-driven" form!

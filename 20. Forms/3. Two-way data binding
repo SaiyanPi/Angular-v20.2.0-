@@ -1,0 +1,92 @@
+Two-way data binding:
+
+
+- 🔥🔥The two-way data binding is what will allow us to type a value in an input field, and have this
+    value automatically stored in a signal, and vice-versa: if we change the value of the signal, the
+    input field will automatically display the new value.
+
+- To start, you will define a model of what will be filled in the form. We’ll do this in a UserModel
+    interface:
+        1️⃣
+        export interface UserModel {
+            username: WritableSignal<string>;
+            password: WritableSignal<string>;
+        }
+
+        💡Template-driven forms were designed when the framework was created, when
+        Angular relied on ZoneJS, and not on signals, to detect changes. It allowed using
+        plain old TypeScript objects as models of the forms. In order for forms to keep
+        working in a zoneless world, every form field must be bound to a signal, which is
+        not very developer-friendly. We can imagine the situation will improve when
+        forms will be re-worked in Angular to better handle signals.
+
+
+- Our RegisterForm should have a field user of type UserModel:
+        2️⃣
+        @Component({
+            selector: 'ns-register',
+            templateUrl: './register-form.html',
+            imports: [FormsModule]
+        })
+        export class RegisterForm {
+            protected readonly user: UserModel = {
+                username: signal(''),
+                password: signal('')
+            };
+            protected register(): void {
+                console.log({ username: this.user.username(), password: this.user.password() });
+            }
+        }
+    
+    😮As you can see this time, the register() method is now directly logging the user object.
+
+
+- We are ready to add the inputs of our form. 🔥We need to bind our inputs to the model we
+    have defined. 🔥🔥For this, we’ll use the ngModel directive:
+        3️⃣
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()">
+            <div>
+                <label>Username</label><input name="username" 👉[(ngModel)]="user.username">
+            </div>
+            <div>
+                <label>Password</label><input type="password" name="password"
+                👉[(ngModel)]="user.password">
+            </div>
+            <button type="submit">Register</button>
+        </form>
+
+    ⁉️Wow! [(ngModel)]? What is this syntax? It’s a syntactic sugar that has been introduced to
+    express the same thing as:
+        😮
+        <input name="username" [ngModel]="user.username()"
+        (ngModelChange)="user.username.set($event)">
+    
+    💡💡The NgModel directive updates the input value every time the related signal user.username
+    changes, hence the [ngModel]="user.username()" part. 💡💡And it emits an event from an output
+    named ngModelChange every time the input is updated by the user, where the event is the new
+    value, hence the (ngModelChange)="user.username.set($event)" part, which will update the signal
+    user.username with this new value
+
+    🔥🔥Instead of writing the long form, we can use the new syntax [()]. If, like me, you have
+    trouble remembering if it is [()] or ([]), there is a cool mnemonic tip: it’s a banana-box! Yes,
+    look: the [] is a box, and, inside, there are two bananas facing each other ()!
+
+    Now, every time we type something in our input, the model is updated. And if the signal is updated
+    in our component, our field will automatically display its new value:
+        4️⃣
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()">
+            <div>
+                <label>Username</label><input name="username" [(ngModel)]="user.username">
+              👉<small>{{ user.username() }} is an awesome username!</small>
+            </div>
+            <div>
+                <label>Password</label><input type="password" name="password"
+                [(ngModel)]="user.password">
+            </div>
+            <button type="submit">Register</button>
+        </form>
+    
+    If you try the example above, you will see that the two-way data-binding works. And so does our
+    form: we can submit it, and the component will log our user object!
