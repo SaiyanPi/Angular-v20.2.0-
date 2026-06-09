@@ -1,0 +1,74 @@
+Adding some validation:
+
+
+- Validation is usually a big part of form-building. Some fields are required, some depend on one
+    another, some should be in a specific format, some should not have a value greater or lower than
+    X, for example.
+    
+    Let’s start by adding basic validation rules: all our fields are required.
+
+
+
+1️⃣ In a code-driven form:
+
+- To specify that every field is required, we will use a Validator. 🔥🔥A validator returns a map of
+    errors or null if it detects no error.
+
+- A few validators are provided by the framework:
+    • Validators.required to ensure that a control is not empty
+    • Validators.minLength(n) to ensure that the value entered has at least n characters
+    • Validators.maxLength(n) to ensure that the value entered has at most n characters
+    • Validators.email() (available since version 4.0) to ensure that the value entered is a valid
+        email address (good luck finding the correct regular expression by yourself for this one…)
+    • Validators.min(n) (available since version 4.2) to ensure that the value entered is at least n
+    • Validators.max(n) (available since version 4.2) to ensure that the value entered is at most n
+    • Validators.pattern(p) to ensure that the value matches the regular expression p
+
+- 🔥🔥You can apply several validators at once, by using an array, on a FormControl or on a
+    FormGroup. Here we want every field to be mandatory, so we can add the required validator to
+    each control, and make sure that the username is 3 characters at least.
+
+        import { Component, inject } from '@angular/core';
+        import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+       
+        @Component({
+            selector: 'ns-register',
+            templateUrl: './register-form.html',
+            imports: [ReactiveFormsModule]
+        })
+        export class RegisterForm {
+            private readonly fb = inject(FormBuilder);
+
+            protected readonly userForm = this.fb.group({
+                username: this.fb.control('', 👉[Validators.required, Validators.minLength(3)]),
+                password: this.fb.control('', 👉Validators.required)
+            });
+
+            protected register(): void {
+                console.log(this.userForm.value);
+            }
+        }
+
+
+
+2️⃣ In a template-driven form:
+
+- Adding a required field in a template-driven form is also really straightforward: 🔥🔥you just have
+    to add the required attribute to the inputs. 🔥🔥required is a provided directive, and will
+    automatically add the validator to this field. Same thing with minlength, maxlength, and email
+    (⚠️ min and max are not yet available as directives).
+
+    Starting from the two-way data-binding example:
+        
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register(userForm.value)" #userForm="ngForm">
+            <div>
+                <label>Username</label><input name="username" ngModel required minlength="3">
+            </div>
+            <div>
+                <label>Password</label><input type="password" name="password" ngModel required>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+
+    🔥💡Note that this can be done in a "code-driven" form too.

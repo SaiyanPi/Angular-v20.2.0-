@@ -1,0 +1,145 @@
+Code-driven:
+
+
+- In AngularJS 1.x you had to build your forms mostly in your templates. 🔥Angular introduces an
+    imperative way, which allows you to construct the form programmatically rather than through a
+    template. Now we can handle forms directly in our code. 🔥It’s more verbose but more powerful.
+
+- 🔥To build a form in our component code, we’ll use the abstractions we talked about: FormControl
+    and FormGroup.
+
+- With these basic elements we can build a form in our component. But 🔥🔥instead of writing new
+    FormControl() or new FormGroup(), we will use a helper class, FormBuilder, that we can inject:
+        1️⃣
+        import { Component, inject } from '@angular/core';
+        import { FormBuilder, ReactiveFormsModule } from '@angular/forms'; 👈
+        
+        @Component({
+            selector: 'ns-register',
+            templateUrl: './register-form.html',
+            imports: [ReactiveFormsModule] 👈
+        })
+        export class RegisterForm {
+            private readonly fb = inject(FormBuilder); 👈
+            // we will have to build the form
+
+            protected register(): void {
+                // we will have to handle the submission
+            }
+        }
+
+    💡💡The FormBuilder is a helper class, with a handful of methods to create controls and groups.
+    Let’s start simple, and create a small form with two controls, a username and a passwor
+        2️⃣
+        import { Component, inject } from '@angular/core';
+        import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+        
+        @Component({
+            selector: 'ns-register',
+            templateUrl: './register-form.html',
+            imports: [ReactiveFormsModule]
+        })
+        export class RegisterForm {
+            private readonly fb = inject(FormBuilder);
+            protected readonly userForm = this.fb.group({
+                username: '',
+                password: ''
+            });
+            // 🔥🔥`userForm` is of type `FormGroup<{
+            //          username: FormControl<string | null>;
+            //          password: FormControl<string | null>;
+            //      }>`
+
+            protected register(): void {
+                // we will have to handle the submission
+            }
+        }
+
+    We created a form with two controls. You can see that each control is created with the value ''.
+    🔥That’s the same as using the helper method control() of the FormBuilder with this string as
+    parameter, and the 🔥same as calling the new FormControl('') constructor: the string represents
+    the initial value you want to display in your form. Here it is empty, so the inputs will be empty.
+    🔥But you can have a value here, of course, if you want to edit an existing entity for example.
+    🔥The helper method can also have other specific attributes, as we will see later
+
+    We need to implement the register method. As we saw, the 🔥🔥FormGroup object has a value
+    (from section 2) attribute, so we can simply log its content with:
+        3️⃣
+        import { Component, inject } from '@angular/core';
+        import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+       
+        @Component({
+            selector: 'ns-register',
+            templateUrl: './register-form.html',
+            imports: [ReactiveFormsModule]
+        })
+        export class RegisterForm {
+            private readonly fb = inject(FormBuilder);
+            protected readonly userForm = this.fb.group({
+                username: '',
+                password: ''
+            });
+
+            protected register(): void {
+                console.log(this.userForm.value); 👈
+            }
+        }
+    
+    We now need to do some work in the template. 🔥We are going to use other directives than those we
+    saw for the "template-driven" forms. 🔥🔥These directives are in the ReactiveFormsModule, that
+    you have to import into your component. 🔥🔥Their names begin with form instead of ng as was the
+    case for the "template-driven" forms.
+    🔥🔥The form needs to be bound to our userForm object, thanks to the formGroup directive.
+    🔥🔥Each input field is bound to a control, thanks to the formControlName directive:
+        4️⃣
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()" 👉[formGroup]="userForm">
+            <div>
+                <label>Username</label><input 👉formControlName="username">
+            </div>
+            <div>
+                <label>Password</label><input type="password" 👉formControlName="password">
+            </div>
+            <button type="submit">Register</button>
+        </form>
+    
+    🔥🔥We want to bind our component’s attribute userForm object to formGroup, so we use the bracket
+    notation [formGroup]="userForm".
+    🔥🔥Each input receives the formControlName directive with a string literal representing the
+    control it is bound to. ⚠️⚠️If you specify a name that does not exist, you will have an error.
+    🧠🧠As we pass a value (and not an expression), we don’t put the [] around formControlName.
+
+    And we’re done: clicking on the submit button will log an object containing the username and the
+    chosen password!
+
+
+
+- If you need to, 🔥you can update the value of a FormControl from your component, using setValue():
+
+        import { Component, inject } from '@angular/core';
+        import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+        
+        @Component({
+            selector: 'ns-register',
+            templateUrl: './register-form.html',
+            imports: [ReactiveFormsModule]
+        })
+        export class RegisterForm {
+            private readonly fb = inject(FormBuilder);
+
+            protected readonly usernameCtrl = this.fb.control('');
+            protected readonly passwordCtrl = this.fb.control('');
+
+            protected readonly userForm = this.fb.group({
+                username: this.usernameCtrl,
+                password: this.passwordCtrl
+            });
+
+            protected setAnotherNinja(): void {
+                this.usernameCtrl.setValue('JB'); 👈
+            }
+
+            protected register(): void {
+                console.log(this.userForm.value);
+            }
+        }

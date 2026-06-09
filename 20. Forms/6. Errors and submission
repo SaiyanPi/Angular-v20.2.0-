@@ -1,0 +1,176 @@
+Errors and submission:
+
+
+- Of course, our user should not be able to submit the form while there are still errors left, and
+    these errors should be perfectly displayed.
+
+- If you try the examples, you will see that even if the fields are required, we can still submit
+    our form. 🤔Maybe we can do something about that?
+
+- 🔥We know that we can easily disable a button using the disabled property, but we need to give it
+    an expression reflecting the state of the current form.
+
+
+
+1️⃣ Errors and submission in a code-driven form:
+
+- 🔥🔥We added a field userForm, of type FormGroup, to our component. This field gives us a complete
+    view of the form and field states and errors.
+
+    For example, we can disable the form submission if the form is not valid:
+        1)
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()" [formGroup]="userForm">
+            <div>
+                <label>Username</label><input formControlName="username">
+            </div>
+            <div>
+                <label>Password</label><input type="password" formControlName="password">
+            </div>
+            <button type="submit" 👉[disabled]="userForm.invalid">Register</button>
+        </form>
+
+
+    Now we can only submit when all controls are valid. 💡💡To help our user understand why the form
+    can’t be submitted, we should display error messages. Still using the userForm, we can do:
+        2)
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()" [formGroup]="userForm">
+            <div>
+                <label>Username</label><input formControlName="username">
+             👉@if (userForm.controls.username.hasError('required')) {
+                    <div>Username is required</div>
+                }
+             👉@if (userForm.controls.username.hasError('minlength')) {
+                    <div>Username should be 3 characters min</div>
+                }
+            </div>
+            <div>
+                <label>Password</label><input type="password" formControlName="password">
+              👉@if (userForm.controls.password.hasError('required')) {
+                    <div>Password is required</div>
+                }
+            </div>
+            <button type="submit" [disabled]="userForm.invalid">Register</button>
+        </form>
+
+
+    Cool! The errors are now displayed if the fields are empty, and they disappear when there is
+    a value. ⚠️⚠️But they are displayed right away when the form is shown. Maybe we can hide them
+    until the user leaves the field?
+        3)
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()" [formGroup]="userForm">
+            <div>
+                <label>Username</label><input formControlName="username">
+                @if (userForm.controls.username.touched && 👈
+                userForm.controls.username.hasError('required')) {
+                    <div>Username is required</div>
+                }
+                @if (userForm.controls.username.touched && 👈
+                userForm.controls.username.hasError('minlength')) {
+                    <div>Username should be 3 characters min</div>
+                }
+            </div>
+            <div>
+                <label>Password</label><input type="password" formControlName="password">
+                @if (userForm.controls.password.touched && 👈
+                userForm.controls.password.hasError('required')) {
+                    <div>Password is required</div>
+                }
+            </div>
+            <button type="submit" [disabled]="userForm.invalid">Register</button>
+        </form>
+    
+
+    🤨It’s a bit verbose, 🔥🔥so you can create a reference for each control in your component:
+
+        @Component({
+            selector: 'ns-register',
+            templateUrl: './register-form.html',
+            imports: [ReactiveFormsModule]
+        })
+        export class RegisterForm {
+            private readonly fb = inject(FormBuilder);
+
+            protected readonly usernameCtrl = this.fb.control('', Validators.required); 👈
+            protected readonly passwordCtrl = this.fb.control('', Validators.required); 👈
+
+            protected readonly userForm = this.fb.group({
+                username: this.usernameCtrl,
+                password: this.passwordCtrl
+            });
+
+            protected register(): void {
+                console.log(this.userForm.value);
+            }
+        }
+
+    And then use the references in your template:
+
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()" [formGroup]="userForm">
+            <div>
+                <label>Username</label><input formControlName="username">
+                @if (👉usernameCtrl.touched && usernameCtrl.hasError('required')) {
+                    <div>Username is required</div>
+                }
+                @if (👉usernameCtrl.touched && usernameCtrl.hasError('minlength')) {
+                    <div>Username should be 3 characters min</div>
+                }
+            </div>
+            <div>
+                <label>Password</label><input type="password" formControlName="password">
+                @if (👉passwordCtrl.touched && passwordCtrl.hasError('required')) {
+                    <div>Password is required</div>
+                }
+            </div>
+            <button type="submit" [disabled]="userForm.invalid">Register</button>
+        </form>
+
+
+
+
+2️⃣ Errors and submission in a template-driven form:
+
+- In a template-driven form, we don’t have any field in our component referring to the FormGroup, but
+    🔥we already declared a local variable in the template, referring to the NgForm object exported
+    by the form directive. 🔥🔥Once again, this variable allows you to know the state of the form and
+    accessing its controls.
+
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register(userForm.value)" #userForm="ngForm">
+            <div>
+                <label>Username</label><input name="username" ngModel required>
+            </div>
+            <div>
+                <label>Password</label><input type="password" name="password" ngModel required>
+            </div>
+            <button type="submit" [disabled]="userForm.invalid">Register</button>
+        </form>
+    
+
+    Now we need to display the errors of each field.
+    🔥🔥Like the form directive, each control exports its FormControl object, so we can create a local
+    variable to access the errors:
+
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register(userForm.value)" #userForm="ngForm">
+            <div>
+                <label>Username</label><input name="username" ngModel required #username="ngModel">
+                @if (👉username.touched && username.hasError('required')) {
+                    <div>Username is required</div>
+                }
+            </div>
+                <div>
+                <label>Password</label><input type="password" name="password" ngModel required
+                #password="ngModel">
+                @if (👉password.touched && password.hasError('required')) {
+                    <div>Password is required</div>
+                }
+            </div>
+            <button type="submit" [disabled]="userForm.invalid">Register</button>
+        </form>
+
+
+    Yay🥳!!

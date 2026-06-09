@@ -13,14 +13,14 @@ Template-driven:
         your components. The whole FormsModule must be imported.
         1️⃣
         import { Component } from '@angular/core';
-        import { FormsModule } from '@angular/forms';
+        import { FormsModule } from '@angular/forms'; 👈
         @Component({
             selector: 'ns-register',
             template: `
                 <h2>Sign up</h2>
                 <form></form>
             `,
-            imports: [FormsModule]
+            imports: [FormsModule] 👈
         })
         export class RegisterForm {}
     
@@ -80,7 +80,7 @@ Template-driven:
     🔥🔥The NgModel directive creates the FormControl for you, and the form automatically creates the
     FormGroup. ⚠️Note that you have to give a name to the input, which will be used by the framework to
     create the FormGroup.
-        5️⃣
+        4️⃣
         <h2>Sign up</h2>
         <form (ngSubmit)="register()">
             <div>
@@ -98,11 +98,11 @@ Template-driven:
     to define a variable, userForm, referencing the form. We can do that because the form directive exports
     the NgForm directive instance, which has the same methods as the FormGroup class. We’ll see the
     exporting part in more detail when we study how to build advanced directives.
-        6️⃣
+        5️⃣
         <h2>Sign up</h2>
         <!-- we use a local variable #userForm -->
         <!-- and give its value to the register method🧠 -->
-        <form (ngSubmit)="register(userForm.value)"👈 #userForm="ngForm"2️⃣>
+        <form (ngSubmit)="register(userForm.value)"👈 #userForm="ngForm" 👈>
             <div>
                 <label>Username</label><input name="username" ngModel>
             </div>

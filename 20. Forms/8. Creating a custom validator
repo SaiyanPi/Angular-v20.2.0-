@@ -1,0 +1,147 @@
+Creating a custom validator:
+
+
+- Pony races are an addictive game so you are only allowed to register if you are over 18. And we
+    want the user to enter the password twice, to be sure they haven’t made a mistake.
+    🤔How do we do this? We create a custom validator.
+
+- To do so, we just have to 🔥🔥create a method that takes a FormControl, tests its value and
+    returns an object with the errors or null, if the validation passes.
+
+        const isOldEnough = (control: AbstractControl<Date | null>) => {
+            // control is a date input, so we can build the Date from the value
+            const birthDatePlus18 = new Date(control.value!);
+            birthDatePlus18.setFullYear(birthDatePlus18.getFullYear() + 18);
+            return birthDatePlus18 < new Date() ? null : { tooYoung: true };
+        };
+    
+    Our validation method is pretty easy: we take the value of the control, we build the date, check
+    if the 18th birthday is before now and return an error with the key 'tooYoung' if not.
+    Now we need to include this validator.
+
+
+
+1️⃣ Using a validator in a code-driven form:
+
+- 🔥🔥We need to add a new control in our form with this validator, using the FormBuilder:
+
+        import { Component, inject } from '@angular/core';
+        import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors,
+        Validators } from '@angular/forms';
+
+        @Component({
+            selector: 'ns-register',
+            templateUrl: './register-form.html',
+            imports: [ReactiveFormsModule]
+        })
+
+        export class RegisterForm {
+            private readonly fb = inject(FormBuilder);
+            protected readonly usernameCtrl = this.fb.control('', Validators.required);
+            protected readonly passwordCtrl = this.fb.control('', Validators.required);
+        👉 protected readonly birthdateCtrl = this.fb.control('', [Validators.required,
+            RegisterForm.isOldEnough 👈]);
+
+            protected readonly userForm = this.fb.group({
+                username: this.usernameCtrl,
+                password: this.passwordCtrl,
+                birthdate: this.birthdateCtrl
+            });
+
+         👉private static isOldEnough(control: AbstractControl<string>): ValidationErrors | null {
+                // control is a date input, so we can build the Date from the value
+                const birthDatePlus18 = new Date(control.value);
+                birthDatePlus18.setFullYear(birthDatePlus18.getFullYear() + 18);
+                return birthDatePlus18 < new Date() ? null : { tooYoung: true };
+            }
+
+            protected register(): void {
+                console.log(this.userForm.value);
+            }
+        }
+
+
+    As you can see, we have added a new control birthdate, with two validators composed. The first
+    validator is required and the other is a static method of our class isOldEnough. 🔥🔥Of course
+    this method could be in another class if you wanted (⚠️⚠️required is a static method for example).
+
+    Don’t forget to add the field and display the errors in the form:
+
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()" [formGroup]="userForm">
+            <div>
+                <label>Username</label><input formControlName="username">
+                @if (usernameCtrl.touched && usernameCtrl.hasError('required')) {
+                    <div>Username is required</div>
+                }
+            </div>
+            <div>
+                <label>Password</label><input type="password" formControlName="password">
+                @if (passwordCtrl.touched && passwordCtrl.hasError('required')) {
+                    <div>Password is required</div>
+                }
+            </div>
+            <div>
+                <label>Birth date</label><input type="date" formControlName="birthdate">
+                @if (birthdateCtrl.touched) {
+                    @if (birthdateCtrl.hasError('required')) {
+                    <div>Birth date is required</div>
+                    } @else if (birthdateCtrl.hasError('tooYoung')) {
+                        <div>You're way too young to be betting on pony races</div>
+                    }
+                }
+            </div>
+            <button type="submit" [disabled]="userForm.invalid">Register</button>
+        </form>
+    
+    🤩Pretty easy, no?
+
+ 
+- ⚠️🔥Note that it’s also possible to create and add asynchronous validators (for example to check
+    with the backend if a username is available).
+
+        @Component({
+            selector: 'ns-register',
+            templateUrl: './register-form.html',
+            imports: [ReactiveFormsModule]
+        })
+
+        export class RegisterForm {
+            private readonly fb = inject(FormBuilder);
+            protected readonly usernameCtrl = this.fb.control('', Validators.required, 👉 control
+            => this.isUsernameAvailable(control));
+            
+            protected readonly userForm = this.fb.group({
+                username: this.usernameCtrl
+            });
+            
+         👉 private readonly userService = inject(UserService);
+         👉 private isUsernameAvailable(control: AbstractControl<string>): Observable 
+            <ValidationErrors | null> {
+                const username = control.value;
+                return this.userService
+                .isUsernameAvailable(username)
+                .pipe(map(available => (available ? null : { alreadyUsed: true })));
+            }
+
+            protected register(): void {
+                console.log(this.userForm.value);
+            }
+        }
+    
+    ⚠️🔥This asynchronous validator is not a static method this time because it needs to access the
+    service.
+    🔥🔥The method from the service returns an Observable that emits either null if there is no
+    error (the username is available), or an object to represent the error (the key will be the
+    error, as with synchronous validators).
+    🔥🔥🔥An interesting feature: the class ng-pending is dynamically added to the field while the
+    asynchronous validator is still completing its job. It allows you to display a spinner for
+    example to show that the validation is still ongoing.
+
+
+
+2️⃣ Using a validator in a template-driven form:
+
+- To add a custom validator in a template-driven form, we need to add it in… the template!
+- 🔥🔥To do this, you need to build a custom directive that we will apply on the input, but honestly
+    this is way easier when using a "code-driven" form…

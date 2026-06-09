@@ -1,0 +1,66 @@
+Grouping fields:
+
+
+- Until now, we just had one group: the complete form. But 🔥we can declare groups inside a group.
+    🔥🔥That’s very useful if you want to validate a group of fields together like an address, or,
+    like in our example, if you want to check if the password and its confirmation match.
+    🔥🔥The solution is to use a code-driven form.
+
+- First, 🔥🔥create a new group, passwordGroup with the two fields and add it in the group userForm
+    with the key passwordForm:
+
+        protected readonly usernameCtrl = this.fb.control('', Validators.required);
+        protected readonly passwordCtrl = this.fb.control('', Validators.required);
+        protected readonly confirmCtrl = this.fb.control('', Validators.required);
+    👉 protected readonly passwordGroup = this.fb.group(
+            { password: this.passwordCtrl, confirm: this.confirmCtrl },
+            {👉 validators: RegisterForm.passwordMatch } 
+        );
+
+        protected readonly userForm = this.fb.group({ 
+            username: this.usernameCtrl,
+         👉 passwordForm: this.passwordGroup 
+        });
+
+    👉 private static passwordMatch(group: AbstractControl<{ password: string; confirm:
+        string }>): ValidationErrors | null {
+            const password = group.value.password;
+            const confirm = group.value.confirm;
+            return password === confirm ? null : { matchingError: true };
+        }
+    
+
+    As you can see, 🔥🔥we have added a validator on the group, passwordMatch, that will be called
+    every time one of the fields changes.
+    Let’s update the template to reflect the new form, using the formGroupName directive:
+
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()" [formGroup]="userForm">
+            <div>
+                <label>Username</label><input formControlName="username">
+                @if (usernameCtrl.touched && usernameCtrl.hasError('required')) {
+                    <div>Username is required</div>
+                }
+            </div>
+        👉 <div formGroupName="passwordForm">
+                <div>
+                    <label>Password</label><input type="password" formControlName="password">
+                    @if (passwordCtrl.touched && passwordCtrl.hasError('required')) {
+                        <div>Password is required</div>
+                    }
+                </div>
+                <div>
+                    <label>Confirm password</label><input type="password" formControlName="confirm">
+                    @if (confirmCtrl.touched && confirmCtrl.hasError('required')) {
+                        <div>Confirm your password</div>
+                    }
+                </div>
+            👉 @if (passwordGroup.touched && passwordGroup.hasError('matchingError')) {
+                    <div>Your password does not match</div>
+                }
+            </div>
+            <button type="submit" [disabled]="userForm.invalid">Register</button>
+        </form>
+
+
+    🤩Voilà!
