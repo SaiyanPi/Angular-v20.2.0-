@@ -1,0 +1,51 @@
+Updating on blur or on submit only:
+
+
+- 🔥Angular 5.0 introduced the possibility of waiting for the blur or the submit event to update the
+    field’s value and validity. 🔥🔥To do so, the FormControl constructor accepts an options object
+    as the second parameter, to define the synchronous and asynchronous validators, and also the
+    updateOn option. Its value can be:
+    👉 change, it’s the default: the value and validity are updated on every change;
+    👉 blur, the value and validity are then updated only when the field loses the focus.
+    👉 submit, the value and validity are then updated only when the parent form is submitted.
+
+        protected readonly usernameCtrl = this.fb.control('', Validators.required);
+        protected readonly passwordCtrl = this.fb.control('', {
+            validators: Validators.required,
+            updateOn: 'blur' 👈
+        });
+
+    🔥🔥It’s also possible to configure this option on a group of fields all at once:
+
+        protected readonly userForm = this.fb.group(
+            {
+                username: this.usernameCtrl,
+                password: this.passwordCtrl
+            },
+         👉{
+                updateOn: 'blur'
+            }
+        );
+
+
+
+- 🔥🔥The same feature is available in template-driven forms, with the ngModelOptions input of the
+    NgModel directive:
+
+        <label>Username</label>
+        <input name="username" #usernameCtrl="ngModel" [(ngModel)]="user.username" 
+        👉[ngModelOptions]="{ updateOn: 'blur' }" required>
+        @if (usernameCtrl.touched && usernameCtrl.hasError('required')) {
+            <div>Username is required</div>
+        }
+    
+    🔥🔥or globally on a form with the NgFormOptions input (which appeared with Angular 5.0) of the
+    directive NgForm:
+
+        <form (ngSubmit)="register()" 👉[ngFormOptions]="{ updateOn: 'blur' }">
+        <div>
+            <label>Username</label>
+            <input name="username" #usernameCtrl="ngModel" [(ngModel)]="user.username" required>
+            @if (usernameCtrl.touched && usernameCtrl.hasError('required')) {
+                <div>Username is required</div>
+            }

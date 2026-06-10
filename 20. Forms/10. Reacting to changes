@@ -1,0 +1,83 @@
+Reacting to changes:
+
+
+- A last 🔥cool feature when using a code-driven form: 🔥🔥you can easily react to value changes,
+    using the observable valueChanges. Reactive programming FTW! 🤔For example, let’s say we want
+    our password field to display a strength indicator. We want to compute the strength at every
+    change of the password value:
+        1️⃣
+        private readonly fb = inject(FormBuilder);
+        protected readonly usernameCtrl = this.fb.control('', Validators.required);
+        protected readonly passwordCtrl = this.fb.control('', Validators.required);
+        protected readonly userForm = this.fb.group({
+            username: this.usernameCtrl,
+            password: this.passwordCtrl
+        });
+     👉protected readonly passwordStrength = signal(0); 
+     👉constructor() {
+            // we subscribe to every password change
+            this.passwordCtrl.valueChanges
+            .pipe(
+                // only recompute when the user stops typing for 400ms
+                debounceTime(400),
+
+                // only recompute if the new value is different from the last
+                distinctUntilChanged()
+            )
+            .subscribe(newValue => this.passwordStrength.set(this.computePasswordStrength(newValue)));
+        }
+
+
+    or with toSignal in other word Observables:(🔥🔥even better)
+
+      👉protected readonly passwordStrength = toSignal(
+            this.passwordCtrl.valueChanges.pipe(
+                // only recompute when the user stops typing for 400ms
+                debounceTime(400),
+
+                // only recompute if the new value is different from the last
+                distinctUntilChanged(),
+
+                // compute the length of the password
+                map(newValue => this.computePasswordStrength(newValue))
+            ), { initialValue: 0 }
+        );
+
+
+    Now we have a passwordStrength field in our component instance, that we can display to our user:
+        2️⃣
+        <h2>Sign up</h2>
+        <form (ngSubmit)="register()" [formGroup]="userForm">
+            <div>
+                <label>Username</label><input formControlName="username">
+                @if (usernameCtrl.touched && usernameCtrl.hasError('required')) {
+                    <div>Username is required</div>
+                }
+            </div>
+            <div>
+                <label>Password</label><input type="password" formControlName="password">
+             👉<div>Strength: {{ passwordStrength() }}</div>
+                @if (passwordCtrl.touched && passwordCtrl.hasError('required')) {
+                    <div>Password is required</div>
+                }
+            </div>
+            <button type="submit" [disabled]="userForm.invalid">Register</button>
+        </form>
+
+
+
+- We are leveraging RxJS operators to add a few cool features:
+    👉 debounceTime(400) will only emit values if the user stops typing for 400ms. That avoids computing
+        the password strength on every value the user enters. That’s really interesting if the
+        computing takes a long time, or launches an HTTP request.
+
+    👉 distinctUntilChanged() will only emit values if the new value entered is different than the last
+        one. Again that’s really interesting: imagine that the user enters 'password' then stops typing.
+        We compute the strength. Then they enter a new character and remove it quickly (before 400ms).
+        The next event out of debounceTime will again be 'password'. It makes no sense to recompute
+        the password strength again! This operator will not even emit the value, and saves us the
+        recomputing.
+
+
+- 🔥🔥RxJS can do tons of work for you: imagine coding yourself what we just did in two lines.
+    🔥🔥It can also easily combine with HTTP work, as the HttpClient service uses observables too.
