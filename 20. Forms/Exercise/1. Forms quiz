@@ -1,0 +1,75 @@
+----------------------------------------- Forms quiz ----------------------------------------------------
+
+1️⃣ How many (non experimental) ways are there to write forms in Angular?
+
+        1
+
+        2   ✅
+
+        3
+
+
+2️⃣ What classes does Angular offer to handle forms?
+
+        FormControl ✅
+
+        FormValue
+
+        FormGroup   ✅
+
+
+3️⃣ Which properties are available on these classes?
+
+        dirty   ✅
+
+        empty
+
+        pristine    ✅
+
+        valid   ✅
+
+        touched ✅
+
+        focused 
+
+        value   ✅
+
+        valueChanges    ✅
+
+
+4️⃣ Angular automatically validates a field if it has validators
+
+        true    ✅
+
+        false (you have to manually watch the field)
+
+
+5️⃣ How can you do a two-way binding on a field name?
+
+        <input ngModel="name">
+
+        <input [ngModel]="name" (ngModelChange)="name = $event">    ✅
+
+        <input [(ngModel)]="name">  ✅
+
+        <input ([ngModel])="name">
+
+
+6️⃣ How can you build a form with a field name in a reactive form?
+
+        this.form = formBuilder.group({ name: '' }) ✅
+
+        this.form = new FormGroup({ name: new FormControl() })  ✅
+
+        this.form = formBuilder.control({ name: '' })
+
+        this.form = { name: '' }
+
+
+7️⃣ How do you use this form in a template?
+
+        <form [formGroup]="form">   ✅
+
+        <form [(formGroup)]="form">
+
+        <form formGroup="form">
