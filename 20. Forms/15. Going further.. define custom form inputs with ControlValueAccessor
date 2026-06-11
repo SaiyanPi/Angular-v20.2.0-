@@ -1,0 +1,105 @@
+Going further: define custom form inputs with ControlValueAccessor:
+
+
+- 🔥HTML defines a large set of input types: text, password, checkbox, etc. But sometimes these
+    standard types don’t fit the bill.
+
+- 🔥🔥Angular allows defining custom components, and it’s actually possible to make them act as
+    Angular form controls, i.e. bind them to a form control by applying the NgModel directive or the
+    FormControlName directive, and thus integrating them in a form.
+
+- 🔥🔥The glue to implement this binding is an interface provided by Angular: ControlValueAccessor.
+
+- Fulfilling its contract is relatively straightforward. You have to
+    👉 accept the value of the FormControl and display it in your component (writeValue);
+    👉 notify Angular that the user changed the value somehow, by calling a provided callback
+        function (registerOnChange);
+    👉 notify Angular when the control should be considered as touched, by calling a provided
+        callback function (registerOnTouched);
+    👉 honor the request from Angular to disable or enable the control (setDisabledState).
+
+
+- 🤩We will illustrate all of this using a custom rating component. This component allows rating a
+    movie, for example, by giving it a note between 0 and 5. But instead of using a number or range
+    input, we would like the user to do that by simply clicking one of 6 buttons (that would typically
+    be displayed as star icons, but we’ll leave that out in the following example).
+
+    Here’s the code of such a component.
+
+        export class Rating implements ControlValueAccessor {
+            private onChange!: (rating: number) => void;
+            protected onTouched!: () => void;
+            protected readonly value = signal<number | null>(null);
+            protected readonly disabled = signal(false);
+            protected readonly pickableValues = [0, 1, 2, 3, 4, 5];
+
+            registerOnChange(🏷️fn: (rating: number) => void): void {
+                this.onChange = fn;
+            }
+
+            registerOnTouched(🏷️fn: () => void): void {
+                this.onTouched = fn;
+            }
+
+         🏷️setDisabledState(isDisabled: boolean): void {
+                this.disabled.set(isDisabled);
+            }
+
+            writeValue(v: number | null): void {
+                this.value.set(v);
+            }
+
+            protected setValueAndPropagateChanges(value: number) {
+                this.value.set(value);
+                // tell Angular the value has changed
+                this.onChange(value);
+            }
+        }
+
+
+    and here is its template:
+
+        @let v = value();
+        @for (pickableValue of pickableValues; track pickableValue) {
+            <button
+            [class.selected]="v != null && pickableValue <= v"
+            type="button"
+            (click)="setValueAndPropagateChanges(pickableValue)"
+            [disabled]="disabled()"
+            (blur)="onTouched()"
+            > {{ pickableValue }} </button>
+        }
+
+
+- 🏷️ The code to deal with the two callback functions and the disabled state is boilerplate code that
+    is almost identical in every CVA (ControlValueAccessor).
+
+    When a button is clicked, we change the value of the component of course, but we must also tell
+    Angular about this change. That’s what allows it to change the value of the form control, trigger
+    the validations, etc.
+
+    The disabled state is honored by disabling all the buttons.
+
+    And finally, we choose to make the form control touched as soon as one of the rating buttons loses
+    the focus. We do that by calling the provided onTouched callback function when a button fires a
+    blur event.
+
+
+- 🔥🔥The last thing we have to do is to register this component as one of the control value accessors
+    of the application. We do that by adding a provider to the rating component’s decorator. Don’t
+    bother too much with the syntax: you can simply copy and paste this snippet every time you define
+    a new CVA.
+
+        providers: [
+            {
+                provide: NG_VALUE_ACCESSOR,
+                useExisting: forwardRef(() => Rating),
+                multi: true
+            }
+        ]
+
+
+- 🔥🔥Voilà. We now have a shiny reusable rating component that can be used to rate something in any
+    form, by simply applying one of the standard Angular form directives to the component:
+        
+        <ns-rating id="rating" formControlName="rating" />

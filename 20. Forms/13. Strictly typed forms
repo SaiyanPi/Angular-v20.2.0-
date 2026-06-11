@@ -1,0 +1,111 @@
+Strictly typed forms:
+
+
+- 🤔Until version 14 of Angular, forms were not typed. What does that mean?
+    👉 Well, the value of a FormControl or a FormGroup was of type any, which is obviously far from
+        being ideal.
+    👉 If you upgrade an application from version 13 to version 14, in order not to break your code,
+        the types FormControl, FormGroup and FormArray are replaced with UntypedFormControl,
+        UntypedFormGroup and UntypedFormArray.
+
+- The original types are now typed. 🤔But what are the concrete changes in Angular 14?
+    👉 The form elements became generic. So, we now use FormControl<string> for example, to indicate
+        that the value of the control is a string. 
+    👉 The FormGroups, on the other hand, take the type of the controls that they contain.
+        For example, a FormGroup used to register a user will have the type
+        
+        FormGroup<{
+            username: FormControl<string>;
+            password: FormControl<string>;
+        }>;
+
+- 🔥🔥It’s verbose, but don’t panic: these generic types are, most of the time, inferred by the
+    compiler when the variables are initialized. (usually you don’t have to write them yourself
+    because TypeScript figures them out automatically)
+
+------------------------------------------------------------------------------------------------------
+
+Nullability:
+
+- I have simplified things a little bit in the previous section. 🔥🔥Indeed, the form elements typing
+    must consider two harsh realities:
+    1. form elements can be disabled
+    2. the behavior of the reset() method is to set the form control values to null.
+
+- 🔥🔥When a control is disabled, its value doesn’t appear in the value of its parent FormGroup. So,
+    if I decide to disable the password control of my form, the FormGroup value will simply be
+        
+        {
+            username: 'cedric'
+        }
+
+    And that is slightly annoying, because it implies that the value of the FormGroup is not of type
+        
+        {
+            username: string;
+            password: string;
+        }
+    
+    as one might expect, but it is in fact of type
+        
+        {
+            username?: string;
+            password?: string;
+        }
+    
+    Indeed, ⚠️Angular can’t possibly know whether you’re planning to disable the form controls or not.
+    It’s thus forced to make every of the properties of the FormGroup value optional. It’s your
+    responsibility, as a developer, to handle that. It’s typically done by using value.username! in
+    order to get a value of type string rather than a value of type string | undefined, if you know
+    that this control is not disabled.
+    
+    ⚠️Another possibility is to use the raw value of the form group (returned by getRawValue()). This
+    raw value contains all the properties, whether or not their matching control is disabled. And
+    these properties are thus not marked as optional. The second point causes the same kind of problem.
+    Since Angular can’t know if you’re planning to call the reset() method or not, the value of the
+    FormGroup is actually of type
+
+        {
+            username?: string | null;
+            password?: string | null;
+        }
+    
+    🔥🔥This second annoyance, unlike the first one, can be avoided. To avoid it, every element of
+    the form must be configured with the option nonNullable: true. This option changes the behavior
+    of reset(), which then resets the control to its initial value rather than null. Configuring this
+    option on every form element is quite verbose and tedious. It’s however the only way if you use
+    the form elements constructors to create them. It’s much easier if you choose to use the
+    FormBuilder. 🔥🔥All you need to do is to inject, instead of FormBuilder, a NonNullableFormBuilder.
+    It has the same API, but configures all the elements it created with the nonNullable option.
+
+        export class RegisterForm {
+            protected readonly userForm = inject(👉NonNullableFormBuilder).group({
+                username: '',
+                password: ''
+            });
+        }
+    
+    ⚠️⚠️Note that the name NonNullableFormBuilder is misleading. Using it doesn’t prevent controls
+    to have a nullable value.
+    🔥🔥Consider, for instance, an input of type number. There is no real good default value other than
+    null in this case. And even if you initialize the control with a non-null value, The user
+    can always clear the input value, thus setting the control value to null. In this case, you have
+    to explicitly type the control:
+
+        readonly birthYearCtrl = new FormControl<number | null>(null);
+    
+    or, with the FormBuilder or the NonNullableFormBuilder:
+        
+        protected readonly birthYearCtrl = inject(NonNullableFormBuilder).control<number | null>(null);
+    
+    or if the control is part of a FormGroup:
+        
+        protected readonly formGroup = inject(NonNullableFormBuilder).group({
+            // ...
+            birthYear: null as number | null
+        });
+
+
+- All this additional complexity might look off-putting, but one should not overlook what we gained:
+    objects with properties of known names and types, which can be auto-completed by the IDE. In the
+    end, more maintainable and more robust code.

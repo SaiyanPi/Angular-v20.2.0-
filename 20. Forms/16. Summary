@@ -1,0 +1,17 @@
+Summary:
+
+
+- Angular offers two ways to build a form:
+    🔥one by setting up everything in the template. But, as you have seen, it forces us to have custom
+    directives for the validation and is harder to test. This way of doing things is useful for simple
+    forms, with just one or a few fields for example, and it gives us two-way data-binding.
+
+    🔥one by setting up almost everything in the component. This way allows an easier setup for
+    validation and testing, with several levels of groups if you need them. It is your weapon of
+    choice for building complex forms. You can even react to changes on a group, or on a field.
+
+
+- 🔥🔥This is maybe the most pragmatic approach: go with template-based and bidirectional binding if
+    you like it, and as soon as you need access to form groups or form controls, for example to add
+    custom validation or reactive behavior, then declare the ones you need in the component, and bind
+    the inputs and divs to them using the appropriate directives.

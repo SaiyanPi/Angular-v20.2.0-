@@ -1,0 +1,96 @@
+FormArray and FormRecord:
+
+
+- FormControl and FormGroup are not the only entities that we can use to build a form.
+    🔥🔥If you want a part of the form to be dynamic, you can use a FormArray or a FormRecord.
+
+- 🔥🔥FormArray is an array of controls that contains the same types of value. A typical example is a
+    form where you want the users to be able to add/remove values, like for example tags when editing
+    a blog post:
+
+        export class EditBlogPost {
+            private readonly fb = inject(FormBuilder);
+
+            // one empty tag by default
+            protected readonly tagsArray = this.fb.array(['']);
+            protected readonly blogPostForm = this.fb.group({
+                title: '',
+                content: '',
+                tags: this.tagsArray
+            });
+
+            protected addTag() {
+                this.tagsArray.push(this.fb.control(''));
+            }
+            
+            protected removeTag(index: number) {
+                this.tagsArray.removeAt(index);
+            }
+
+    Then you can iterate on the controls in the template, and have buttons to add/remove a tag:
+
+        <div formArrayName="tags">
+            <p>Tags</p>
+            <button id="add-tag" (click)="addTag()">Add tag</button>
+            @for (tagControl of tagsArray.controls; track tagControl) {
+                <div>
+                    <input class="tag" [formControlName]="$index" />
+                    <button class="remove-tag" (click)="removeTag($index)">Remove tag</button>
+                </div>
+            }
+        </div>
+    
+    The value of the FormArray is an array of strings in this example. 🔥🔥Of course, form arrays can
+    contain any kind of controls. For example, if you want to add lines to an invoice, the FormArray
+    will contain form groups with a label, quantity, price, etc.
+
+
+
+- 🔥🔥FormRecord is another entity you can use to build forms. It has been introduced in Angular v14,
+    and allows building key-value maps.
+
+- Let’s say you want to build the packing list for a trip, with the possibility to add and remove
+    items, and to check/uncheck them. FormRecord can help in that case:
+
+        export class EditPackingList {
+            private readonly fb = inject(NonNullableFormBuilder);
+            protected readonly equipmentRecord = this.fb.record({
+                // always bring your toothbrush
+                toothbrush: true
+            });
+
+            protected readonly packingListForm = this.fb.group({
+                equipments: this.equipmentRecord
+            });
+
+            protected addEquipment(equipment: string) {
+                this.equipmentRecord.addControl(equipment, this.fb.control(true));
+            }
+            protected removeEquipment(equipment: string) {
+                this.equipmentRecord.removeControl(equipment);
+            }
+    
+    Then you can iterate on the controls in the template, and have buttons to add/remove equipment:
+
+        <div formGroupName="equipments">
+            <label for="equipment-to-add">Equipments</label>
+            <input #equipment id="equipment-to-add" />
+            <button id="add-equipment" (click)="addEquipment(equipment.value)">Add</button>
+            @for (control of equipmentRecord.controls | keyvalue; track control) {
+                <div>
+                    <label [for]="'eq-' + control.key">{{ control.key }}</label>
+                    <input [id]="'eq-' + control.key" type="checkbox" class="equipment"
+                    [formControlName]="control.key" />
+                    <button class="remove-equipment" (click)="removeEquipment(control.key)">Remove
+                    equipment</button>
+                </div>
+            }
+        </div>
+
+    🔥🔥The value of the FormRecord will then be an object, with the equipment name as the key and a
+    boolean as value. For example:
+        
+        {
+            toothbrush: false,
+            jacket: true
+        }

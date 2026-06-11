@@ -1,0 +1,56 @@
+Super simple validation error messages with ngx-valdemort:
+
+
+- As you may have noticed, ⚠️the templates can quickly become very verbose with all the error
+    messages that we have to repeat for each error type on each field, in every form. You are
+    quickly stuck with very long ngIf and copied/pasted boilerplate between components.
+
+- 🔥As we find it distasteful as well, we wrote a tiny open-source library to make it easier (heavily
+    inspired by ngMessages in AngularJS): ngx-valdemort.
+
+    Instead of
+        <input id="email" formControlName="email" class="form-control" type="email" />
+        @if (form.controls.email.invalid && (f.submitted || form.controls.email.touched)) {
+            <div class="invalid-feedback">
+                @if (form.controls.email.hasError('required')) {
+                    <div>The email is required</div>
+                }
+                @if (form.controls.email.hasError('email')) {
+                    <div>The email must be a valid email address</div>
+                }
+            </div>
+        }
+
+    🔥🔥the library allows you to write:
+
+        <input id="email" formControlName="email" class="form-control" type="email" />
+        <val-errors controlName="email">
+            <ng-template valError="required">The email is required</ng-template>
+            <ng-template valError="email">The email must be a valid email address</ng-template>
+        </val-errors>
+
+
+
+- 🔥🔥We can even do better by defining default messages once and for all:
+        
+        <val-default-errors>
+            <ng-template valError="required" let-label> {{ label || 'This field' }} is required
+            </ng-template>
+
+            <ng-template valError="email" let-label> {{ label || 'This field' }} must be a valid
+            email address </ng-template>
+
+            <ng-template valError="min" let-error="error" let-label>
+            {{ label || 'This field' }} must be at least {{ error.min | number }} </ng-template>
+            
+            <!-- same for the other types of error -->
+        </val-default-errors>
+    
+
+    And then simply use:
+
+        <input id="email" formControlName="email" class="form-control" type="email" />
+        <val-errors controlName="email" label="The email" />
+
+- We provide an integration with Bootstrap and Material, to have error messages with a coherent
+    style if you use one of these CSS frameworks. Give it a try, you won’t regret it!
