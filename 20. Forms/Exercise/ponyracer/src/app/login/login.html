@@ -1,0 +1,30 @@
+<div class="row">
+  <div class="col-md-6 offset-md-3">
+    <h1>Log in</h1>
+    @if (authenticationFailed()) {
+      <div class="alert alert-danger" role="alert">Nope, Try again.</div>
+    }
+
+    <form (ngSubmit)="authenticate()" [formGroup]="credentials">
+      <div class="mb-3">
+        <label for="login" class="form-label">Login</label>
+        <input id="login" class="form-control" formControlName="login" />
+        <!-- error message here -->
+        @if (credentials.controls.login.touched && credentials.controls.login.hasError('required')) {
+          <div class="invalid-feedback">Login is required</div>
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input id="password" type="password" class="form-control" formControlName="password" />
+        <!-- error message here -->
+        @if (credentials.controls.password.touched && credentials.controls.password.hasError('required')) {
+          <div class="invalid-feedback">Password is required</div>
+        }
+      </div>
+
+      <button class="btn btn-primary" type="submit" [disabled]="credentials.invalid">Log me in!</button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,73 @@
+--------------------------------------------- Login form -----------------------------------------------------
+
+
+- BUILD A SIMPLE REACTIVE FORM TO AUTHENTICATE OUR USERS.
+
+1️⃣ We would now like to create a login page. New page = New component! Create a component login.
+
+
+2️⃣ Add ReactiveFormsModule (from @angular/forms) to its imports.
+    The template must contain a h1 with the text "Log in".
+    The form must contain two fields:
+        👉 a mandatory input field named login.
+        👉 a mandatory input field named password (with type="password").
+    
+    To have something not too ugly, use the Bootstrap styles. For example, an email field should
+    look like the following:
+        
+        <div class="mb-3">
+            <label for="login" class="form-label">Login</label>
+            <input id="login" class="form-control" formControlName="login">
+            <!-- error message here -->
+        </div>
+
+
+3️⃣ As the fields are mandatory, we will display an error message under each field. Add a div below
+    each input, and 💡make sure it’s only visible when the field is touched and has the error required.
+    The message displayed in that div should be "Login is required", or "Password is required",
+    with a class invalid-feedback:
+        
+        <div class="invalid-feedback">Login is required</div>
+
+
+4️⃣ Copy the following style in styles.css to have a red border around the input when it’s invalid,
+    and properly display the error messages:
+    styles.css:
+
+        input.ng-touched.ng-invalid {
+            border: 1px solid red;
+        }
+
+        .invalid-feedback {
+            display: block;
+        }
+
+
+5️⃣ Add a button of type submit at the end of the form, containing the text "Log me in!".
+    Create a UserService with the method authenticate(login: string, password: string).
+    The submission must call a method authenticate(). This method must first check if the form is valid.
+    If the form is invalid, mark all fields as touched using markAllAsTouched() and return immediately.
+    If the form is valid, this method will delegate to a method authenticate
+    (login: string; password: string) of a new UserService. The service method must return an
+    Observable<UserModel>, to which the component method subscribes.
+
+
+6️⃣ Create an interface representing the user, named UserModel. You’ll find the fields of a user in the
+API documentation(https://ponyracer.ninja-squad.com/apidoc#resources-user). Add to these fields an
+optional token field of type string, that we’ll need later.
+
+
+7️⃣ In case of success, redirect to the home page. In case of failure, set a boolean signal
+    authenticationFailed to true, and use this signal in the template to display an error message.
+    This error message should be displayed in a simple div and should contain "Nope, try again":
+
+    login.html:
+        <div class="alert alert-danger" role="alert">Nope, try again.</div>
+
+
+8️⃣ Final step: add the necessary configuration in the router to be able to navigate to this component
+    using the URL /login, and replace the "Races" link in the home page by a "Login" link, allowing to
+    go to the login page.
+
+
+9️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
