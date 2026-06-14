@@ -1,0 +1,38 @@
+Standard schema validation with validateStandardSchema():
+
+
+- 🔥In addition to the previous built-in validators, signal forms offer a new way to define the field’s
+    constraints, by using a schema validation. A few libraries have made this popular lately, like Zod
+    or Valibot
+
+- 💡Both allow you to define a schema to represent your data, using functions to define the type of each
+    field, and to add constraints to these fields. These libraries and others even joined their effort to
+    define a standard: Standard Schema, which provides a common interface, called StandardSchemaV1.
+    🔥Angular relies on this standard and offers a validateStandardSchema() function which accepts such a
+    StandardSchemaV1 schema.
+
+- This schema can be defined with whatever library you prefer. 🔥Let’s use Zod Mini to define a
+    validation schema for our Register form:
+    register.ts:
+        
+        form => {
+            validateStandardSchema(
+                form,
+                z.object({ email: z.string().check(z.email()), password: z.string().check(z.minLength(6)) })
+            );
+        },
+
+    🔥Here, we don’t define error messages. The errors will be generated automatically by the
+    validateStandardSchema() function which returns errors of type StandardSchemaValidationError.
+
+    🔥These errors have the same properties as the previous ValidationError(see previous section). For
+    example, if you input a too short password, you’ll get an error like this:
+
+        'Too small: expected string to have >=6 characters'
+    
+
+    🔥This can be customized as well, as Zod Mini allows defining error messages when defining the
+    schema, using 
+        
+        z.string().check(z.minLength(6, { message: issue => `Password should have at least 
+        ${issue.minimum} characters` })) 

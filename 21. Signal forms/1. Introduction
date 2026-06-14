@@ -1,0 +1,11 @@
+Signal forms:
+
+
+- 🤩In Angular v22, developers gained access to a new way to build forms: Signal Forms.
+
+- 🔥🔥After years of working with template-driven forms (ngModel) and reactive forms (formGroup
+    /formControl), we now have a third approach that’s entirely based on signals, available in the
+    @angular/forms/signals package.
+
+- While this is great news for the future, it also means we need to learn a third way to write forms.
+    But don’t fear, let’s dive in!

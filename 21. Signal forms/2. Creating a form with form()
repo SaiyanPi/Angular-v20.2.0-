@@ -1,0 +1,71 @@
+Creating a form with form():
+
+
+- As this new way is based on signals, 🔥the first thing to do in your component is to define a signal
+    that will hold the value of the form. 🔥Then you can create a FieldTree to edit the value of this
+    signal, using the form() function from the @angular/forms/signals package.
+
+- Here I want to write a Login component, where the user inputs their credentials:
+    login.ts:
+
+        // 👇 signal to hold the form credentials
+        private readonly credentials = signal({
+            login: '',
+            password: ''
+        });
+        // 👇 form created from the credentials signal (type is `FieldTree`)
+        protected readonly loginForm = form(this.credentials);
+
+    🔥Then we need to bind each input/select/textarea to a field in the form. This is done using a single
+    directive, FormField:
+    login.html:
+        
+        <form (submit)="authenticate($event)" novalidate>
+            <label for="login">Login</label>
+            <input id="login" 👉[formField]="loginForm.login" />
+
+            <label for="password">Password</label>
+            <input id="password" 👉[formField]="loginForm.password" />
+
+            <button type="submit">Log in</button>
+        </form>
+
+    🤩That’s it! With just the [formField] directive, your inputs are automatically bound to the form
+    fields. If a user types something in an input, it will update the corresponding property of the
+    signal. And if the code modifies the signal value, the input will display the new value.
+
+
+- 🔥The FieldTree object, returned by the form() function, is a key concept in signal forms. Your
+    loginForm is a FieldTree, and so are loginForm.login and loginForm.password.
+
+
+- 🔥A FieldTree, like a Signal, is an object that is also a function. If you call it (loginForm()),
+    it returns a FieldState object with several signal properties that represent the state of the field:
+        • value(): the current value of the field (may be debounced)
+        • controlValue(): the current value in the form control (always up-to-date)
+        • touched(): whether the field has been touched or not
+        • dirty(): whether the field is pristine or not
+        • disabled(): whether the field is disabled or not
+        • disabledReasons(): if the field is disabled, the reasons why
+        • hidden(): whether the field is hidden or not
+        • readonly(): whether the field is readonly or not
+        • submitting(): whether the field is being submitted or not
+
+    🔥Some properties are related to validation, a topic we cover below:
+        • pending(): whether the field is pending (async validators running)
+        • valid(): whether the field is valid (all validators passed). Note that valid() is false until
+                    all async validators are done.
+        • invalid(): whether the field is invalid
+        • errors(): the errors of the field (if any)
+        • errorSummary(): the errors of the field and its sub-fields (if any)
+    
+    🔥You can use getError(kind) to get the first error of a given kind (for example required or
+        minLength).
+    
+    🔥It also has a few methods to change the state of the field:
+        • reset() to mark the field as pristine and untouched (but does not reset the value)
+        • markAsTouched()/markAsDirty() to mark the field as touched/dirty
+        • reloadValidation() to reload all asynchronous validators for this field and its descendants.
+
+    🔥We can also grab the FieldState of a sub-field using loginForm.login() for example, and each
+        property then represents the state of that sub-field (its value, dirtiness, etc).

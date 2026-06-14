@@ -1,0 +1,120 @@
+Adding validation with built-in validators:
+
+
+-💡Angular provides a validation system based on functions that can be used to programmatically constrain
+    the value of a field.
+
+- As with the previous form systems, there are two types of validators:
+    • synchronous validators, that run immediately
+    • asynchronous validators, that return a promise and only run if all the synchronous validators
+        on the field pass.
+
+- 🔥The framework itself provides some built-in synchronous validators, the same as those it provides
+    for reactive and template-driven forms:
+    • required(field) to mark a field as required
+    • minLength(field, length) to set a minimum length (for strings or arrays)
+    • maxLength(field, length) to set a maximum length (for strings or arrays)
+    • min(field, min) to set a minimum value (for numbers)
+    • max(field, max) to set a maximum value (for numbers)
+    • minDate(field, minDate) to set a minimum value (for dates)
+    • maxDate(field, maxDate) to set a maximum value (for dates)
+    • email(field) to validate an email address
+    • pattern(field, pattern) to validate a value against a regex pattern
+
+
+- 🤩Let’s build another Register form, allowing the user to create an account:
+    register.ts:
+
+        protected readonly accountForm = form(
+            this.credentials,
+            //👇 add validators to the fields, with their error messages
+            form => {
+                // email is mandatory
+                required(form.email, { message: 'Email is required' });
+
+                // must be a valid email
+                email(form.email, { message: 'Email is not valid' });
+
+                // password is mandatory
+                required(form.password, { message: 'Password is required' });
+
+                // should have at least 6 characters
+                minLength(form.password, 6, {
+                    // 🔥can also be a function, if you need to access the current value/state of the field
+                    message: password => `Password should have at least 6 characters but has only
+                    ${password.value().length}`
+                });
+            },
+            {
+                submission: {
+                    action: () => this.userService.register(this.credentials().email, this.credentials()
+                    .password)
+                }
+            }
+        );
+
+    🔥Each validator will then run when the value of the field changes.
+    🔥If the validation fails, a ValidationError is added to the errors() property of the field.
+    🔥A ValidationError is an object with several properties:
+        • kind: the kind of error (for example required, minLength, etc)
+        • field: the field that caused the error
+        • message: an optional human-readable message. There is no message by default, you need to
+                    provide it yourself when applying the validator if you want one.
+
+    (🔥Some validators can add more properties to the error, for example, the minLength validator adds
+    a minLength property to the error, so you can access it when displaying the error message.)
+
+    🔥These errors can be displayed in the template by iterating over the errors() property of the field,
+    or by checking for a specific error kind with getError():
+    register.html:
+
+        <input id="email" [formField]="accountForm.email" />
+        @let email = accountForm.email();
+        @if (email.touched() && !email.valid()) {
+            <div data-testid="email-errors">
+             👉 @for (error of email.errors(); track error.kind) {
+                    <div>{{ error.message }}</div>
+                }
+            </div>
+        }
+        @if (accountForm().touched() && !accountForm().valid()) {
+            <div data-testid="form-errors">
+             👉 @for (error of accountForm().errors(); track error.kind) {
+                    <div>{{ error.message }}</div>
+                }
+            </div>
+        }
+    
+
+- 🔥The built-in validators do more than they used to: 🔥they also add a metadata on the field. 🔥This
+    property can be useful to know if a validator is applied to a field. For example, in the template,
+    you can add an asterisk next to the label of required fields:
+    register.html:
+        
+        <label for="email">
+            <span>Email</span>
+        👉 @let isEmailRequiredMetadata = accountForm.email().metadata(REQUIRED);
+        👉 @if (isEmailRequiredMetadata?.()) {
+                <span>*</span>
+            }
+        </label>
+    
+    🔥The metadata(REQUIRED) method returns a signal, and its value can be true or false.
+    🔥But some validators store additional details in this metadata. For example, the signal returned by
+    metadata(MIN_LENGTH) contains the minimum length.
+
+    This is a powerful mechanism as you can also define your own metadata in custom validators, and
+    use it in the template to display dynamic information about the validation rules
+
+    🔥The built-in validators have a shortcut to access this metadata in the template. For example,
+    instead of writing field.metadata(REQUIRED)() to know if a field is required, you can write
+    field.required() directly:
+    register.html:
+        
+        <label for="email">
+            <span>Email</span>
+            @let isEmailRequired = accountForm.email().required(); 👈
+            @if (isEmailRequired) {
+                <span>*</span>
+            }
+        </label>

@@ -1,0 +1,92 @@
+Custom validation with validate() and validateTree():
+
+
+- 🔥You can also write your own custom validators, either synchronous or asynchronous, and apply them
+    with validate()
+
+- Let’s start with a synchronous validator, that checks that the password of our Register form is
+    strong enough.
+
+- 🔥A validator is simply a function that takes a 🧠ChildFieldContext as an argument and returns either
+    undefined if the field is valid, or a ValidationError if the field is invalid.
+    🔥The ChildFieldContext provides useful methods to get the value or state of the field (as well as
+    the value or state of other fields, more on that later)
+    🔥Validators are typed, which is a great improvement over previous form systems.
+
+    register.ts:
+
+        // password is strong enough
+        validate(form.password, (context: ChildFieldContext<string>) =>
+            isTooWeak(context.value()) ? { kind: 'too-weak', message: 'Password is too weak' } : undefined
+        );
+
+
+- 🔥It is also possible to add cross-field validation, 🔥by adding the validator to the parent field, and
+    checking the values of the sub-fields
+    register.ts:
+
+        // password is different from email
+        validate(form, context => {
+            const { email, password } = context.value();
+            return email && password && email === password
+            ? {
+                kind: 'password-different-from-email',
+                message: 'Password should not be the same as email'
+            } : undefined;
+        });
+    
+    🔥In your template, you can display this cross-field validation error by checking the errors on the
+    form itself:
+    register.html:
+
+        <input id="email" [formField]="accountForm.email" />
+        @let email = accountForm.email();
+        @if (email.touched() && !email.valid()) {
+            <div data-testid="email-errors">
+                @for (error of email.errors(); track error.kind) {
+                    <div>{{ error.message }}</div>
+                }
+            </div>
+            }
+        @if (accountForm().touched() && !accountForm().valid()) {
+            <div data-testid="form-errors">
+                @for (error of accountForm().errors(); track error.kind) {
+                    <div>{{ error.message }}</div>
+                }
+            </div>
+        }
+    
+    🧠🔥Alternatively, you can put the cross-field validation error on a specific field, using
+    validateTree() instead of validate(). This function works like validate(), but allows returning
+    errors targeting specific sub-fields of the tree. For example, to validate that the password is
+    different from the email, but show the error on the password field:
+    register.ts:
+
+        validateTree(form, context => {
+            const { email, password } = context.value();
+            return email && password && email === password
+            ? {
+                //👇 targets the password field
+                fieldTree: context.fieldTree.password,
+                kind: 'password-different-from-email',
+                message: 'Password should not be the same as email'
+            } : undefined;
+        });
+
+
+- 🔥It is also possible to add a validation to a field and get the value of another field by using the
+    valueOf() method. The same example can be written like this:
+    register.ts:
+
+        //👇 the validator is defined on the password field
+        validate(form.password, context => {
+            //👇 get the value of the email field
+            const email = context.valueOf(form.email);
+            const password = context.value();
+            return email && password && email === password
+            ? {
+                kind: 'is-different-from-email',
+                message: 'Password should not be the same as email'
+            }
+            : undefined;
+        });

@@ -1,0 +1,45 @@
+Submitting the form with the FormRoot directive:
+
+
+- 🔥To submit the form, you can use the FormRoot directive, which automatically listens to the submit
+    event and calls the submit action defined with the form() function.
+    This submit action:
+    1. marks all fields as touched
+    2. checks the form validity
+    3. if valid, calls your provided async action
+
+- 🔥When defining the form, you can use the second parameter of the form() function to specify the
+    submit action:
+    login.ts:
+
+        protected readonly loginForm = form(this.credentials, 👉{
+            submission: {
+                action: async () => await this.userService.authenticate(this.credentials().login,
+                this.credentials().password),
+                onInvalid: () => this.invalidSubmission.set(true),
+                ignoreValidators: 'none'
+            }
+        })
+    
+    🔥As you can see, this submission option also allows to define an onInvalid callback, which is called
+    when the form is submitted while invalid.
+
+    🔥The ignoreValidators option let you define whether the validation should be ignored when submitting
+    the form or not:
+        👉 pending (default value) invokes the action even if there are pending asynchronous validations,
+            but doesn’t if there are validation errors;
+        👉 all invokes the action even if there are validation errors;
+        👉 none only invokes the action if there is no error and no pending validation.
+
+    🔥FormRoot receives the form as an input. So, to come back to our example, we can write:
+    login.html:
+
+        <form [formRoot]="loginForm">
+            <label for="login">Login</label>
+            <input id="login" [formField]="loginForm.login" />
+            <label for="password">Password</label>
+            <input id="password" [formField]="loginForm.password" />
+            <button type="submit">Log in</button>
+        </form>
+    
+    Let’s now add some validation to our form.
