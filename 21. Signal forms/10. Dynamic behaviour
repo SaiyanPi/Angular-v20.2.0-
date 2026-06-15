@@ -1,0 +1,87 @@
+Dynamic behavior:
+
+
+- 😮A more realistic form often has some dynamic behavior, for example, enabling/disabling or
+    hiding/displaying fields based on the value of other fields, or adding/removing validators.
+
+- 🔥To hide a field, you can use the hidden() function, which lets you specify when the field should
+    be hidden or not, based on the state of the form. 🔥When a field is hidden, it is excluded from
+    validation.
+
+- 🔥In the template, you can then use an @if block to display the field only if it’s not hidden.
+
+- 🔥Similarly, to disable a field, you can use the disabled() function in the form schema. Here, the
+    password field is disabled unless the login is valid:
+    register.ts:
+
+        protected readonly loginForm = form(this.credentials, f => {
+            required(f.login);
+            //👇 disable the password field until a valid login is provided
+            disabled(f.password, {
+                when: ({ stateOf }) => {
+                    return !stateOf(f.login).valid();
+                }
+            });
+        });
+    
+    😮🔥You can go even further and return a string from the disabled logic, in order to populate the
+    disabledReasons() of the field
+
+
+- 🔥The last function to know about is readonly(), which makes a field read-only as you imagine.
+    🔥This is useful when you want to display an input that the user may not edit, but that should
+    still be submitted with the form.
+    🔥disabled() and readonly() automatically update the HTML attributes of the corresponding field in
+    the template: you don’t need to do anything special for an input to be disabled in the template
+    part of the form.
+
+    💡Disabled fields do not behave the same way as in reactive forms: their value is still
+    part of the form value when submitting it. The positive side is that you don’t have
+    to deal with the fact that all properties are potentially undefined. The negative side
+    is that you need to be careful before sending this value to the server: it could be
+    invalid if it comes from a disabled field. The same goes for hidden fields.
+
+
+- These functions can be used together to create complex dynamic behavior, and they can be applied
+    conditionally. ⚠️⚠️The second parameter of the form() function is not a reactive function, which
+    means you can’t use if/else conditions based on signals
+
+    For example, 🤩to make a field mandatory only when a user is not admin we can use the when option
+    of the required() validator. 🔥Its predicate receives helpers such as 👉valueOf and 👉stateOf,
+    which can read the value or state of any field in the form:
+    register.ts:
+
+        protected readonly accountForm = form(this.user, form => {
+            //👇 the birth year field is required only when the user is not admin
+            required(form.birthYear, {
+                message: 'Birth year is required for non-admin users',
+                when: ({ valueOf }) => {
+                    return !valueOf(form.isAdmin);
+                }
+            });
+        });
+
+
+- 🔥If you need to apply a whole group of rules under the same condition, you can use applyWhen().
+    😮Here the birthYear field is both required and constrained to four digits only when the user is
+    not admin:
+    register.ts:
+
+        protected readonly accountForm = form(this.user, form => {
+            //👇 these rules only apply when the isAdmin checkbox is not checked
+            applyWhen(
+                form,
+                context => !context.valueOf(form.isAdmin),
+                form => {
+                    required(form.birthYear, { message: 'Birth year is required for non-admin users'});
+                    pattern(form.birthYear, /^\d{4}$/, { message: 'Birth year must contain four digits' });
+                }
+            );
+        });
+
+
+- applyWhenValue() is a variant where the predicate receives the current value of the path as an
+    argument. It is especially useful with type guards: when the predicate narrows the value type, the
+    schema function receives the narrowed path type. 🔥You can also use applyWhen() or applyWhenValue()
+    to conditionally apply a reusable schema or a schema function that doesn’t expose its own when
+    option.

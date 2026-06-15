@@ -1,0 +1,72 @@
+Extracting and applying schemas with apply():
+
+
+- 😮🔥To avoid duplicating validation logic across forms, you can extract it into a reusable schema.
+    Then we can apply this schema to both fields of the form.
+
+- 🔥If both our login and password fields should be required and with a minimum length, we can
+    define the following schema:
+    register.ts:
+
+        const requiredAndMinLengthSchema = schema<string>(field => {
+            required(field, { message: 'This field is required' });
+            minLength(field, 3, { message: 'Minimum length is 3 characters' });
+        });
+
+    🔥Then we can apply this schema to both fields in our forms:
+    register.ts:
+       
+        protected readonly accountForm = form(this.user, context => {
+            //👇 apply the same schema to both fields
+            apply(context.login, requiredAndMinLengthSchema);
+            apply(context.password, requiredAndMinLengthSchema);
+        });
+    
+    🔥A schema can also be applied to all elements of an array using applyEach():
+    event.ts:
+
+        protected readonly eventForm = form(
+            signal({
+                location: '',
+                participants: ['ced'] as Array<string>
+            }),
+            context => {
+                //👇 apply the same schema to all participants
+                applyEach(context.participants, requiredAndMinLengthSchema);
+            }
+        );
+
+
+- 🔥By the way, to display an array of fields in the template, all you need is a plain old @for loop. No
+    need for any special directive.
+    event.html:
+
+        @for (participant of eventForm.participants; track participant) {
+            <div class="participant">
+                <label [for]="`participant-${$index}`">Username</label>
+                <input [id]="`participant-${$index}`" [formField]="participant" />
+                @if (participant().touched() && !participant().valid()) {
+                    <div [id]="`participant-${$index}-errors`">
+                        @for (error of participant().errors(); track error.kind) {
+                            <div>{{ error.message }}</div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+
+- 🔥applyEach() also works with objects, applying the schema to all properties. For example, if we want
+    to make all fields required:
+    login.ts:
+
+        protected readonly loginForm = form(
+            signal({
+                login: '',
+                password: ''
+            }),
+            context => {
+                //👇 apply the required schema to all fields
+                applyEach(context, requiredSchema);
+            }
+        );

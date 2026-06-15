@@ -1,0 +1,68 @@
+Asynchronous validation with validateAsync() and validateHttp():
+
+
+- 🔥The validation can also be asynchronous thanks to the validateAsync() function, which uses a
+    Resource:
+
+        // email is not already registered (async validation)
+        validateAsync(form.email, {
+            params: (email: ChildFieldContext<string>) => email.value(),
+            factory: (params: Signal<string | undefined>) =>
+            resource({
+                //👇 Params contains the `email` signal and is used to trigger the resource
+                params,
+
+                // the loader makes an HTTP call to check if the email is already registered
+                loader: async (loaderParams: ResourceLoaderParams<string | undefined>) =>
+
+                // returns true if the email is already registered
+                await this.userService.isRegistered(loaderParams.params)
+            }),
+
+            //👇 This is called with the result of the resource
+            onSuccess: (response: { isRegistered: boolean }) =>
+            response.isRegistered
+            ? {
+                kind: 'email-already-registered',
+                message: 'Email is already registered'
+            }
+            : undefined,
+
+            //👇 This is called if the resource fails
+            onError: () => ({
+                kind: 'email-check-failed',
+                message: 'Could not verify if the email is already registered'
+            })
+        });
+    
+    🔥The resource is automatically called when the value of the field changes, and the field is
+        marked as pending() while waiting for the result of the resource.
+    🔥 When the resource resolves, if it returns an error, the error is added to the errors() of the
+        field.
+
+
+- 🔥As an alternative, if you need to call an HTTP endpoint to validate a field, you can use a
+    httpResource() with the validateHttp() function:
+    register.ts:
+
+        // email is not already registered (async validation)
+        validateHttp(form.email, {
+            //👇 httpResource is triggered when the email signal changes
+            request: (email: ChildFieldContext<string>) => `/api/users/check?email=${email. value()}`,
+
+            //👇 specify a debounce duration to avoid sending a request on every keystroke
+            debounce: 400,
+            onSuccess: (response: { isRegistered: boolean }) =>
+            response.isRegistered
+            ? {
+                kind: 'email-already-taken',
+                message: 'Email is already taken'
+            }
+            : undefined,
+            onError: () => ({
+                kind: 'email-check-failed',
+                message: 'Could not verify if the email is already taken'
+            })
+        });
+    
+    💡in that case, you only need to provide the request URL.

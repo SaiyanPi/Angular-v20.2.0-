@@ -1,0 +1,26 @@
+Server errors:
+
+
+- The submit function and action property we saw earlier have another interesting feature: 🔥if the
+    action you provide returns errors, they are automatically added to the errors() of the
+    corresponding fields (or to the form if you don’t provide a field).
+    register.ts:
+
+        protected readonly loginForm = form(this.credentials, {
+            submission: {
+                action: async () => {
+                    const { login, password } = this.credentials();
+                    try {
+                        await this.userService.authenticate(login, password);
+                        await this.router.navigateByUrl('/');
+                        return;
+                    } catch (error) {
+                        //👇 add an error to the form
+                        const message = (error as Error).message;
+                        return [{ kind: 'invalid-credentials', message }];
+                    }
+                }
+            }
+        })
+    
+    This allows merging errors detected client-side with errors detected server-side.
