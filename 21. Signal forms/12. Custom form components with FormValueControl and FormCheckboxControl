@@ -1,0 +1,132 @@
+Custom form components with FormValueControl and FormCheckboxControl:
+
+
+- Sometimes we need to build custom form components. We used to have ControlValueAccessor
+    (chapter 20, section 15) for that in previous form systems, but with signal forms, 🔥there is a new
+    and simpler way to do that: by implementing the FormUiControl interface, or, more accurately, one of
+    its children interfaces 🔥FormCheckboxControl (for boolean-like controls) and 🔥FormValueControl (for
+    other types of values).
+
+        ⚠️Custom form components that use ControlValueAccessor are still supported in
+        signal forms, but it’s recommended to use these new interfaces for new components.
+
+
+- These interfaces only define the inputs and models your component should have, and Angular will
+    bind the Field directive state into these signals automatically.
+    The properties to implement are:
+    • value: (only for FormValueControl) a model input defining the value of the field
+    • checked: (only for FormCheckboxControl) a model input defining whether the field is checked or not
+    • touched/disabled/disabledReasons/readonly/hidden/dirty: inputs containing the state of the field
+    • touch: output to emit when the user touches the field
+    • errors/invalid/pending: inputs containing the validation state of the field
+    • required/minLength/maxLength/min/max/pattern: inputs containing the built-in validators applied to
+        the field. The min and max inputs can contain numbers or dates, depending on the field value.
+
+    🔥 All these properties are optionals, except value or checked depending on the interface you
+    implement. 🔥Most properties are read-only inputs, except value and checked, which are model inputs,
+    as the component is expected to update them.
+
+
+- 🤩Let’s build a Rating component, that allows the user to select a rating from 1 to 5. The value will be
+    a number, so let’s implement the FormValueControl<number> interface:
+    rating.ts:
+
+        export class Rating implements FormValueControl<number | null> {
+            readonly value = model.required<number | null>();
+            readonly touch = output<void>();
+            readonly disabled = input.required<boolean>();
+            protected readonly pickableValues = [0, 1, 2, 3, 4, 5];
+        }
+
+    The template is straightforward. We iterate over the possible ratings and display a button for each
+    rating. Clicking a button updates the value. And when it loses focus (blur event), we emit the touch
+    output to notify the form that the field was touched.
+    rating.html:
+
+        @let v = value();
+        @for (pickableValue of pickableValues; track pickableValue) {
+            <button [class.selected]="v != null && pickableValue <= v"
+                type="button"
+                (click)="value.set(pickableValue)"
+                [disabled]="disabled()"
+                (blur)="touch.emit()"
+                > {{ pickableValue }}
+            </button>
+        }
+    
+    🔥Changing the value of the model inputs automatically updates the state of the field in the form.
+    And in the other direction, changing the field state automatically update the inputs of the component.
+
+    Our component can then be used in a form like this:
+    movie-review.ts:
+
+        <ns-rating id="rating" [formField]="movieForm.rating" />
+
+
+-----------------------------------------------------------------------------------------------------------
+
+transformedValue for custom controls:
+
+- 🔥Another nice addition for custom controls is the new transformedValue utility. 🔥It helps synchronize a
+    raw value entered by the user with the model value using parse and format functions, while
+    automatically reporting parse errors to the parent form. 🔥The parse function can either return an
+    object with a value property containing the parsed value, or an object with an errors property
+    containing an array of errors if the value is invalid.
+
+- 🤩In this example, the user types a duration like 20m or 1h, and the form model stores the duration in
+    minutes. If the value is invalid, then a custom parse error is reported to the form, which can be
+    used to display an error message in the UI. 🔥You can also return built-in validation errors from the
+    parse function, for example to report that a negative duration is not allowed using a min error.
+    duration-input.ts:
+
+        @Component({
+            selector: 'ns-duration-input',
+            template: `<input [value]="rawValue()" (input)="onDurationInput($event)" />`
+        })
+
+        export class DurationInput implements FormValueControl<number | null> {
+            // model value exposed to the form (in minutes)
+            readonly value = model.required<number | null>();
+            
+            // raw UI value (string) <-> model value (minutes)
+            readonly rawValue = transformedValue(this.value, {
+                parse: (raw: string) => {
+
+                    // normalize user input
+                    const input = raw.trim().toLowerCase();
+
+                    if (input === '') {
+                        return { value: null };
+                    }
+
+                    // `20m` -> 20
+                    if (input.endsWith('m')) {
+                        const minutes = Number(input.slice(0, -1));
+                        if (Number.isNaN(minutes)) {
+                            return { error: { kind: 'parse' } };
+                        }
+                        return minutes < 0 ? { error: minError(0) } : { value: minutes };
+                    }
+
+                    // `1h` -> 60
+                    if (input.endsWith('h')) {
+                        const hours = Number(input.slice(0, -1));
+                        if (Number.isNaN(hours)) {
+                            return { error: { kind: 'parse' } };
+                        }
+                        const minutes = hours * 60;
+                        return minutes < 0 ? { error: minError(0) } : { value: minutes };
+                    }
+                    
+                    // anything else is a parse error
+                    return { error: { kind: 'parse' } };
+                },
+
+                // format minutes back to a user-facing value
+                format: (value: number | null) => (value == null ? '' : `${value}m`)
+            });
+
+            onDurationInput(event: Event) {
+                this.rawValue.set((event.target as HTMLInputElement).value);
+            }
+        }

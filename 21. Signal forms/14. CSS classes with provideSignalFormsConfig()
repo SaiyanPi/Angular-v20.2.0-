@@ -1,0 +1,18 @@
+CSS classes with provideSignalFormsConfig():
+
+
+- 🔥Another nice feature of signal forms is the ability to automatically apply CSS classes to fields
+    based on their state.
+
+- 🔥This is done by providing a configuration using the provideSignalFormsConfig() function:
+
+    app.config.ts:
+
+        provideSignalFormsConfig({
+            classes: {
+                'is-invalid': field => field.state().invalid() && field.state().touched()
+            }
+        })
+
+    In this example, 😮we automatically add the is-invalid CSS class to any field that is invalid
+    and touched.

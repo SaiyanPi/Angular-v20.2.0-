@@ -1,0 +1,25 @@
+Debouncing form updates with debounce():
+
+
+- 🧠Sometimes you want to control when form control changes are synchronized to the form model.
+    For example, 🧠you might want to delay validation while a user is still typing, to avoid triggering
+    expensive validation checks on every keystroke.
+
+- 🔥Signal forms provide a debounce() function that allows you to manage the timing of form field
+    updates:
+
+        //👇 let's say the computation is expensive, and we want to debounce it
+        debounce(form.password, 500);
+        // password is strong enough
+        validate(form.password, (context: ChildFieldContext<string>) =>
+            isTooWeak(context.value()) ? { kind: 'too-weak', message: 'Password is too weak' } : undefined
+        );
+    
+    🔥When a debounce rule is applied to a field, the value signal may lag behind the controlValue
+    signal.
+    🔥The controlValue represents the current value in the form control (what the user just typed),
+    while value represents the debounced value that gets synchronized to the form model.
+
+
+- The debounce delay can be a fixed number (in milliseconds), a function that returns a promise, or
+    'blur' to debounce until the field loses focus.

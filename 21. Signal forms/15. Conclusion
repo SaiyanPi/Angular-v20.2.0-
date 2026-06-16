@@ -1,0 +1,10 @@
+Conclusion:
+
+
+- Signal forms bring a new way to build forms in Angular, based on signals and with a fresh
+    approach to validation and reactivity. They offer a lot of interesting features that make
+    building forms easier and more enjoyable than before.
+
+- Among the benefits, 🔥the type safety is better than before; 🔥cross-field validation is easier
+    to implement (no need to use FormGroup anymore); and 🔥building custom form components is
+    simpler as well (FormValueControl is much simpler than ControlValueAccessor).

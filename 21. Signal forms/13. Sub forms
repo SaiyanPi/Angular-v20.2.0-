@@ -1,0 +1,71 @@
+Sub forms:
+
+
+- 🔥Sometimes you don’t want to define the entire form in a single component. You may want to split it
+    into several sub-forms, each defined in its own component. 🔥With signal forms, this is easy to
+    do by passing a field to the child component.
+
+    👉Let’s say our user form has an address sub-form:
+    register.ts:
+
+        protected readonly user = signal({
+            firstname: '',
+            lastname: '',
+            address: {
+                number: '',
+                street: '',
+                zipcode: '',
+                city: ''
+            }
+        });
+
+        protected readonly userForm = form(
+            this.user,
+            f => {
+                required(f.firstname, { message: 'First name is required' });
+                required(f.lastname, { message: 'Last name is required' });
+                //👇 the address schema can be defined separately and reused
+                apply(f.address, addressSchema);
+            },
+            {
+                submission: {
+                    action: async () => await this.save()
+                }
+            }
+        );
+    
+
+    👉We can define an Address component that accepts a FieldTree for the address:
+    address.ts:
+
+        export class AddressSubForm {
+            readonly addressField = input.required<FieldTree<AddressModel>>();
+        }
+
+
+    👉Then we can use our Address component in the Register template:
+    register.html:
+
+        <ns-address-sub-form 👉[addressField]="userForm.address" />
+    
+
+    👉In the template, we can then 🔥use the Field directive to bind the inputs to the fields of
+    the address:
+    address.html:
+
+        @let address = addressField();
+        <div>
+            @let number = address.number;
+            <label for="number">Number</label>
+            <input id="number" [formField]="number" />
+            @if (number().touched() && number().invalid()) {
+                <div>
+                    @for (error of number().errors(); track error.kind) {
+                        <div>{{ error.message }}</div>
+                    }
+                </div>
+            }
+        </div>
+    
+
+    That makes it really easy to split a form into several components!
