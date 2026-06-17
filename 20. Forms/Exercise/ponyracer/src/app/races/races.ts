@@ -10,5 +10,5 @@ import { RaceService } from '../services/race-service';
 })
 export class Races {
   // Since RhttpResource() returns a resource, the component no longer needs toSignal().
-  protected readonly racesResource = inject(RaceService).list();
+  protected readonly races = inject(RaceService).list();
 }

@@ -1,0 +1,41 @@
+<div class="row">
+  <div class="col-md-6 offset-md-3">
+    <h1>Log in</h1>
+    @if (authenticationFailed()) {
+      <div class="alert alert-danger" role="alert">Nope, Try again.</div>
+    }
+
+    <form [formRoot]="credentials">
+      <div class="mb-3">
+        <label for="login" class="form-label">Login</label>
+        <input id="login" class="form-control" [formField]="credentials.login" />
+        <!-- error message here -->
+        @let login = credentials.login();
+        @if (login.touched() && !login.valid()) {
+          <div class="invalid-feedback">
+            @for (error of login.errors(); track error.kind) {
+              <div>{{ error.message }}</div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input id="password" type="password" class="form-control" [formField]="credentials.password" />
+        <!-- error message here -->
+        @let password = credentials.password();
+        @if (password.touched() && !password.valid()) {
+          <div class="invalid-feedback">
+            @for (error of password.errors(); track error.kind) {
+              <div>{{ error.message }}</div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- <button class="btn btn-primary" type="submit" [disabled]="!credentials().valid()">Log me in!</button> -->
+      <button class="btn btn-primary" type="submit">Log me in!</button>
+    </form>
+  </div>
+</div>

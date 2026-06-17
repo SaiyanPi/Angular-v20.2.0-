@@ -48,7 +48,7 @@ describe('Races', () => {
     const tester = new RacesTester();
 
     await expect.element(tester.loading).toBeVisible();
-    await expect.element(tester.loading).toHaveTextContent('Loading.');
+    await expect.element(tester.loading).toHaveTextContent('Loading...');
   });
 
   it('should display an error message if loading races failed', async () => {

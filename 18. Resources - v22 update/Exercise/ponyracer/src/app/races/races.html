@@ -1,0 +1,23 @@
+<!-- @for (race of racesResource.value(); track race.id) {
+  <div>
+    <pr-race [raceModel]="race" />
+  </div>
+} -->
+
+@if (races.isLoading()) {
+  <!-- Following is a bootstrap icon for fancy loading. But for now i've comented this out to align
+     code with the test file. -->
+  <!-- <button class="btn btn-primary" type="button" disabled>
+    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+    Loading...
+  </button> -->
+  <div role="status">Loading...</div>
+} @else if (races.hasValue()) {
+  @for (race of races.value(); track race.id) {
+    <div>
+      <pr-race [raceModel]="race" />
+    </div>
+  }
+} @else if (races.error()) {
+  <div class="alert alert-danger" role="alert">An error occurred while loading races.</div>
+}

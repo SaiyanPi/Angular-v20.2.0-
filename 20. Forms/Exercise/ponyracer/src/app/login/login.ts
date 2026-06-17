@@ -16,12 +16,7 @@ export class Login {
 
   protected readonly authenticationFailed = signal(false);
 
-  // protected readonly loginCtrl = this.fb.control('', Validators.required);
-  // protected readonly passwordCtrl = this.fb.control('', Validators.required);
-
   protected readonly credentials = this.fb.group({
-    // login: this.loginCtrl,
-    // password: this.passwordCtrl
     login: ['', Validators.required],
     password: ['', Validators.required]
   });
@@ -33,8 +28,7 @@ export class Login {
       this.credentials.markAllAsTouched();
       return;
     }
-    // const login = this.credentials.value;
-    // const password = this.credentials.value;
+
     const { login, password } = this.credentials.getRawValue();
 
     this.userService.authenticate(login, password).subscribe({

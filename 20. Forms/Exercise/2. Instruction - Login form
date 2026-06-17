@@ -71,3 +71,60 @@ optional token field of type string, that we’ll need later.
 
 
 9️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
+
+-------------------------------------------------------------------------------------------------
+
+
+CONFUSION:
+
+🤔 In step 5️⃣ i created a user service  with a method authenticate(login: string, password: string)
+    that returns an Observable<UserModel>, to which the component method subscribes.
+    Now there are multiple ways to subscribe to the observable. 2 ways i can think of right now
+    are using toSignal and using .subscribe() (seefrom chapter 17 and 15). So the confusion is which
+    is the correct way in this case?
+
+🧠 using .subscribe():
+    -> You manually receive values through callbacks.
+    -> You manually update component state.
+    -> You are responsible for cleanup (unless Angular handles it through takeUntilDestroyed(),
+        async pipe, etc.).
+        
+        private readonly destroyRef = inject(DestroyRef);
+        this.userService.getUser()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(user => {
+                this.user = user;
+            });
+    
+    -> Typical use case: 🔥🔥When you need to perform side effects:
+
+        this.authService.login(credentials).subscribe({
+            next: () => this.router.navigate(['/']),
+            error: () => this.authenticationFailed.set(true)
+        });
+
+        (Notice that you're not trying to expose data to the template. You're performing actions.)
+
+
+🧠 Using toSignal():
+    -> Angular subscribes to the observable for you.
+    -> Angular automatically unsubscribes when the component/service is destroyed.
+    -> The latest emitted value is stored in a signal.
+    -> Typical use case: When the observable represents state that the UI should react to.
+
+        readonly products = toSignal(
+            this.productService.getProducts(),
+            { initialValue: [] }
+        );
+
+        Then:
+
+        @for (product of products(); track product.id) {
+            <p>{{ product.name }}</p>
+        }
+
+        (No manual subscription required.)
+
+
+✅ step 7️⃣ talks about side effect. so it's obvious that we should use .sunscribe() method for an
+    operation like Login. Bingo!!!!🎇

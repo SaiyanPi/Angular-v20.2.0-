@@ -1,7 +1,7 @@
 {
   "config": {
-    "configFile": "D:\\Projects\\Angular v20.2.0\\18. Router\\Exercise11\\ponyracer\\playwright.config.ts",
-    "rootDir": "D:/Projects/Angular v20.2.0/18. Router/Exercise11/ponyracer/e2e",
+    "configFile": "D:\\Projects\\Angular v20.2.0\\19. Router\\Exercise\\ponyracer\\playwright.config.ts",
+    "rootDir": "D:/Projects/Angular v20.2.0/19. Router/Exercise/ponyracer/e2e",
     "forbidOnly": false,
     "fullyParallel": true,
     "globalSetup": null,
@@ -16,7 +16,7 @@
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "D:/Projects/Angular v20.2.0/18. Router/Exercise11/ponyracer/test-results",
+        "outputDir": "D:/Projects/Angular v20.2.0/19. Router/Exercise/ponyracer/test-results",
         "repeatEach": 1,
         "retries": 2,
         "metadata": {
@@ -24,7 +24,7 @@
         },
         "id": "chromium",
         "name": "chromium",
-        "testDir": "D:/Projects/Angular v20.2.0/18. Router/Exercise11/ponyracer/e2e",
+        "testDir": "D:/Projects/Angular v20.2.0/19. Router/Exercise/ponyracer/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.e2e-spec.ts"
@@ -88,12 +88,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4229,
+                      "duration": 10349,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-01T14:25:38.964Z",
+                      "startTime": "2026-06-17T12:45:32.898Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -122,12 +122,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 4339,
+                      "duration": 10049,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-01T14:25:39.590Z",
+                      "startTime": "2026-06-17T12:45:32.898Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -156,12 +156,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 4917,
+                      "duration": 10845,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-01T14:25:39.475Z",
+                      "startTime": "2026-06-17T12:45:32.909Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -207,12 +207,12 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 4395,
+                      "duration": 10319,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-01T14:25:38.993Z",
+                      "startTime": "2026-06-17T12:45:32.910Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -241,12 +241,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 1971,
+                      "duration": 3963,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-01T14:25:45.142Z",
+                      "startTime": "2026-06-17T12:45:47.296Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -266,8 +266,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-01T14:25:31.194Z",
-    "duration": 16561.418999999998,
+    "startTime": "2026-06-17T12:45:16.813Z",
+    "duration": 35509.09700000001,
     "expected": 5,
     "skipped": 0,
     "unexpected": 0,

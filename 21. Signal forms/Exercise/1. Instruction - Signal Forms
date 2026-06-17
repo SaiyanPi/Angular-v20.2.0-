@@ -1,0 +1,85 @@
+----------------------------------------- Signal Forms ---------------------------------------
+
+- LET'S MIGRATE TO SIGNAL FORMS!
+
+- Angular v22 introduced a new way to handle forms using signals. Let’s refactor our login
+    form to use this new approach!
+
+
+1️⃣ In Login, change the form declaration to use form(). Update the validation logic to use
+    signal-based validators and to have the same validation rules as before.
+
+
+2️⃣ Then update the submit logic to use the submission.action option of signal-based forms. ⚠️The
+    submission callback should call an async component method instead of subscribing to the
+    Observable directly: import firstValueFrom from rxjs, await the service call with
+    firstValueFrom(…​), and wrap the submission logic in a try/catch block so the failure signal is
+    still updated on error while successful submissions still navigate to the home page.
+
+        private async submit() {
+            this.failureSignal.set(false);
+            const { ... } = this.form().value();
+            try {
+                await firstValueFrom(this.userService....);
+                await this.router.navigateByUrl('/');
+            } catch {
+                this.failureSignal.set(true);
+            }
+        }
+    
+    In the end everything should be imported from @angular/forms/signals instead of @angular/forms.
+
+
+3️⃣ Finally, modify the template to use the FormField directive and the FormRoot directive
+    ([formRoot] on <form>) and update the error display blocks.
+    Signal forms have a nice customization feature: you can automatically bind CSS classes to your
+    form fields based on their state! Bootstrap has a very nice support for validation, we should
+    use it.
+    In app.config.ts, add the following provider:
+
+        app.config.ts
+        provideSignalFormsConfig({
+            classes: {
+                'is-invalid': field => field.state().invalid() && field.state().touched()
+            }
+        })
+    
+    This will add the is-invalid Bootstrap CSS class to any invalid signal form field, displaying a
+    red border around the field automatically 🚀.
+    You can now remove the global CSS styles for invalid fields in styles.css.
+
+
+4️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
+
+
+---------------------------------------------------------------------------------------------------
+
+🧠Remember:
+
+⚠️ In the reactive form we build earlier as the exercise in the previous Chapter: forms, we directly
+    subscribed to the Observable<UserModel> which gets returned from the method
+    authenticate(login: string, password: string) in user service as:
+
+        this.userService.authenticate(login, password).subscribe({
+        next: () => this.router.navigateByUrl('/'),
+        error: () => this.authenticationFailed.set(true)
+        });
+    
+    Unlike the previous approach, here in the signal forms, the submission callback calls an
+    async component method authenticate instead of subscribing to the Observable directly:
+
+        submission: {
+            action: async () => await this.authenticate() 👈
+        }
+
+        private async authenticate() {
+            this.authenticationFailed.set(false);
+            const { login, password } = this.credentials().value();
+            try {
+                await firstValueFrom(👉this.userService.authenticate(login, password));
+                await this.router.navigateByUrl('/');
+                return;
+            } catch {
+                this.authenticationFailed.set(true);
+            }
+        }

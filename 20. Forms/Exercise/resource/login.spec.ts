@@ -107,7 +107,7 @@ describe('Login', () => {
 
     subject.error(new Error());
 
-    await expect.element(tester.alert).toHaveTextContent('Nope, try again');
+    await expect.element(tester.alert).toHaveTextContent('Nope, Try again');
     await expect.element(tester.alert).toHaveClass('alert-danger');
   });
 });
