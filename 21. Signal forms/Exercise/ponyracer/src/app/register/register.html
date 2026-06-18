@@ -1,8 +1,8 @@
 <div class="row">
   <div class="col-md-6 offset-md-3">
-    <h1>Register</h1>
+    <h1>Sign up</h1>
     @if (registrationFailed()) {
-      <div class="alert alert-danger" role="alert">Nope, Try again.</div>
+      <div class="alert alert-danger" role="alert">Try again with another login.</div>
     }
 
     <form [formRoot]="userForm">
@@ -11,7 +11,7 @@
         <input id="login" class="form-control" [formField]="userForm.login" />
         <!-- error message here -->
         @let login = userForm.login();
-        @if (login.touched() && !login.valid()) {
+        @if (login.touched() && login.invalid()) {
           @if (login.getError('required')) {
             <div class="invalid-feedback">Login is required</div>
           }
@@ -26,12 +26,10 @@
         <input id="password" type="password" class="form-control" [formField]="userForm.password" />
         <!-- error message here -->
         @let password = userForm.password();
-        @if (password.touched() && !password.valid()) {
-          <div class="invalid-feedback">
-            @for (error of password.errors(); track error.kind) {
-              <div>{{ error.message }}</div>
-            }
-          </div>
+        @if (password.touched() && password.invalid()) {
+          @if (password.getError('required')) {
+            <div class="invalid-feedback">Password is required</div>
+          }
         }
       </div>
 
@@ -40,12 +38,13 @@
         <input id="confirmPassword" type="password" class="form-control" [formField]="userForm.confirmPassword" />
         <!-- error message here -->
         @let confirmPassword = userForm.confirmPassword();
-        @if (confirmPassword.touched() && !confirmPassword.valid()) {
-          <div class="invalid-feedback">
-            @for (error of confirmPassword.errors(); track error.kind) {
-              <div>{{ error.message }}</div>
-            }
-          </div>
+        @if (confirmPassword.touched() && confirmPassword.invalid()) {
+          @if (confirmPassword.getError('required')) {
+            <div class="invalid-feedback">Password confirmation is required</div>
+          }
+          @if (confirmPassword.getError('matchingError')) {
+            <div class="invalid-feedback">Your password does not match</div>
+          }
         }
       </div>
 
@@ -54,17 +53,18 @@
         <input id="password" type="number" class="form-control" [formField]="userForm.birthYear" />
         <!-- error message here -->
         @let birthYear = userForm.birthYear();
-        @if (birthYear.touched() && !birthYear.valid()) {
-          <div class="invalid-feedback">
-            @for (error of birthYear.errors(); track error.kind) {
-              <div>{{ error.message }}</div>
-            }
-          </div>
+        @if (birthYear.touched() && birthYear.invalid()) {
+          @if (birthYear.getError('required')) {
+            <div class="invalid-feedback">Birth year is required</div>
+          }
+          @if (birthYear.getError('min') || birthYear.getError('max')) {
+            <div class="invalid-feedback">This is not a valid year</div>
+          }
         }
       </div>
 
-      <!-- <button class="btn btn-primary" type="submit" [disabled]="!userForm().valid()">Log me in!</button> -->
-      <button class="btn btn-primary" type="submit">Register!</button>
+      <!-- <button class="btn btn-primary" type="submit" [disabled]="!userForm().valid()">Let's go!</button> -->
+      <button class="btn btn-primary" type="submit">Let's go!</button>
     </form>
   </div>
 </div>

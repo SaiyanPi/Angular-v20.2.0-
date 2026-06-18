@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { RaceModel } from '../models/race-model';
 import { Pony } from '../pony/pony';
 import { PrettyDatePipe } from '../shared/pipes/pretty-date-pipe';
@@ -7,6 +7,7 @@ import { PrettyDatePipe } from '../shared/pipes/pretty-date-pipe';
   selector: 'pr-race',
   imports: [Pony, PrettyDatePipe],
   templateUrl: './race.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './race.css'
 })
 export class Race {

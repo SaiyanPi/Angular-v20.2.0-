@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { UserService } from '../services/user-service';
 import { Router } from '@angular/router';
 import { form, required, FormField, FormRoot } from '@angular/forms/signals';
@@ -8,6 +8,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'pr-login',
   imports: [FormField, FormRoot],
   templateUrl: './login.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './login.css'
 })
 export class Login {
@@ -24,8 +25,8 @@ export class Login {
   protected readonly credentials = form(
     this.fields,
     f => {
-      required(f.login, { message: 'Login is required.' });
-      required(f.password, { message: 'Password is required.' });
+      required(f.login);
+      required(f.password);
     },
     {
       submission: {

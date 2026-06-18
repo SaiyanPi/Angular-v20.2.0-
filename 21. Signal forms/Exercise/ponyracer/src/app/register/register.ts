@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { UserService } from '../services/user-service';
 import { Router } from '@angular/router';
 import { form, FormField, FormRoot, minLength, required, validate, max, min } from '@angular/forms/signals';
@@ -8,6 +8,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'pr-register',
   imports: [FormField, FormRoot],
   templateUrl: './register.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './register.css'
 })
 export class Register {

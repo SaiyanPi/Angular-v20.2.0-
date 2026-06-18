@@ -12,11 +12,9 @@
         <!-- error message here -->
         @let login = credentials.login();
         @if (login.touched() && !login.valid()) {
-          <div class="invalid-feedback">
-            @for (error of login.errors(); track error.kind) {
-              <div>{{ error.message }}</div>
-            }
-          </div>
+          @if (login.getError('required')) {
+            <div class="invalid-feedback">Login is required</div>
+          }
         }
       </div>
 
@@ -26,11 +24,9 @@
         <!-- error message here -->
         @let password = credentials.password();
         @if (password.touched() && !password.valid()) {
-          <div class="invalid-feedback">
-            @for (error of password.errors(); track error.kind) {
-              <div>{{ error.message }}</div>
-            }
-          </div>
+          @if (password.getError('required')) {
+            <div class="invalid-feedback">Password is required</div>
+          }
         }
       </div>
 

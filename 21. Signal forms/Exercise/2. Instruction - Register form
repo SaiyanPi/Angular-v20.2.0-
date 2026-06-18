@@ -4,4 +4,81 @@
 
 - Instructions: Angular Prerequisite "Signal Forms" chapter
 
-1️⃣ 
+1️⃣ Users must be able to register themselves into the application. We will thus add a register
+    component, with a slightly more complex validation than the previous login form.
+    let’s use signal forms for it.
+    Create the register component with Angular CLI.
+
+
+2️⃣ Add FormRoot and FormField (from @angular/forms/signals) to its imports.
+    Then add a field named userForm to our new component, initialized using form(). The form model
+    must contain 4 attributes:
+    👉 a login control, initialized with an empty string, that is mandatory and should have at
+        least 3 characters;
+    👉 a required password field, initialized with an empty string;
+    👉 a required confirmPassword field, initialized with an empty string;
+    👉 a birthYear field, of type number | null, initialized with null, that is mandatory as well
+        (you’ll need null as number | null to help TypeScript infer that null is in fact a
+        number | null).
+    
+
+3️⃣ The template must of course display these four fields. The field login is of type text; the
+    field password is of type password; the field confirmPassword is of type password; the field
+    birthYear is of type number.
+    The fields must of course be inside a form. Add the FormRoot directive to the form element with
+    [formRoot]="userForm". The form declaration must use the submission.action option to call an
+    async method register, to define in the component.
+
+    👉 A div with the invalid-feedback class should display the message "Login is required" if the
+    login is touched and has the required error. The field login should be required and have at
+    least 3 characters. A div with the invalid-feedback class should display the message
+    "Your login should be at least 3 characters" if the login isn’t long enough (minLength error)
+    and if the user has started interacting with that field.
+
+    👉 The password confirmation must have a validator checking that the two password values are
+    equal. To achieve that, use validate() on the confirmPassword field. This validator must return
+    an object with kind set to matchingError if the values don’t match, or undefined if they do
+    match.
+
+    👉Add a div with the invalid-feedback class, which must display "Your password does not match"
+    if the user has started interacting with the confirmation field and if the values don’t match.
+    The password field should also have a div with the invalid-feedback class displaying the
+    message "Password is required" if the password is touched and has the required error. The
+    confirmPassword field should have a div with the invalid-feedback class displaying the message
+    "Password confirmation is required" if the password confirmation is touched and has the
+    required error.
+
+    👉 The last field to validate is birthYear. We could define a custom validator to check that
+    the entered year is valid, but we can also do it easily with the min() and max() validators.
+    We will consider a date valid if it’s at least equal to 1900, and at most the current year.
+    The current year can be obtained using new Date().getFullYear().
+    If the year is invalid, then display a div with the invalid-feedback class containing the
+    message: "This is not a valid year". If the year is required, display a div with the
+    invalid-feedback class containing the message: "Birth year is required".
+
+    Add a button of type submit at the end of the form, containing the text Let's go!.
+
+
+4️⃣ The remaining task is to send the registration information to the server. To do that, let’s
+    add a new method in our UserService, called register(login, password, birthYear) which expects
+    three parameters: the login, the password, and the birth year. Check the API documentation
+    (https://ponyracer.ninja-squad.com/apidoc#resources-user-create) to know what it’s supposed to
+    do.
+
+
+5️⃣ Implement the async register method of the component, by delegating to the UserService. The
+    signal form will call this method only if the form is valid, and will mark invalid fields as
+    touched automatically.
+    In this method, import firstValueFrom from rxjs and use it to await the service call. If the
+    registration succeeds, redirect to the home page, using router.navigateByUrl(). Otherwise,
+    set a new signal registrationFailed of the component to true.
+    This signal allows displaying a div with the CSS classes alert alert-danger and the
+    accessibility attribute role="alert" in the template, displaying the message "Try again with
+    another login.".
+
+    
+6️⃣ Finally, Add a route configuration so that the URL /register goes to that new component.
+    Add a link on the home page to navigate to that route (just after the Login link).
+
+
+7️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK. 

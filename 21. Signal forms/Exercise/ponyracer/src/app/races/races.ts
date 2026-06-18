@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Race } from '../race/race';
 import { RaceService } from '../services/race-service';
 
@@ -6,6 +6,7 @@ import { RaceService } from '../services/race-service';
   selector: 'pr-races',
   imports: [Race],
   templateUrl: './races.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './races.css'
 })
 export class Races {
