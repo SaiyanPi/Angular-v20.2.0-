@@ -34,8 +34,8 @@
       </div>
 
       <div class="mb-3">
-        <label for="confirmPassword" class="form-label">Confirm Password</label>
-        <input id="confirmPassword" type="password" class="form-control" [formField]="userForm.confirmPassword" />
+        <label for="confirm" class="form-label">Confirm password</label>
+        <input id="confirm" type="password" class="form-control" [formField]="userForm.confirmPassword" />
         <!-- error message here -->
         @let confirmPassword = userForm.confirmPassword();
         @if (confirmPassword.touched() && confirmPassword.invalid()) {
@@ -49,8 +49,8 @@
       </div>
 
       <div class="mb-3">
-        <label for="birthYear" class="form-label">Birth Year</label>
-        <input id="password" type="number" class="form-control" [formField]="userForm.birthYear" />
+        <label for="birth-year" class="form-label">Birth year</label>
+        <input id="birth-year" type="number" class="form-control" [formField]="userForm.birthYear" />
         <!-- error message here -->
         @let birthYear = userForm.birthYear();
         @if (birthYear.touched() && birthYear.invalid()) {

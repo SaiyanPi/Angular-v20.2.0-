@@ -88,12 +88,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 12651,
+                      "duration": 9871,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T13:40:28.201Z",
+                      "startTime": "2026-06-19T04:46:34.457Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -122,12 +122,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 12892,
+                      "duration": 10563,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T13:40:28.209Z",
+                      "startTime": "2026-06-19T04:46:34.333Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -137,7 +137,7 @@
               ],
               "id": "e2caf6f5f0104c3eaa7f-733d8a887446e4614b69",
               "file": "home.e2e-spec.ts",
-              "line": 14,
+              "line": 15,
               "column": 7
             },
             {
@@ -156,12 +156,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 13521,
+                      "duration": 11004,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T13:40:28.222Z",
+                      "startTime": "2026-06-19T04:46:35.038Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -171,7 +171,7 @@
               ],
               "id": "e2caf6f5f0104c3eaa7f-a08f4f97b3dc9706228d",
               "file": "home.e2e-spec.ts",
-              "line": 19,
+              "line": 20,
               "column": 7
             }
           ]
@@ -207,12 +207,12 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 15282,
+                      "duration": 13421,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T13:40:28.237Z",
+                      "startTime": "2026-06-19T04:46:34.360Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -241,12 +241,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 5757,
+                      "duration": 6566,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T13:40:44.884Z",
+                      "startTime": "2026-06-19T04:46:48.694Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -292,12 +292,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 5647,
+                      "duration": 4366,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T13:40:44.960Z",
+                      "startTime": "2026-06-19T04:46:49.996Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -326,12 +326,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 3589,
+                      "duration": 4077,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-17T13:40:46.343Z",
+                      "startTime": "2026-06-19T04:46:50.548Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -347,13 +347,64 @@
           ]
         }
       ]
+    },
+    {
+      "title": "register.e2e-spec.ts",
+      "file": "register.e2e-spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Register page",
+          "file": "register.e2e-spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display a register page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 6967,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-19T04:46:51.424Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "dd5af5a48e2194da68d0-c90fd224986b1be08b6a",
+              "file": "register.e2e-spec.ts",
+              "line": 12,
+              "column": 7
+            }
+          ]
+        }
+      ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-17T13:40:18.215Z",
-    "duration": 34327.806,
-    "expected": 7,
+    "startTime": "2026-06-19T04:46:19.519Z",
+    "duration": 39557.865999999995,
+    "expected": 8,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

@@ -5,6 +5,7 @@
 - Angular v22 introduced a new way to handle forms using signals. Let’s refactor our login
     form to use this new approach!
 
+⚠️ First and foremost don't forget to upgrade angular version to new v22.
 
 1️⃣ In Login, change the form declaration to use form(). Update the validation logic to use
     signal-based validators and to have the same validation rules as before.
