@@ -1,0 +1,18 @@
+Service with a signal:
+
+
+- The core idea is to keep a piece of state inside a service and expose only a read-only view to
+    consumers. 🔥Components can read the state in templates and react to it, while only the service is
+    allowed to update it.
+
+    Let’s define a UserService with a read-only currentUser signal:
+
+        @Service()
+        export class UserService {
+            private readonly user = signal<UserModel | undefined>(undefined);
+            readonly currentUser = this.user.asReadonly();
+    
+    This is just a tiny example. More complex use cases might require several signals, observables, and
+    more logic, but this basic principle (storing state in a service in order to share it reactively
+    between several components) is an extremely common pattern. The service can also be provided by a
+    component instead of in root when the state is local to that component and its descendants.

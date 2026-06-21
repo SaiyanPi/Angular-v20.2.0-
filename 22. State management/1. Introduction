@@ -1,0 +1,6 @@
+State management:
+
+- In this chapter, we will handle application state that must be shared by more than one component,
+    or inside a tree of components. 🔥Component signals are useful for local, temporary UI values.
+    🔥For cross-component state, a shared service is often the simplest way to share state across the
+    app.

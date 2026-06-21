@@ -1,0 +1,22 @@
+Managing state with stores (NgRx, NGXS, Elf and friends):
+
+
+- The Angular ecosystem has many state management libraries, usually called stores: NgRx, NgRx
+    component store, NgRx signal store, NGXS, Elf, and probably others.
+
+- During our trainings, we often get the questions: "should we use one?" or "which one is the best?".
+    We can’t really answer that question. Every project has its own needs. Every developer team has its
+    own preferences and priorities.
+
+- We do have an opinion, though: they’re not a silver bullet, and they are not a solution to avoid
+    having to learn signals or RxJS. They’re based on RxJS and signals, and you’d better know RxJS
+    and signals pretty well before using a store.
+
+- For our various projects, we’ve always thought that they were not worthy enough to compensate
+    for the additional complexity and boilerplate that they bring. But your mileage may vary. Make
+    some experiments and see by yourself.
+
+- Beware of this trap though: they look smart; you managing to use them makes you smart too; but
+    that doesn’t mean that they’re a good fit for your project and your team. We also get a lot of
+    feedbacks telling us that the lead developer chose to use a store, and all the other developers o
+    the team suffered from that choice.

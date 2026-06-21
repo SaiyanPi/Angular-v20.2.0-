@@ -1,0 +1,21 @@
+Consuming state in components:
+
+
+- 🔥We can now inject the service in components that need user state. The home component displays
+    different templates based on whether a user is logged in.
+
+        @Component({
+            selector: 'ns-home',
+            imports: [RouterLink],
+            template: `
+                @if (user(); as user) {
+                <div>Greetings, {{ user.name }}!</div>
+                } @else {
+                <a routerLink="/login">Log in</a>
+                }
+            `
+        })
+
+        export class Home {
+            protected readonly user = inject(UserService).currentUser;
+        }

@@ -1,0 +1,14 @@
+Updating shared state:
+
+
+- 🔥When the API returns a user, we set the internal signal in a tap operator. 🔥tap lets us run
+    side-effect code without changing the response stream.
+
+        authenticate(login: string, password: string): Observable<UserModel> {
+            return this.http
+                .post<UserModel>('/api/users/authentication', { login, password })
+                .pipe(tap(user => this.user.set(user)));
+        }
+        logout(): void {
+            this.user.set(undefined);
+        }
