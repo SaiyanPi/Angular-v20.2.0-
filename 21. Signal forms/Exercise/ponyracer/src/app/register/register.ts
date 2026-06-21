@@ -3,10 +3,11 @@ import { UserService } from '../services/user-service';
 import { Router } from '@angular/router';
 import { form, FormField, FormRoot, minLength, required, validate, max, min } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
+import { BirthYearInput } from '../birth-year-input/birth-year-input';
 
 @Component({
   selector: 'pr-register',
-  imports: [FormField, FormRoot],
+  imports: [FormField, FormRoot, BirthYearInput],
   templateUrl: './register.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './register.css'

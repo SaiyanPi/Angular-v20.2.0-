@@ -50,7 +50,9 @@
 
       <div class="mb-3">
         <label for="birth-year" class="form-label">Birth year</label>
-        <input id="birth-year" type="number" class="form-control" [formField]="userForm.birthYear" />
+        <!-- <input id="birth-year" type="number" class="form-control" [formField]="userForm.birthYear" /> -->
+        <pr-birth-year-input inputId="birth-year" [formField]="userForm.birthYear" />
+
         <!-- error message here -->
         @let birthYear = userForm.birthYear();
         @if (birthYear.touched() && birthYear.invalid()) {

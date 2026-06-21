@@ -1,0 +1,196 @@
+------------------------------- Form Value Control --------------------------------------------------
+
+- CREATE A CUSTOM BIRTH YEAR INPUT COMPONENT WITH FORMVALUECONTROL.
+
+- Instructions: Angular Prerequisite "Signal Forms" chapter
+
+- 💡To help our users, we’d like to let them input just the last two digits of their birth year
+    (for example, "84" for 1984, "12" for 2012, etc.). Is it a great idea? Probably not, but it’s
+    a good exercise to learn how to create a custom form component with signal forms.
+    
+
+1️⃣ Generate a new component called birth-year-input with the Angular CLI.
+        
+        ng generate component birth-year-input
+    
+    Use the following template for the component:
+
+        <div class="row d-flex align-items-center">
+            <div class="col-3">
+                <input class="form-control" type="number" />
+            </div>
+            <div class="col formatted-year">
+                <!-- formatted year here -->
+            </div>
+        </div>
+
+    This template has an input field and a div to display the formatted year.
+
+
+2️⃣ For the TypeScript part, implement the FormValueControl<number | null> interface from
+    @angular/forms/signals. The component must also have:
+    👉 a required inputId input signal to set the input field id;
+    👉 a required value model of type number | null, which is the two-way binding with the signal
+        form;
+    👉 a required touched input of type boolean, which receives the touched state from the signal
+        form;
+    👉 a touch output of type void, used to notify the signal form when the user touches the field;
+    👉 a required disabled input of type boolean, which receives the disabled state from the signal
+        form;
+    👉 a required invalid input of type boolean, which receives the invalid state from the signal
+        form;
+    👉 a rawValue field using transformedValue.
+
+    The rawValue field should use the value model as its source. Its parse function must turn null
+    or NaN into { value: null }, and otherwise return { value: this.computeYear(raw) }. Its format
+    function must return value ?? null.
+
+        readonly inputId = input.required<string>();
+        readonly value = model.required<number | null>();
+        readonly touched = input.required<boolean>();
+        readonly touch = output<void>();
+        readonly disabled = input.required<boolean>();
+        readonly invalid = input.required<boolean>();
+        protected readonly rawValue = transformedValue(this.value, {
+            parse: (raw: number | null) => {
+                return { value: raw === null || isNaN(raw) ? null : this.computeYear(raw) };
+            },
+            format: (value: number | null) => value ?? null
+        });
+
+
+3️⃣ Add the computation of the year in a new private method called computeYear. This method should
+    return the formatted year, using the following rules:
+    👉 if the value is negative or greater than 100, return the value;
+    👉 else if the value is greater than the last two digits of the current year, return
+        (firstTwoDigitsOfTheCurrentYear - 1) * 100 + value (for example, if the user inputs 82,
+        the year should be 1982);
+    👉 otherwise, return firstTwoDigitsOfTheCurrentYear * 100 + value (for example, if the user
+        inputs 10, the year should be 2010).
+    
+    To get the first two digits and last two digits of the current year, you can use the following
+    code:
+
+        const lastTwoDigitsOfTheCurrentYear = new Date().getFullYear() % 100;
+        const firstTwoDigitsOfTheCurrentYear = Math.floor(new Date().getFullYear() / 100);
+
+
+4️⃣ Add an onBirthYearInput method that will be called on input events. This method should get the
+    native input value with:
+
+        const value = (event.target as HTMLInputElement).valueAsNumber;
+    
+    Then set rawValue with this value. transformedValue will update the form value automatically.
+
+
+5️⃣ In the template:
+    👉 use the inputId signal to set the input field ID;
+    👉 bind the native input value to rawValue();
+    👉 bind the native input disabled state to disabled();
+    👉 add a class binding to apply the Bootstrap is-invalid class when the field is both touched
+        and invalid;
+    👉 listen to the input event and call onBirthYearInput($event);
+    👉 listen to the blur event and emit the touch output with touch.emit();
+    👉 display value() in the formatted year column.
+
+        <input class="form-control"
+        [id]="inputId()"
+        [value]="rawValue()"
+        [disabled]="disabled()"
+        [class.is-invalid]="touched() && invalid()"
+        (input)="onBirthYearInput($event)"
+        (blur)="touch.emit()"
+        type="number" />
+
+
+6️⃣ You can now use the new component in the register form. Import BirthYearInput in the Register
+    component, add it to the component imports, and replace the birth year native input with:
+
+        <pr-birth-year-input inputId="birth-year" [formField]="userForm.birthYear" />
+    
+    Everything should work as before, with the bonus that the user can now type a two-digit year
+    and the birth year input gets the red border when invalid.
+
+
+---------------------------------------------------------------------------------------------------
+
+
+CONFUSION 😵‍💫😵‍💫:
+
+- I did not understood the template code from step 5️⃣. I do understand the input and output signal
+    properties but where the heck [id],.....,(blur) come from and why are we passing input signal
+    property inputId() to the id?
+    MY UNDERSTANDING ABOUT
+    1) Input signal properties:
+    👉 If we define input signal property in the component A say name() like:
+        
+        readonly name = input.required<string>();
+
+    👉 Then from the template of parent component say B, we can pass the value to the input signal
+    property of component A like:
+        
+        < pr-A name = "xyz" /> 
+        or 
+        < pr-A [name] = "xyz" />
+    
+
+    2) Output signal prperties:
+    👉 If we define output signal property in the component A say ponySelected to emit the ponyModel
+    value to the parent component B like:
+
+        template: `<div><button (click)="selectMe()">Select me</button></div>`
+
+        readonly ponySelected = output<ponyModel>();
+
+        protected selectMe() {
+            this.ponySelected.emit(this.ponyModel());
+        }
+
+    👉 Then in the template of parent component B, we can get the value of selected pony by listenting
+    to the click event of the child component A as:
+
+        <pr-A (ponySelected) = "someMethod($event)"
+    
+    Here, we are passing the event(passed from child component A which is the ponyModel) as the
+    parameter to some method in component B. 🔥$event is the syntax you have to use to access the
+    emitted event.
+
+    3)  [property]="expression"   <!-- Property binding -->
+        (event)="statement"       <!-- Event binding -->
+
+    😵‍💫 But when i see the template code in 5️⃣, I don't see any of these. Instead i see property
+        binding and event binding to unkown properties.
+
+
+
+😮🧠The confusion is coming from mixing up HTML attributes with Angular inputs. They are completely
+different things.
+
+✅ [id]="inputId()" : property binding
+    Here, id is the HTML id attribute of the <input> element. and we are binding id attribute
+    dynamically with our input signal property inputId().
+    🔥 So when we use birth-year-input component in the parent component like:
+
+        <pr-birth-year-input inputId="birth-year" />  
+        or,
+        <pr-birth-year-input [inputId]="'birth-year'" />
+    
+    <input class="form-control" [id]="inputId()" ... /> becomes <input id="birth-year">
+
+⁉️ Why not just write <input id="birth-year">?
+    Because our component should be reusable. Imagine you have two instances:
+
+        <pr-birth-year-input inputId="father-birth-year"></pr-birth-year-input>
+        <pr-birth-year-input inputId="mother-birth-year"></pr-birth-year-input>
+    
+    If we hardcoded <input id="birth-year">, both inputs have the same ID, which is invalid HTML and
+    breaks labels and accessibility.
+
+✅ (blur)="touch.emit()" : event binding
+    Here, blur is a standard HTML DOM event. It fires when an element loses focus. for example when
+    user types something inside the input and click somewhere else, the blur event fires.
+    So we are binding this blur event with the output property touch. It means "I'm notifying whoever
+    is using this component that the field has been touched."
+    This is needed for displaying validation error message. 
+
+and so on.....
