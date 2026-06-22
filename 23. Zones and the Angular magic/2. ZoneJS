@@ -1,0 +1,42 @@
+ZoneJS:
+
+
+- 🔥The "legacy" change detection mechanism is based on a dirty trick: ZoneJS. 🔥ZoneJS is a library
+    that has been written for the needs of Angular, but is actually not coupled to it. Its principle is
+    pretty simple, but ugly: it monkey-patches plenty of functions of the browser. Basically, all the
+    functions of the browser that receive a callback function, like setTimeout, setInterval,
+    Element.addEventListener, Promise.then, etc.
+
+- 🔥The goal of this monkey-patching, for Angular, is to act as a snitch. Every time one of these
+    callback functions is executed, ZoneJS notifies Angular that something has happened.
+
+- 🔥To illustrate it, let’s take setTimeout as an example. The principle of the monkey-patching is the
+    following one (this is not the actual code):
+
+        const originalSetTimeout = window.setTimeout;
+        window.setTimeout = (callback, timeout) => {
+            const snitchingCallback = () => {
+                callback();
+                angular.notifyThatSomeCodeHasBeenExecuted();
+            };
+            originalSetTimeout(snitchingCallback, timeout);
+        };
+    
+
+- Why does this help? Thanks to ZoneJS, the framework knows when some code has been executed. 🔥It
+    thus knows that some state might have changed. ⚠️But it still doesn’t know if something actually
+    changed, and even less what has changed.
+
+- ⚠️To have a DOM that is always up-to-date, Angular will thus launch a change detection every time
+    ZoneJS tells it that some code has been executed.
+
+
+- 🔥🔥This first part already shows reasons why Angular decided to get rid of ZoneJS by introducing
+    signals:
+    👉 every Angular application needs to download the ZoneJS code and wait until it has patched the
+        browser before starting the application, which of course has a performance cost;
+    👉 every call to one of the patched functions triggers change detections. Even the calls made by
+        libraries which don’t change any application state. So plenty of change detections are actually
+        useless;
+    👉 the stack traces of the errors that happen at runtime contain zone-related code that makes them
+        harder to read and understand.

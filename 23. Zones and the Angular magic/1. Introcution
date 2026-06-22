@@ -1,0 +1,17 @@
+Zones and the Angular magic:
+
+
+- 🔥Hopefully, you remember what we explained in the chapter introducing signals. Angular wants you
+    to store the state of your components in signals. Templates read the signals to display the
+    information they contain. Thanks to the signal super-powers, it can establish a dependency
+    between a template and the signals that it reads, be notified when signals change, and update the
+    DOM of the templates that depend on these signals.
+
+- 🔥If you experiment with versions of Angular older than v21, or if your application hasn’t been
+    migrated to zoneless change detection yet, you’ll see that you actually don’t need to store the
+    state in signals. Even if a simple property changes, Angular is able to detect the change and
+    update the DOM. ⚠️You shouldn’t rely on that, though: this works because Angular still supports
+    the "brute-force" change detection mechanism that doesn’t rely on signals.
+
+- In order to better understand how "legacy" applications work, and why it’s a better idea to switch
+    to signals, let’s explain this legacy change detection magic.

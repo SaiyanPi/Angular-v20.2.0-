@@ -1,0 +1,133 @@
+Change detection:
+
+
+- The second part of the problem is the change detection itself. It’s one thing to know when and how
+    it’s started, but it’s another to know how it works.
+
+- 🔥First of all, we have to remember that an Angular application is a tree of components. When the
+    change detection runs, it starts walking through the components of the tree, starting from the root
+    component and going down to the leaves.
+
+- 🔥🧠When checking a component, Angular evaluates all the expressions used in the template, and
+    compares each result with the previous one. If an evaluation result is not the same, then the DOM
+    is updated. The expression that has a new value could also be used as the input of a child
+    component. In that case, Angular updates the input of the child component and calls its
+    ngOnChanges hook, which might change the state of the child component. Then the child component
+    is checked.
+
+- 💡💡Before Angular 22, the default change detection strategy of components was Default, now renamed
+    to Eager. So, unless components explicitly opted for the OnPush strategy, every expression of
+    every component of the tree was checked during each change detection.
+
+- 💡The tree traversal, fortunately for performance, is done only once per change detection. But this
+    comes with another disadvantage: ⚠️you can introduce a bug if, during the change detection of a
+    child component, you update its own state or the state of a parent. ⚠️Since Angular does a single
+    pass, this change will go unnoticed until the next time ZoneJS triggers a new change detection.
+
+- 😮Angular forbids you from doing that. During development, each change detection actually does two
+    traversals. If the second traversal detects a change, then Angular throws an error to warn you that
+    you broke the unidirectional data flow principle (the infamous
+    ExpressionChangedAfterItHasBeenCheckedError).
+
+- ⚠️As you can see, change detection is quite brute-force. The expressions in your templates are
+    evaluated many many times. This is why you should make sure they don’t invoke complex, slow
+    functions.
+
+- 🔥🔥Since Angular 22, the default change detection strategy of components is OnPush. Modern
+    applications using this default for all their components are more efficient, because change
+    detection can skip most components during the tree traversal.
+
+
+------------------------------------------------------------------------------------------------------
+
+Inline caching:
+
+- Another parameter to take into account in the performance of Angular is the time spent by the
+    framework making these expression evaluations. The Angular team has employed all the knowledge
+    it has about computer science and virtual machines.
+
+- 🧠To improve performance, virtual machines like the ones executing dynamic JavaScript code, use a
+    strategy named inline caching.
+    🧠It’s a very old technique, invented for SmallTalk, 40 years ago (an eternity in IT), relying
+    on a relatively simple principle: if a program calls a function frequently, with objects having
+    the same shape, the VM should recall how it evaluates the properties of the object.
+    🧠This technique thus uses a cache, hence the name inline caching. When receiving an object, it
+    looks in the cache to see if it recognizes the shape of the object. And if it does, it uses the
+    cached optimized way of accessing the properties of the object.
+
+    🔥This kind of cache is really beneficial if the arguments of the function have the same shape.
+    For example, {name: 'Cédric'} and {name: 'Cyril'} have the same shape. But {name: 'JB', skills: []}
+    doesn’t have the same shape as the two other ones
+
+    🔥🔥When the arguments always have the same shape, the cache is monomorphic, and thus produces
+    very fast results.
+    
+    🔥🔥If the cache only has a few entries, it is polymorphic. That means that the method is called
+    with some different kinds of objects which makes the code a bit slower.
+    
+    🔥🔥Finally, if there are too many different object shapes, the VM drops the cache completely,
+    because it is megamorphic. That, of course, is the worst case in terms of performance.
+
+
+- In order to benefit from the inline caching optimizations of the VM, Angular has adopted a clever
+    strategy. 🔥Instead of using a single function able to evaluate expressions involving all kinds
+    of objects, the Angular team has decided to compile all the templates into JavaScript code, and
+    to make the compiler generates a set of change detection functions, specific to each component.
+    The VM can optimize this code because it’s monomorphic.
+
+    ✅ Explanation:
+        - Imagine you write this template:
+
+            <h1>{{ user.name }}</h1>
+            <p>{{ user.age }}</p>
+
+
+    1️⃣ A generic interpreter (slow):
+        - Angular could have one function that interprets every template.
+            Something like:
+
+                function evaluate(expression, context) {
+                    // Parse expression
+                    // Figure out what objects are involved
+                    // Read properties dynamically
+                    // Return result
+                }
+        
+        - For your template it might repeatedly execute something conceptually like:
+
+                evaluate("user.name", component);
+                evaluate("user.age", component);
+        
+        - Every change detection cycle it must
+            👉 parse the expression
+            👉 determine what object it's accessing
+            👉 resolve the property
+            👉 return the value
+        
+        - This is extremely flexible. But JavaScript engines cannot optimize it very well because
+            every expression is different.
+    
+
+    2️⃣ Generate JavaScript ahead of time (Angular):
+        - Angular compiles your template.
+        - Your template:
+
+                {{ user.name }}
+
+            becomes something conceptually like:
+
+                function UserComponent_Template(ctx) {
+                    textBinding(ctx.user.name);
+                }
+
+        - There is no parsing anymore.
+        - Angular already knows exactly what to read.
+            Instead of
+                
+                "Read property user then property name"
+
+            it simply emits JavaScript that literally does
+
+                ctx.user.name
+        
+        - Every component gets its own function.
