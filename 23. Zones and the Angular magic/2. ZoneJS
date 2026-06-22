@@ -27,7 +27,7 @@ ZoneJS:
     thus knows that some state might have changed. ⚠️But it still doesn’t know if something actually
     changed, and even less what has changed.
 
-- ⚠️To have a DOM that is always up-to-date, Angular will thus launch a change detection every time
+- 🔥🔥To have a DOM that is always up-to-date, Angular will thus launch a change detection every time
     ZoneJS tells it that some code has been executed.
 
 

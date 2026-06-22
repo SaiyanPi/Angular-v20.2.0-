@@ -1,0 +1,55 @@
+Ahead of Time compilation:
+
+
+- 🔥We can generate this code before starting the application, using the compiler that the Angular
+    team wrote: the Ahead of Time (AoT) compiler. You can call it manually in your project (ngc),
+    or, if you are using the CLI (as you should), it is enabled by default when you run ng serve or
+    ng build since Angular CLI v8.1.
+
+- 🔥The build uses the Angular compiler to compile the templates to TypeScript files. To TypeScript?
+    Yes, because it then makes sure that we didn’t make a mistake in our templates! The generated
+    TypeScript code and our application code will then be compiled by TypeScript (ngc will call the
+    TypeScript compiler immediately), and if you made a mistake in a template, you’ll see an error:
+
+        <figure>
+            <!-- wrong computed name -->
+            <img [src]="ponyImageUr()">
+            <figcaption>{{ ponyModel.name }}</figcaption>
+        </figure>
+    
+    🔥The Angular compiler then generates this TypeScript code:
+
+        // ...
+        <!-- wrong computed name in the generated code -->
+        domProperty('src', component.ponyImageUr());
+        advance(2);
+        textInterpolate(component.ponyModel().name);
+    
+    🔥which raises an error in the TypeScript compilation:
+        
+        Property 'ponyImageUr' does not exist on type 'Pony'.
+
+
+- This is great, because it means you can check all your templates before even running the
+    application. Your future refactoring will be painless: if you rename a method or a property in
+    a component, you’ll know straight away that the template must be updated, too, because it breaks
+    the build. It also means that this compilation may throw an error whereas your code can be fine
+    in the Just in Time mode.
+    
+    🔥For example, if you have a private input() in your component, it will be fine in JiT mode
+    (because JavaScript has no notion of private property), but will break in AoT mode (as the
+    generated TypeScript code of another component needs to access the property).
+
+- Compiling your application before shipping to your users will also greatly speed up the start of the
+    application, as the compilation will already be done!
+
+- 🔥🔥To sum up, in AoT mode: you still write TypeScript and HTML, you compile the HTML to TypeScript
+    and then all TypeScript code to JavaScript, and send this JS code to your users.
+
+- 🔥🔥The downside will be the size of the JavaScript bundle you will ship to your users: the generated
+    code is larger than the uncompiled templates. This is somewhat compensated by the fact that you
+    don’t need to ship the Angular compiler to your users, as the templates are already compiled. And
+    the compiler is a big piece of code, so this is a nice win. On a medium or large application, this
+    generally doesn’t compensate the increase in size from the generated code though. 🔥🔥If you want
+    to have all the perks of the AoT compilation AND a small bundle, you’ll need to dig into the
+    lazyloading feature we explained in the Router chapter.

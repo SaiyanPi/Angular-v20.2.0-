@@ -1,0 +1,94 @@
+Code generation:
+
+
+- In the previous chapter, we talked briefly about how the framework generates a change detection
+    function for each component.
+
+- 🔥🔥This is a very interesting and particular point in Angular, which you don’t see in other
+    frameworks: Angular, at the start of your application, will compile your templates and generate
+    dynamic code for each component.
+
+- 🔥The HTML you write in your templates is never read by the browser directly. Instead, Angular
+    generates a component definition for each component that represents exactly what you wrote in
+    your template. This component definition is inlined in a static field of your component.
+
+    Let’s take an example, with our well-known Pony. The template is mainly an image with a bound
+    source property, and a figcaption element with an interpolation.
+
+        <figure>
+            <img [src]="ponyImageUrl()">
+            <figcaption>{{ ponyModel().name }}</figcaption>
+        </figure>
+
+    🧠🧠When Angular compiles this, it first starts by parsing the template to generate what is
+    called an Abstract Syntax Tree (AST). An AST is a tree representing the structure of the template,
+    commonly used by compilers to represent such things. It is the result of the syntax analysis
+    step of the compilation.
+    🧠🧠This AST will then be used to generate the dynamic JavaScript code, a "component
+    definition" per component, inlined in a static field of our component class. A component
+    definition contains several things, and among them the template, represented by a function.
+
+        domElementStart(0, 'figure');
+        {
+            domElement(1, 'img');
+        }
+        {
+            domElementStart(2, 'figcaption');
+            text(3);
+            domElementEnd();
+        }
+        domElementEnd();
+
+    🧠🧠With this function, Angular is able to create the DOM corresponding to our Pony: it basically
+    appends the corresponding HTMLElement to the DOM, for every element.
+
+
+- ⁉️But how does it handle the change detection?
+    The template function is in fact a little bit longer:
+
+        template: (renderFlags: RenderFlags, component: Pony) => {
+            if (renderFlags & RenderFlags.Create) {
+                domElementStart(0, 'figure');
+                {
+                    domElement(1, 'img');
+                }
+                {
+                    domElementStart(2, 'figcaption');
+                    text(3);
+                    domElementEnd();
+                }
+                domElementEnd();
+            }
+
+            if (renderFlags & RenderFlags.Update) {
+                advance();
+                domProperty('src', component.ponyImageUrl());
+                advance(2);
+                textInterpolate(component.ponyModel().name);
+            }
+        }
+    
+    This template function has two parts:
+    👉 the creation of the component that we explained above
+    👉 the update of the component which does basically what you would write by hand (i.e. the image
+        has a source property that reflects the result of the method ponyImageUrl() of my component,
+        and the figcaption has a text that reflects the pony’s name)
+
+    🔥🔥It is called by the framework every time it needs to check if there is a change (see the
+    previous chapter). It basically gets the values of the dynamic bits (the src attribute and the
+    interpolation), and then calls a function of the framework with the index of the element to
+    update, and another one with its property and the new value. The framework then compares the
+    previous value stored for this element and if it changed, updates it, and replaces it with the
+    new value.
+
+
+- This generated code is very fast and can be optimized by JS engines (see the part on monomorphism
+    and inline caching in the previous chapter). This code generation takes some time, so it used to
+    be done in the browser, on the application start. This mode was called the Just in Time (JiT)
+    compilation. 🔥The Ivy compiler is now fast enough to do this compilation directly when you run
+    ng serve or ng build. This mode is called Ahead of Time (AoT), and is detailed below.
+
+
+- 🔥🔥To sum up, when you are using the JiT(Just-In-Time) compilation: you write TypeScript code and
+    HTML templates, you compile your TypeScript to JavaScript and send the JS and HTML to your users.
+    At runtime, the HTML is then compiled to JS code too.
