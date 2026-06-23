@@ -1,0 +1,32 @@
+Using Subjects as triggers:
+
+
+- Another common pattern in Angular is to use a Subject to trigger some action.
+    For example, 🤔let’s say we want to display a list of races:
+    • when the component first loads
+    • every time the user clicks on a refresh button
+
+    We can use a Subject for that. 🔥🔥A Subject is a hot observable, which emits a new event when
+    you call its next method. In the code below, 
+    👉 refreshTrigger is used to emit a new event every time the user clicks on the refresh button.
+    👉 We use this subject as the source of the subscription to the raceService.list method.
+    👉 As we also want to call the method when the component is first loaded, we use the startWith
+        operator to emit an event when the component is initialized.
+
+    races.ts:
+
+        private readonly refreshTrigger = new Subject<void>();
+        protected readonly races: Signal<Array<RaceModel> | undefined>;
+
+        constructor() {
+            const raceService = inject(RaceService); 👈
+            const races$ = this.refreshTrigger.pipe(
+                startWith(undefined),
+                switchMap(() => raceService.list())
+            );
+            this.races = toSignal(races$);
+        }
+
+        protected refresh() {
+            this.refreshTrigger.next();
+        }

@@ -19,7 +19,7 @@ will access this signal to do whatever they need to do.
         readonly currentUser = this.user.asReadonly();
 
 
-2️⃣ We now want to set the user in case of authentication success. To do that, you can use the RxJS
+2️⃣ We now want to set the user in case of authentication success. To do that, 🔥you can use the RxJS
     tap operator in the authenticate method, which allows executing an action without transforming
     the event as the map operator does. In the tap operator, set the user signal with the received
     user.

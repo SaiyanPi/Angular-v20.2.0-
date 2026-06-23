@@ -1,0 +1,38 @@
+Advanced observables:
+
+
+- When you start with Angular, RxJS looks like something hard to use. Newbies generally try to avoid
+    using it. After all, other frameworks don’t use observables. ⁉️Besides, Angular has signals now.
+    So should you really learn RxJS?
+
+    ✅Well, first of all, you don’t really have a choice for now. Angular still forces you to use it
+    if you want to use its HTTP client, its router or its reactive forms.
+
+    ✅But even if it didn’t, RxJS really a great piece of software, that can make it much easier to
+    make asynchronous programming easier, more efficient and correct. Asynchronous code relying on
+    promises is often full of race conditions or inefficiencies. And RxJS isn’t tied to Angular, so
+    learning it can be beneficial even if you work with other frameworks, or without any framework
+    at all.
+
+
+-----------------------------------------------------------------------------------------------------
+
+Some Like It Hot:
+
+- 🔥We learned in the chapter 11 about Reactive Programming that an Observable represents a sequence
+    of events to which we can subscribe.
+    ⚠️But there is a distinction to understand between two kinds of Observables: cold ones and hot
+    ones.
+
+- 🔥🔥Cold observables only emit events when they are subscribed to. You can think of it as watching
+    a Youtube video: the video will only stream when you hit the "Play" button. 🔥🔥For example, the
+    observables returned by the HttpClient class are cold observables: they only send the request
+    when you subscribe. And each call to subscribe sends a new request and results in a new stream of
+    events (limited to one event in this specific case).
+
+- 🔥🔥Hot observables are different: they emit events without caring if someone subscribed. You can
+    think of them as live television: you turn on the TV and you land in the middle of a show, that
+    could have started minutes or hours ago. 🔥🔥The valueChanges observable of a FormControl is a
+    hot observable. You will not receive the values emitted before the moment you subscribed, only the
+    values from the moment you subscribe. And unlike with cold observable two different subscribers
+    will receive the same events.

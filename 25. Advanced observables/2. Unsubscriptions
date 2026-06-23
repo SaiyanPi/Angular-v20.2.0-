@@ -1,0 +1,66 @@
+Unsubscriptions:
+
+
+- 😮In our Ponyracer app, a live race can be represented by an observable, emitting the positions
+    of the ponies. When the race is over, the observable stops emitting events.
+
+- 🤔🔥But maybe the user won’t stay around until the end of the race. What happens then? The component
+    will be destroyed. But, if we forgot to unsubscribe, then the next callback will continue to do
+    its job every time an event occurs. Even if the component is no longer displayed!
+
+- ⚠️⚠️Not unsubscribing can lead to memory leaks and all sorts of trouble (unnecessary network
+    traffic, server overload, etc.). So the best practice in general is to make sure you unsubscribe
+    before the component is destroyed.
+
+    1️⃣
+    🔥🔥One way of doing that is to store the Subscription returned by subscribe in a property of
+    the component, and in the ngOnDestroy method, call unsubscribe on this subscription:
+
+        export class LiveRace implements OnDestroy {
+            private readonly subscription: Subscription;
+            constructor() {
+                const raceService = inject(RaceService);
+                this.subscription = raceService.live().subscribe(() => {
+                    // ...
+                });
+            }
+            ngOnDestroy() {
+                this.subscription.unsubscribe();
+            }
+        }
+
+
+- As we explained before, 🔥🔥you’re automatically unsubscribed when an observable completes.
+    
+    2️⃣
+    So another way of avoiding troubles caused by never-ending subscriptions is to make sure that the
+    observable completes when the component is destroyed.
+    🔥🔥Since Angular v16, you can do that easily by using the takeUntilDestroyed operator provided
+    by the framework in the @angular/core/rxjsinterop package. 🔥🔥This operator should be the last
+    operator in the chain, just before the call to subscribe. That way, it makes sure that you
+    unsubscribe to all the observable chain when the component is destroyed
+
+        export class LiveRace {
+            constructor() {
+                const raceService = inject(RaceService);
+                raceService
+                .live()
+                .pipe(takeUntilDestroyed()) 👈
+                .subscribe(() => {
+                    // ...
+                });
+            }
+        }
+
+
+- ⁉️Are there situations where it’s safe not to unsubscribe? If you’re in doubt, follow the best
+    practice, and unsubscribe. It’s interesting however to understand when it’s absolutely essential
+    to unsubscribe, and when it’s not a big deal not to do it.
+
+    👉Since you’re automatically unsubscribed when the observable completes or errors, it’s not a big
+    deal not to unsubscribe to HTTP observables for example: they complete or error after a short time,
+    usually before, or shortly after the component is destroyed.
+
+    👉Similarly, if the emitter is destroyed at the same time as the component which subscribes (for
+    example, the ActivatedRoute of a routed component, or the form created by a component), then not
+    unsubscribing is not a problem either.

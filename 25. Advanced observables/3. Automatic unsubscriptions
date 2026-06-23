@@ -1,0 +1,72 @@
+Automatic unsubscriptions:
+
+
+- 🔥A good way of making sure you never forget to unsubscribe is… to avoid subscribing in the first
+    place. 🤔Well, something has to subscribe, otherwise nothing will happen. 🔥🔥But if you let the
+    framework subscribe for you, it will also unsubscribe for you.
+
+- ⚠️⚠️That’s not always possible. To trigger side effects, explicitly subscribing is pretty much
+    unavoidable.
+
+- 🔥🔥But if the goal of the observable is to get things to display, then you can let the framework
+    subscribe and unsubscribe for you, using toSignal:
+        1️⃣
+        export class LiveRace {
+            protected readonly liveRace: Signal<LiveRaceModel | undefined> = 
+            toSignal(inject(RaceService).live());
+        }
+
+    That’s my preferred solution. Before signals were introduced though, another way was frequently
+    used (and might still be used in your projects): 🔥the async pipe.
+
+    🔥The idea is to expose the observable itself as a property of the component, and to let the async
+    pipe subscribe and unsubscribe for you, directly from the template:
+        2️⃣
+        @Component({
+            selector: 'ns-live-race',
+            template: `{{ (liveRace$ | async)?.name }}`,
+            imports: [AsyncPipe]
+        })
+        export class LiveRace {
+            protected readonly liveRace$: Observable<LiveRaceModel> = inject(RaceService).live();
+        }
+    
+    🧠🧠Similarly to the toSignal function, the async pipe can’t return a race until the observable
+    has emitted. That’s why we use the ?. operator.
+
+
+- Now, what if we also want to display the start instant of the race. We could do this:
+
+        @Component({
+            selector: 'ns-live-race',
+            template: `❌ don't do this
+                <div>{{ (liveRace$ | async)?.name }}</div>
+                <div>{{ (liveRace$ | async)?.startInstant | date }}</div>`,
+            imports: [AsyncPipe, DatePipe]
+        })
+        export class LiveRace {
+            protected readonly liveRace$: Observable<LiveRaceModel> = inject(RaceService).live();
+        }
+    
+    ⚠️⚠️Can you spot the problem? Two async pipes means two subscriptions. So if the observable is
+    cold, two different streams of events are generated (two different HTTP requests and responses
+    for example).
+
+    ✅We could use the shareReplay operator to transform the cold observable into a hot one. ✅✅But
+    the usual way to avoid the problem is to make sure to only use the async pipe once, using the
+    following pattern:
+
+        @Component({
+            selector: 'ns-live-race',
+            template: `✅ Do this instead
+                @if (liveRace$ | async; as liveRace) {
+                    <div>{{ liveRace.name }}</div>
+                    <div>{{ liveRace.startInstant | date }}</div>
+                } @else {
+                    Loading in progress...
+                }`,
+            imports: [AsyncPipe, DatePipe]
+        })
+        export class LiveRace {
+            protected readonly liveRace$: Observable<LiveRaceModel> = inject(RaceService).live();
+        }

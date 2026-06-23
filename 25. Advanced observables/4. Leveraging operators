@@ -1,0 +1,176 @@
+Leveraging operators:
+
+
+- We saw a few operators up until now, but I’d like to take a moment to describe a few others in a
+    step by step example. 😮😮We are going to code a typeahead input. A typeahead allows your users
+    to enter a text in an input, and then the application displays a few suggestions based on this
+    text (like a Google search box).
+
+    🔥🔥A good typeahead has quite a few features:
+
+    👉 it displays the results matching the request (obviously)
+    👉 it allows you to only display results if the input text is at least a few characters long
+    👉 it won’t fetch the results for every keystroke from our user, but will wait for some time to 
+        make sure the user is done typing
+    👉 it won’t trigger the same request twice if the user enters the same value
+
+    All this can be done by hand, but it’s far from being trivial. 🫡But we’re in luck - Angular and
+    RxJS combine nicely to solve this kind of problem!
+
+    First let’s see what such a component would look like:
+
+        import { Component, inject, Signal } from '@angular/core';
+        import { toSignal } from '@angular/core/rxjs-interop';
+        import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
+        import { PonyModel, PonyService } from './pony-service';
+        @Component({
+            selector: 'ns-typeahead',
+            template: `
+                <div>
+                    <input [formControl]="input" />
+                    <ul>
+                        @for (pony of ponies(); track pony.id) {
+                            <li>{{ pony.name }}</li>
+                        }
+                    </ul>
+                </div>
+            `,
+            imports: [ReactiveFormsModule]
+        })
+        export class PonyTypeAhead {
+            protected readonly input = inject(NonNullableFormBuilder).control('');
+            protected readonly ponies: Signal<Array<PonyModel>>;
+
+            constructor() {
+                const ponyService = inject(PonyService);
+                // todo: do something with the input
+            }
+        }
+    
+    🔥🔥In the constructor, we can start by subscribing to the valueChanges observable exposed by the
+    FormControl (check the chapter 20: forms section 10: reacting to changes if you need to refresh
+    your memory).
+
+        this.input.valueChanges.subscribe(value => console.log(value));
+    
+    🔥🔥Next we want to use this value to fetch the ponies matching the given input. Our PonyService
+    has a method search that does exactly that! We can suppose that this method does a HTTP request
+    behind the scenes to fetch the results from the server, so it returns an
+    Observable<Array<PonyModel>>, an observable that emits an array of ponies.
+    Let’s subscribe to this method to update the ponies field of our component:
+
+        const ponies = signal<Array<PonyModel>>([]);
+        this.ponies = ponies;
+        this.input.valueChanges.subscribe(value => {
+            this.ponyService.search(value).subscribe(results => ponies.set(results));
+        });
+
+    ⚠️⚠️OK, that works. But it’s not ideal. We have many subscriptions that should be unsubscribed.
+    And there is actually a race condition: the second search result could be emitted before the
+    first one.
+
+    🤔We could transform the Observable<string> by applying the map operator. But since the search
+    method returns an Observable<Array<PonyModel>>, we would end up with an
+    Observable<Observable<Array<PonyModel>>>. What we want is an Observable<Array<PonyModel>>,
+    which emits the successive search results.
+    
+    🔥🔥We should use one of the flattening operators that RxJS provides. Let’s try with mergeMap:
+
+        const ponies$ = this.input.valueChanges.pipe(mergeMap(value => this.ponyService
+        .search(value)));
+        this.ponies = toSignal(ponies$, { initialValue: [] });
+    
+    😮Wow, much more elegant! Every time a new pony name is emitted by the source observable, it
+    creates a new observable of ponies, and it merges all the events of all these observables into a
+    single one. ⚠️⚠️But this has the same race condition as the previous attempt: the second search
+    result could be emitted before the first one.
+
+    🔥🔥Let’s try with concatMap:
+
+        const ponies$ = this.input.valueChanges.pipe(concatMap(value => this.ponyService
+        .search(value)));
+        this.ponies = toSignal(ponies$, { initialValue: [] });
+    
+    😮✅This time the search results are correctly ordered. ⚠️⚠️But since the observables are
+    concatenated, the second search request is only sent once the response to the first one has
+    arrived. So it’s much too slow, and unnecessarily displays all the successive results.
+
+    ✅✅The correct flattening operator to use here is the one we already talked about: switchMap.
+
+        const ponies$ = this.input.valueChanges.pipe(switchMap(value => this.ponyService
+        .search(value)));
+        this.ponies = toSignal(ponies$, { initialValue: [] });
+    
+    🫡When a new pony name is emitted, switchMap unsubscribes from the previous observable before
+    creating and subscribing to the next. So we get the results in order, and we don’t wait to get a
+    result before fetching the next one.
+
+
+- OK, 🤔now let’s discard the queries that are less than three characters. 🔥🔥Easy: we just have
+    to use a filter operator!
+
+        const ponies$ = this.input.valueChanges.pipe(
+            filter(query => query.length >= 3),
+            switchMap(value => this.ponyService.search(value))
+        );
+        this.ponies = toSignal(ponies$, { initialValue: [] });
+    
+    🤔We also don’t want to search immediately after a keystroke: we’d like to search only after the
+    user stops typing for 400ms for example. Yep, you guessed it: 🔥🔥there’s an operator for that, and
+    it’s called debounceTime:
+
+        const ponies$ = this.input.valueChanges.pipe(
+            filter(query => query.length >= 3),
+            debounceTime(400),
+            switchMap(value => this.ponyService.search(value))
+        );
+        this.ponies = toSignal(ponies$, { initialValue: [] });
+    
+    So now a user can enter a value, delete some character, add others and the query will only fire
+    when 400ms have passed since the last keystroke. ⁉️But what if the user enters "Rainbow", waits for
+    400ms (which will thus send a request), then enters "Rainbow Dash" and immediately removed the
+    "Dash" to get back to "Rainbow"? That would send two subsequent requests for "Rainbow"! 🤔Maybe
+    we can only trigger a request if the query is different from the last one? 🔥🔥Of course we can,
+    with distinctUntilChanged:
+
+        const ponies$ = this.input.valueChanges.pipe(
+            filter(query => query.length >= 3),
+            debounceTime(400),
+            distinctUntilChanged(),
+            switchMap(value => this.ponyService.search(value))
+        );
+        this.ponies = toSignal(ponies$, { initialValue: [] });
+    
+
+- Last thing: 🤔we need to properly handle the errors. We know that the valueChanges will not signal
+    any error, but our ponyService.search() observable might throw: it is dependent on the network.
+    ⚠️⚠️And the problem with observables is that an error will completely break the stream: so if one
+    request blows, the whole typeahead will be down… We don’t want that, 🔥🔥so let’s catch potential
+    errors and replace the faulty observable by one that emits an empty result:
+
+        const ponies$ = this.input.valueChanges.pipe(
+            filter(query => query.length >= 3),
+            debounceTime(400),
+            distinctUntilChanged(),
+            switchMap(value => this.ponyService.search(value).👉pipe(catchError(() => of([]))))
+        );
+        this.ponies = toSignal(ponies$, { initialValue: [] });
+
+
+- Quite nice, don’t you think? We now only trigger a search when the user enters a text with more
+    than 3 characters and waits at least 400ms. We guarantee that we don’t trigger the same request
+    twice, and that the results are always in sync with the request! All that in 5 lines of code.
+    😵‍💫Good luck doing the same by hand without adding any issue…
+
+    This is of course a really good use-case for RxJS, but the point is that it provides a lot of
+    operators, with some gems hidden in it. It takes time to understand it, but it’s worth the
+    trouble as it can be tremendously useful in your application.
+
+
+-------------------------------------------------------------------------------------------------
+    
+    💡💡 switchMap operator of RxJS:
+
+    switchMap maps each value from an outer Observable to a new inner Observable,
+    subscribes to that inner Observable, and automatically unsubscribes from the
+    previous one whenever a new outer value arrives.
