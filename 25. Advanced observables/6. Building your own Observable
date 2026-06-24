@@ -1,0 +1,61 @@
+Building your own Observable:
+
+
+- 🔥Sometimes, sadly, you need to use libraries that produce events but not using an Observable.
+    🔥🔥All hope is not lost, because you can of course create your own Observables, using, 
+    new Observable(observer ⇒ {}).
+
+    🔥🔥The function passed as a parameter to the constructor is called the subscribe function: it
+    will be responsible for emitting events and errors, and for completing when done.
+
+    😮🔥For example, if you want to create an Observable which emits 1, then 2, then completes, you
+    could do:
+
+        const numbers = new Observable(observer => {
+            observer.next(1);
+            observer.next(2);
+            observer.complete();
+        });
+    
+
+    😮🔥 Now we could subscribe to such an observable:
+
+        numbers.subscribe({
+            next: number => console.log(number),
+            error: error => console.log(error),
+            complete: () => console.log('Complete!')
+        });
+        // Will log:
+        // 1
+        // 2
+        // Complete!
+
+
+    😮🔥Now, let’s say I want to emit 'hello' every 2 seconds, and never complete. We could easily
+    do this with some built-in operators, but we can try by hand, as a small example:
+
+        import { Observable } from 'rxjs';
+        export class HelloService {
+            get(): Observable<string> {
+                return new Observable(observer => {
+                    const interval = setInterval(() => observer.next('hello'), 2000);
+                });
+            }
+        }
+    
+
+    - 🔥🔥The function passed to new Observable() can also return a function that will be called on
+    the unsubscription. That’s really useful if you have some cleanup to do. Like us with our
+    HelloService, because we’ll need to stop the setInterval when the observable will be unsubscribed.
+
+        import { Observable } from 'rxjs';
+        export class HelloService {
+            get(): Observable<string> {
+                return new Observable(observer => {
+                    const interval = setInterval(() => observer.next('hello'), 2000);
+                    return () => clearInterval(interval);
+                });
+            }
+        }
+
+    ⚠️⚠️The interval will not be created until the subscription, so we just created a cold observable.

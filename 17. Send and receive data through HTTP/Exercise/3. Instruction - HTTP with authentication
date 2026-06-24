@@ -1,0 +1,114 @@
+⚠️ Start this exercise only after you're done with the forms, signal forms, state management,
+    zones and the angular magic, and angular compilation. forms, signal forms, and state
+    management specifically.
+
+------------------------------------- HTTP with authentication ---------------------------------------
+
+- SOME REST ENDPOINTS ARE SECURED: LET'S SEE WHAT WE NEED TO DO TO CALL THEM, AND HOW TO USE
+    INTERCEPTORS. ALSO A LITTLE INTRODUCTION TO JSON WEB TOKEN AND TO HOW TO USE ENVIRONMENT FILES.
+
+
+- Now that the user is able to log in (and out), we should be able to use the APIs of PonyRacer
+    that require to be authenticated.
+    The mechanism used is JWT (JSON Web Token). If you don’t know anything about JWT, you can browse
+    https://www.jwt.io/.
+
+    The general principle of this mechanism is quite simple:
+        👉 The user logs in to a server and gets back a JSON token;
+        👉 this token contains a clear-text payload containing information that the application needs
+            to know about the user;
+        👉 this token is cryptographically signed with a secret key that only the server knows
+            (which means that you can’t counterfeit a token without knowing this secret key);
+        👉 this token is sent with every HTTP request to the server, in the Authorization header.
+        👉 the server checks the authenticity of the token, extracts the information it needs from
+            the token, and responds to the request.
+
+- We have already obtained this token when authenticating: it’s one of the fields of the object
+    returned after a successful login.
+
+- All we need to do now is to make sure this token is sent with every HTTP request the application
+    sends.
+
+- 🔥Since we need the same header to be sent for every request, it is the perfect use case for an HTTP
+    interceptor.
+
+
+1️⃣ But let’s start with a bit of refactoring. Hardcoding the URL of the API every time we use it
+    does not feel right: what if we want to use another URL when we are in dev, staging or
+    production? Let’s use the "replacement file" feature of the CLI to add environment properties
+    to our application.
+    💡A CLI schematic is going to create for us a folder environments in src with two files
+    environment.ts and environment.development.ts:
+
+        ng generate environments
+
+
+
+2️⃣ Then we can replace the content of each file with:
+
+    environment.development.ts:
+
+        export const environment = {
+            baseUrl: 'https://ponyracer.ninja-squad.com'
+        };
+
+
+    environment.ts:
+
+        export const environment = {
+            baseUrl: 'https://ponyracer.ninja-squad.com'
+        };
+
+
+
+3️⃣ Notice that the angular.json file as been modified by the schematic as well to add the
+    following option to the build configuration:
+
+        "fileReplacements": [
+            {
+                "replace": "src/environments/environment.ts",
+                "with": "src/environments/environment.development.ts"
+            }
+        ]
+
+
+
+4️⃣ Angular CLI will then use the "development" file or the "production" file, depending on which
+    environment you specify 🔥when you build/serve the app, even if as a developer, you always import
+    from the environment.ts file. For example, 
+    🔥ng serve --configuration=production will use the constant from the environment.ts file,
+    🔥whereas ng serve uses the constant from the environment.development.ts file.
+
+
+5️⃣ Import the environment constant from the environment.ts file in user-service.ts, and refactor the
+    hardcoded URLs by using the environment.baseUrl value. Do the same in RaceService.
+
+
+6️⃣ Now that this refactoring is done, we just need to add the JWT feature. ⚠️We could pass the secret
+    token every time we do an HTTP request, but that would be cumbersome. The HttpClient provided by
+    Angular has a useful feature though: you can define interceptors that will be called for every
+    request.
+    First, create an interceptor called jwtInterceptor. The CLI offers a generator to do so:
+
+        ng generate interceptor jwt
+    
+    ⚠️This interceptor does nothing yet: it just gives the request to the next interceptor in the
+    chain.
+
+
+7️⃣ Now, in the function of our interceptor, let’s get the current user (you need to inject UserService
+    in the interceptor thanks to inject()). If we have a user, we should add a header to the request
+    before giving it to the next handler. The new header must be named Authorization and its value
+    must be Bearer ${user.token}. For example, if the token value is 'secret', the header value must
+    be 'Bearer secret'. To set a header in an intercepted request, you must use the clone method of
+    the request, which takes an optional parameter. This parameter has a field setHeaders, to which
+    you can give the header you want to set with an object literal, like { 'hello': 'world' }. You
+    should then give the cloned request to the next handler. If there is no token just give the
+    original request to the next handler.
+
+
+8️⃣ We now need to register our interceptor in our application: 
+    use provideHttpClient(withInterceptors([myInterceptor])) in the providers of appConfig.
+
+
+9️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK. 

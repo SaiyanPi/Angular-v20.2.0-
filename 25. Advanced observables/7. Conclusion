@@ -1,0 +1,6 @@
+Conclusion:
+
+
+- I hope you enjoyed this small chapter on observables. They can also be used to sequence your HTTP
+    requests, or to communicate between components (more on this soon). But you have now a good
+    overview of what’s possible!
