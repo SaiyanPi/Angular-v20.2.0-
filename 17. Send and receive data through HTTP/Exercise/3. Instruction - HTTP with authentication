@@ -2,7 +2,11 @@
     zones and the angular magic, and angular compilation. forms, signal forms, and state
     management specifically.
 
+⚠️ project for this exercise is ponyracer - from chapter 22
+
+
 ------------------------------------- HTTP with authentication ---------------------------------------
+
 
 - SOME REST ENDPOINTS ARE SECURED: LET'S SEE WHAT WE NEED TO DO TO CALL THEM, AND HOW TO USE
     INTERCEPTORS. ALSO A LITTLE INTRODUCTION TO JSON WEB TOKEN AND TO HOW TO USE ENVIRONMENT FILES.
