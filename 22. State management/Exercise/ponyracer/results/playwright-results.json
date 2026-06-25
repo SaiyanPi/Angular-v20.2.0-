@@ -1,7 +1,7 @@
 {
   "config": {
-    "configFile": "D:\\Projects\\Angular v20.2.0\\22. State management\\Exercise\\ponyracer\\playwright.config.ts",
-    "rootDir": "D:/Projects/Angular v20.2.0/22. State management/Exercise/ponyracer/e2e",
+    "configFile": "D:\\Projects\\Angular\\22. State management\\Exercise\\ponyracer\\playwright.config.ts",
+    "rootDir": "D:/Projects/Angular/22. State management/Exercise/ponyracer/e2e",
     "forbidOnly": false,
     "fullyParallel": true,
     "globalSetup": null,
@@ -16,7 +16,7 @@
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "D:/Projects/Angular v20.2.0/22. State management/Exercise/ponyracer/test-results",
+        "outputDir": "D:/Projects/Angular/22. State management/Exercise/ponyracer/test-results",
         "repeatEach": 1,
         "retries": 2,
         "metadata": {
@@ -24,7 +24,7 @@
         },
         "id": "chromium",
         "name": "chromium",
-        "testDir": "D:/Projects/Angular v20.2.0/22. State management/Exercise/ponyracer/e2e",
+        "testDir": "D:/Projects/Angular/22. State management/Exercise/ponyracer/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.e2e-spec.ts"
@@ -69,7 +69,7 @@
         {
           "title": "Home page",
           "file": "home.e2e-spec.ts",
-          "line": 14,
+          "line": 18,
           "column": 6,
           "specs": [
             {
@@ -88,12 +88,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4560,
+                      "duration": 3738,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-21T11:14:21.471Z",
+                      "startTime": "2026-06-25T04:55:08.906Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -103,7 +103,7 @@
               ],
               "id": "e2caf6f5f0104c3eaa7f-1c019d09729f6e40ad78",
               "file": "home.e2e-spec.ts",
-              "line": 32,
+              "line": 23,
               "column": 7
             },
             {
@@ -122,12 +122,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 4447,
+                      "duration": 3879,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-21T11:14:21.477Z",
+                      "startTime": "2026-06-25T04:55:08.840Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -137,7 +137,7 @@
               ],
               "id": "e2caf6f5f0104c3eaa7f-733d8a887446e4614b69",
               "file": "home.e2e-spec.ts",
-              "line": 39,
+              "line": 30,
               "column": 7
             },
             {
@@ -156,12 +156,12 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 5631,
+                      "duration": 4346,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-21T11:14:21.485Z",
+                      "startTime": "2026-06-25T04:55:08.841Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -171,7 +171,7 @@
               ],
               "id": "e2caf6f5f0104c3eaa7f-a08f4f97b3dc9706228d",
               "file": "home.e2e-spec.ts",
-              "line": 44,
+              "line": 35,
               "column": 7
             },
             {
@@ -190,12 +190,12 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 5975,
+                      "duration": 4491,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-21T11:14:21.473Z",
+                      "startTime": "2026-06-25T04:55:08.789Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -205,7 +205,7 @@
               ],
               "id": "e2caf6f5f0104c3eaa7f-29ea3c84a018c543ec92",
               "file": "home.e2e-spec.ts",
-              "line": 65,
+              "line": 57,
               "column": 7
             }
           ]
@@ -241,12 +241,12 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 1880,
+                      "duration": 2075,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-21T11:14:28.023Z",
+                      "startTime": "2026-06-25T04:55:13.712Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -275,12 +275,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1568,
+                      "duration": 1668,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-21T11:14:28.019Z",
+                      "startTime": "2026-06-25T04:55:13.775Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -323,15 +323,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "passed",
-                      "duration": 1764,
+                      "duration": 1139,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-21T11:14:29.149Z",
+                      "startTime": "2026-06-25T04:55:14.387Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -357,15 +357,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "passed",
-                      "duration": 1567,
+                      "duration": 1121,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-21T11:14:29.428Z",
+                      "startTime": "2026-06-25T04:55:14.443Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -411,12 +411,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2718,
+                      "duration": 1487,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-06-21T11:14:29.660Z",
+                      "startTime": "2026-06-25T04:55:15.514Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -436,8 +436,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-21T11:14:14.543Z",
-    "duration": 18103.943999999996,
+    "startTime": "2026-06-25T04:55:03.228Z",
+    "duration": 14018.160999999998,
     "expected": 9,
     "skipped": 0,
     "unexpected": 0,

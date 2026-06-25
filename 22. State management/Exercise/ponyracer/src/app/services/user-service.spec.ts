@@ -1,10 +1,12 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { MockInstance } from 'vitest';
 import { UserModel } from '../models/user-model';
 import { UserService } from './user-service';
 
 describe('UserService', () => {
   let http: HttpTestingController;
+  let localStorageGetItem: MockInstance<(key: string) => string | null>;
 
   const user = {
     id: 1,
@@ -15,6 +17,8 @@ describe('UserService', () => {
   };
 
   beforeEach(() => {
+    localStorageGetItem = vi.spyOn(Storage.prototype, 'getItem');
+    localStorageGetItem!.mockReturnValue(null);
     TestBed.configureTestingModule({
       providers: [provideHttpClientTesting()]
     });
@@ -23,7 +27,9 @@ describe('UserService', () => {
 
   afterAll(() => http.verify());
 
-  it('should authenticate a user', () => {
+  it('should authenticate and store a user', () => {
+    vi.spyOn(Storage.prototype, 'setItem');
+
     let actualUser: UserModel | undefined;
     const userService = TestBed.inject(UserService);
     userService.authenticate('cedric', 'hello').subscribe(fetchedUser => (actualUser = fetchedUser));
@@ -36,6 +42,10 @@ describe('UserService', () => {
 
     expect(actualUser, 'The observable should return the user').toBe(user);
     expect(userService.currentUser()).toStrictEqual(user);
+
+    TestBed.tick();
+
+    expect(Storage.prototype.setItem).toHaveBeenCalledWith('rememberMe', JSON.stringify(user));
   });
 
   it('should register a user', () => {
@@ -52,14 +62,33 @@ describe('UserService', () => {
     expect(actualUser, 'You should emit the user.').toBe(user);
   });
 
-  it('should logout the user', () => {
-    // log in the user
+  it('should retrieve a user if one is stored', () => {
+    localStorageGetItem!.mockReturnValue(JSON.stringify(user));
     const userService = TestBed.inject(UserService);
-    userService.authenticate('cedric', 'hello').subscribe();
-    http.expectOne({ method: 'POST', url: 'https://ponyracer.ninja-squad.com/api/users/authentication' }).flush(user);
+
+    expect(userService.currentUser()).toStrictEqual(user);
+    expect(localStorageGetItem).toHaveBeenCalledWith('rememberMe');
+  });
+
+  it('should retrieve no user if none stored', () => {
+    const userService = TestBed.inject(UserService);
+
+    expect(userService.currentUser()).toBeUndefined();
+  });
+
+  it('should logout the user', () => {
+    vi.spyOn(Storage.prototype, 'removeItem');
+    localStorageGetItem!.mockReturnValue(JSON.stringify(user));
+    const userService = TestBed.inject(UserService);
+
+    expect(userService.currentUser()).toStrictEqual(user);
 
     userService.logout();
 
     expect(userService.currentUser()).toBeUndefined();
+
+    TestBed.tick();
+
+    expect(Storage.prototype.removeItem).toHaveBeenCalledWith('rememberMe');
   });
 });

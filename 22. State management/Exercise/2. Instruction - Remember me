@@ -1,0 +1,66 @@
+-------------------------------------- Remember me --------------------------------------------------
+
+- HAVING TO LOG IN EVERY TIME IS PAINFUL: LET'S REMEMBER OUR USER FOR THE NEXT TIME! PLAY WITH THE
+    LOCALSTORAGE AND EFFECTS.
+
+Instruction: 
+
+- ⚠️You have probably noticed that every time we reload the page, we lose the logged in user.
+    Indeed, every time the page is reloaded, the application restarts from scratch, and the
+    UserService is thus recreated in its initial state. Let’s improve that.
+
+1️⃣To be able to remember the logged-in user, we need to store it in a persistent location, and not
+    just in memory. The browser has an API to do that: LocalStorage. So, every time the user logs
+    in, we will store the user in LocalStorage. When the application starts (i.e. when we load or
+    reload the page), we will also read the logged-in user from LocalStorage and expose it in
+    UserService.
+
+        constructor() {
+        
+        }
+
+
+2️⃣ We can handle the synchronization with the LocalStorage using an effect. Every time the value of
+    the signal containing the current user changes, we want to update the LocalStorage. This is 
+    xactly what an effect() is for. Add an effect() in the constructor of the service to update the
+    localStorage every time the value of the signal changes (by calling setItem), or to remove the
+    value from the localStorage if the user is undefined (by calling removeItem).
+
+        constructor() {
+            effect(() => {
+                // every time the user signal changes, we store it in local storage
+                const user = this.user();
+                untracked(() => {
+                    if (user) {
+                        window.localStorage.setItem(USER_LOCAL_STORAGE_KEY, JSON.stringify(user));
+                    } else {
+                        window.localStorage.removeItem(USER_LOCAL_STORAGE_KEY);
+                    }
+                });
+            })
+        }
+
+    LocalStorage is accessible using window.localStorage. It has a method setItem(key, value). 🔥The
+    key must be a string. Use rememberMe. 🔥Note that the value must also be a string. You can thus
+    serialize the user to JSON using JSON.stringify(user), and store the result.
+
+
+3️⃣ The second phase consists in reading the stored value at startup. Add a new private method
+    retrieveUser(). This method should read, deserialize the user (with JSON.parse()) from LocalStorage
+    (if it exists), and return it. It should return undefined if the user is not stored in
+    LocalStorage. Then use this method as the initial value of the user signal.
+
+        private readonly user = signal<UserModel | undefined>(this.retrieveUser());
+        
+        // omitted
+
+        private retrieveUser(): UserModel | undefined {
+            const value = window.localStorage.getItem(USER_LOCAL_STORAGE_KEY);
+            if (value) {
+                return JSON.parse(value) as UserModel;
+            }
+            return undefined;
+        }
+
+
+4️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
