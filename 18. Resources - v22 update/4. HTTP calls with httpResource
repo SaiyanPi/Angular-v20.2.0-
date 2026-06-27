@@ -52,7 +52,7 @@ HTTP calls with httpResource:
 - 🔥You can of course send a body with the request, for example for a POST/PUT request, using
     the body property of the request object.
 
-        protected readonly query = signal('');
+        protected readonly get(raceId: () => number): ResourceRef<RaceModel | undefined> = signal('');
         protected readonly filterUsersResource: HttpResourceRef<Array<UserModel> | undefined>
         = httpResource<Array<UserModel>>(() => {
             const query = this.query();

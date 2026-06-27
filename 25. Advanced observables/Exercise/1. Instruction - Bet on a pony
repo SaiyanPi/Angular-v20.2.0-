@@ -1,5 +1,274 @@
+- ⚠️ project for this exercise comes from the chapter 17: HTTP with authentication
+
+
 ------------------------------------- Bet on a pony --------------------------------------------------
+
 
 - BET ON A PONY FROM A RACE DETAIL PAGE USING THE ROUTER, INPUTS, AND RESOURCES.
 
 - Instructions: Angular Prerequisite "Router" chapter
+
+- Now that we can call the secure API(from chapter 17 exercise - HTTP with authentication), we
+    should be able to bet on ponies.
+
+- Betting on a pony, in a race, consists in sending a POST request
+    (see https://ponyracer.ninja-squad.com/apidoc#resources-bet-create).
+
+
+1️⃣ 👉Let’s create a new method bet(raceId: number, ponyId: number): Observable<void> in RaceService,
+    which of course uses HttpClient to call our API.
+    👉Let’s also create a method get(raceId: () => number): ResourceRef<RaceModel | undefined>,
+    allowing to get the detail of a race by its ID. 🧠The raceId parameter must be a function,
+    because it allows to use this method in a component where the ID of the race is a signal
+    (get(raceId())) or a simple number (get(() => raceId)).
+    race-service.ts:
+
+        bet(raceId: number, ponyId: number): Observable<void> {
+            return this.http.post<void>(`${environment.baseUrl}/api/races/${raceId}/bets`, { ponyId });
+        }
+
+        get(raceId: () => number): ResourceRef<RaceModel | undefined> {
+            return httpResource<RaceModel>(() => `${environment.baseUrl}/api/races/${raceId()}`);
+        }
+
+
+2️⃣ Then let’s create a new component Bet to deal with the bets in a race. We would like this
+    component to display for a URL like /races/123, where 123 is the ID of the race. It means that
+    🧠we’ll have a route '/races' which displays the list of races, and a 🧠route '/races/123' which
+    displays the race detail and allows to bet on it. When a configuration like this one presents
+    itself, we can use the children attribute in the route configuration:
+
+        {
+            path: 'users',
+            children: [
+                { path: '', component: Users },
+                { path: ':userId', component: User }
+            ]
+        }
+    
+    🔥This kind of configuration then allows to apply security "guards" to all the children. It also
+    allows to simplify the lazy-loading configuration. That’s what we’ll do in a more advanced
+    exercise! Do the same as the example with Races and Bet in the route configuration, and 🧠name
+    the dynamic parameter raceId.
+    app.routes.ts:
+
+        {
+            path: 'races',
+            children: [
+                { path: '', component: Races },
+                { path: ':raceId', component: Bet }
+            ]
+        }
+
+
+3️⃣ Then add the required navigation links for each race. These links should use routerLink to
+    point to the URL of the race, should also have the CSS classes btn btn-primary, and should
+    have the text Bet on Paris if the race is named Paris.
+    If you want the links to show correctly under each race, you can use the following template:
+    races.html:
+
+        @for (...) {
+            <div>
+                <pr-race [raceModel]="race" />
+                <!-- insert your link here 👇-->
+                <a [routerLink]="['/races', race.id]" class="btn btn-primary mb-2">Bet on {{ race.name }}</a>
+            </div>
+        }
+
+
+4️⃣ Let’s focus on the new Bet. 
+    👉We will start by creating a field named raceModel in the component, of type
+    ResourceRef<RaceModel | undefined>. The value of this race depends on the race ID defined in
+    the URL. 👉Create a required input named raceId, transformed with numberAttribute, 🔥so the
+    router can bind the dynamic URL parameter to it(⚠️ remember to configure the router with
+    withComponentInputBinding inorder to automatically bind the route parameters and data to the
+    component inputs). Then initialize raceModel with the get method of RaceService and this input.
+    bet.ts:
+        
+        protected readonly raceModel: ResourceRef<RaceModel | undefined> = this.raceService.get(() => 
+        this.raceId());
+
+    or,
+
+        protected readonly raceModel = this.raceService.get(() => this.raceId());
+        readonly raceId = input.required({ transform: numberAttribute });
+
+    (💡because get() is declared as: get(raceId: () => number): ResourceRef<RaceModel | undefined> {...}
+    in the race-service.ts)
+
+    app.config.ts:
+        
+        provideRouter(routes, withComponentInputBinding())
+
+    👉The template should be equivalent to the one of Race. We indeed want to display:
+    -> the name of the race (in an h1 element this time)
+    -> the remaining time before the start of the race
+    -> the running ponies, each inside a div with the CSS classes col-12 col-md-2.
+
+    🧠 Since receModel is not a signal but ResourceRef, we can't do it like raceModel().
+    🧠Test raceModel.hasValue() before calling raceModel.value(), and only display the race when
+    the resource has a value. 👉If the resource is loading, display a div with the accessibility
+    attribute role="status" containing the message: "Loading.". 👉If the resource is in error,
+    display a div with the CSS classes alert alert-danger and the accessibility
+    attribute role="alert" containing the message: "An error occurred while loading the race.".
+    race.html:
+
+        @if (raceModel.isLoading()) {
+            <div role="status">Loading...</div>
+        } @else if (raceModel.hasValue()) {
+            @let race = raceModel.value();
+            
+            <h1>{{ race.name }}</h1>
+            <p>{{ race.startInstant | prettyDate }}</p>
+            <div class="py-2">Click to bet on your favorite pony</div>
+            <div class="row">
+                @for (pony of race.ponies; track pony.id) {
+                <div class="col-12 col-md-2">
+                    <pr-pony [ponyModel]="pony" />
+                </div>
+                }
+            </div>
+        }@else if (raceModel.error()) {
+            <div class="alert alert-danger" role="alert">An error occurred while loading race.</div>
+        }
+    
+    👉The difference is that, this time, we will use the custom event ponySelected(output signal in
+    Pony component). Indeed, you will call the method betOnPony(pony) every time this event is
+    emitted by one of the Pony components. The method betOnPony(pony) must of course be created in
+    the Bet component, and it must call the bet method of RaceService.
+    race.html:
+
+        @if (raceModel.isLoading()) {
+            <div role="status">Loading...</div>
+        } @else if (raceModel.hasValue()) {
+            @let race = raceModel.value();
+            
+            <h1>{{ race.name }}</h1>
+            <p>{{ race.startInstant | prettyDate }}</p>
+            <div class="py-2">Click to bet on your favorite pony</div>
+            <div class="row">
+                @for (pony of race.ponies; track pony.id) {
+                <div class="col-12 col-md-2">
+                    <pr-pony [ponyModel]="pony" 👉(ponySelected)="betOnPony(pony)" />
+                </div>
+                }
+            </div>
+        }@else if (raceModel.error()) {
+            <div class="alert alert-danger" role="alert">An error occurred while loading race.</div>
+        }
+    
+    bet.ts:
+
+        protected betOnPony(pony: PonyModel): void {
+            const race = this.raceModel.value()!;
+            const result$ = this.raceService.bet(race.id, pony.id);
+        }
+    
+  
+5️⃣ We now need to display a visual indicator in the template, to identify the pony on which the
+    bet has been placed. We will thus add a beautiful green border around the pony that has been
+    chosen.
+    To achieve that, once the bet has been placed, 👉you will fetch the race again from the server,
+    and it will contain an additional attribute betPonyId. 👉Add the field betPonyId to RaceModel,
+    and make it optional using a ?. 👉To trigger the refresh, you will tell the resource to reload
+    after the bet has been placed (in the subscribe of the bet method).
+    👉Create a method isPonySelected(pony) returning true if the ID of the pony matches with the
+    betPonyId attribute of the race. 👉Then use this method to dynamically add a CSS class selected
+    to the div wrapping the pony.
+    race-model.ts:
+
+        export interface RaceModel {
+            id: number;
+            name: string;
+            ponies: Array<PonyModel>;
+            startInstant: string;
+            betPonyId?: number; 👈
+        }
+
+    bet.ts:
+
+        protected betOnPony(pony: PonyModel): void {
+            const race = this.raceModel.value()!;
+            const result$ = this.raceService.bet(race.id, pony.id)
+            result$.subscribe({
+                next: () => this.raceModel.reload() 👈
+            });
+        }
+
+    👉 protected isPonySelected(pony: PonyModel): boolean {
+            return pony.id === this.raceModel.value()!.betPonyId;
+        }
+    
+    bet.html:
+
+        // omitted
+        <div class="row">
+            @for (pony of race.ponies; track pony.id) {
+                <div class="col-12 col-md-2" 👉[class.selected]="isPonySelected(pony)>
+                    <pr-pony [ponyModel]="pony" (ponySelected)="betOnPony(pony)" />
+                </div>
+            }
+        </div>
+        // omitted
+
+    Define the following CSS rule in the CSS stylesheet of Bet:
+    bet.css:
+
+        .selected {
+            border: 3px solid green;
+            border-radius: 10px;
+        }
+
+
+6️⃣ You probably noticed that if you try to place a bet on a race that has already started
+    (or is finished), the bet fails. You should display an error message to the user when that
+    happens. Add a div with the CSS classes alert alert-danger alert-dismissible and the
+    accessibility attribute role="alert" containing the message: "The race is already started or
+    finished", and display this div if the bet fails.
+    👉Use a signal named betFailed to achieve that. We want the alert to be closable, so it
+    should contain a button like the following:
+
+        <button type="button" class="btn-close" aria-label="Close"></button>
+
+    bet.ts:
+
+        protected readonly betFailed = signal(false);
+
+    A click on this button should reset the betFailed signal to false, hence closing the alert.
+    bet.html:
+
+        @if (betFailed()) {
+            <div class="alert alert-danger alert-dismissible mb-3" role="alert">
+                <button type="button" class="btn-close" aria-label="Close"
+                👉(click)="betFailed.set(false)"></button>
+                The race is already started or finished
+            </div>
+        }
+
+
+7️⃣ A user should also be able to change his mind and cancel his bet. Add a method
+    cancelBet(raceId: number): Observable<void> in RaceService
+    (see https://ponyracer.ninja-squad.com/apidoc#resources-bet-cancel)
+
+    Then call this cancelBet method from betOnPony() if the pony that has been clicked is the
+    selected one. To do so, create a variable that contains this.raceService.cancelBet(…​) if
+    the pony is the selected one, or this.raceService.bet(…​) if it isn’t. Then subscribe to
+    this variable, with the same subscribe method as before, as we also want to refresh the
+    race after a cancelled bet, or display the alert if the cancellation failed.
+    bet.ts:
+
+        protected betOnPony(pony: PonyModel): void {
+            this.betFailed.set(false);
+            const race = this.raceModel.value()!;
+        👉 const result$ = this.isPonySelected(pony)
+            ? this.raceService.cancelBet(race.id)
+            : this.raceService.bet(race.id, pony.id);
+
+            result$.subscribe({
+                next: () => this.raceModel.reload(),
+                error: () => this.betFailed.set(true) 👈
+            }); 
+        }
+
+
+8️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.

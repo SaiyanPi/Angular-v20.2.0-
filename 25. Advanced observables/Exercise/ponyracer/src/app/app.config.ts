@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
 import { provideSignalFormsConfig } from '@angular/forms/signals';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -15,5 +15,6 @@ export const appConfig: ApplicationConfig = {
       }
     }),
     provideHttpClient(withInterceptors([jwtInterceptor])),
+    provideRouter(routes, withComponentInputBinding())
   ]
 };
