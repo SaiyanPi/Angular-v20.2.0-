@@ -272,3 +272,76 @@
 
 
 8️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
+
+
+__________________________________________________________________________________________________
+
+Mental Note.
+
+🫡We already have: 
+    Output signal(ponySelected) and method(selectPony()) defined in the Pony component. I should
+    know by now  how event binding works. 🧠Data flows out of the components via events and custom
+    events are emitted by output(). In the Pony template, we also have (click)="selectPony()" which
+    means when when is clicked, selectPony() mmethod in the component is invoked and the method
+    selectPony() emits the event through ponySelected output signal to the parent component
+
+🫡What we are trying to achieve:
+    We want a bet component and template that's very much like a Race component and template.
+    But before that we want a "Bet on Pony_name" button on each race and when we click on the button
+    It'll redirect us to that specific race where we can bet on a specific pony 💡Note that this is a
+    Bet component.
+    Let's recap the structure of project.
+
+                                 Component/ App template 
+                                        (parent to Races and Menu)
+                                        |                       |
+                                        |                       |
+                                        |                       |
+                                        |                       v
+                                        |                   Menu component
+                                        |
+                                        v
+                                Races component ---------> RaceModel(id, name, ponies, startInstant)
+                                (races containing ponies using for loop on race template selector)
+                                (parent to Race)
+                                        |
+                                        |
+                                        |
+                                        v
+    Bet component               Race component ----------> RaceModel(id, name, ponies, startInstant)
+ (single race with ponies..)    (single race with ponies using for loop on pony template selector)
+        |                        (parent to Pony)
+        |                                |
+        |                                |
+        |                                |
+        |                                v
+        --------------------->  Pony component ----------> PonyModel(id, name, color)
+                                (single pony with name and gif)
+    
+
+    ✅Now we should be clear that we must add the button in the races template since it holds the
+    list of races using @for.
+    ✅ Once we click on the button we will be redirect into Bet component with a specific race.
+        Where we can place bet on a specific pony in the race. So we must write a code for placing
+        bet inside a Bet component
+    ✅ From the above diagram, it's clear that Pony component is a child component ofRace component.
+        And since our new Bet component very much similar like a Race compnent with ponies, It
+        also is a parent component to a Pony component.
+    ✅All though at first glance it seems like Bet component is also a child component of a Races
+        component, it is not. Because the races template does not use the bet selector(<pr-bet>)
+        on its template. 🔥But it is a child route of a Races component(from step 2️⃣).
+
+          Routes
+            └── races
+                ├── ''        -> Races component
+                └── :raceId   -> Bet component
+
+
+🫡 What should we do:
+    ✅ Our event binding is not yet completed. To fully complete it, we need to add a bind the
+    output signal of the Pony component with the method in our Bet component in the Bet template.
+    (template of parent component)
+
+        <pr-pony [ponyModel]="pony" 👉(ponySelected)="betOnPony(pony)" />
+    
+    ✅ Implement other mechanism including error displaying mechanism related to betting.
