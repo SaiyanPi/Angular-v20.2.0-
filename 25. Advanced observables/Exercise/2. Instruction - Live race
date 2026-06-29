@@ -508,7 +508,7 @@ Let's focus on the code from Live component from step 5️⃣:
         ⚠️Without startWith, nothing would be emitted until the first live update arrives.
 
             startWith({ ...race, poniesWithPosition: [] })
-            
+
         imeline without startWith:
 
             Time 0s  ---- nothing
@@ -539,3 +539,29 @@ Let's focus on the code from Live component from step 5️⃣:
 
         🧠This lets the UI render immediately using the initial race data, even before any live
         positions have arrived.
+
+
+    ✔️The overall data flow:
+        
+        initialRace
+            │
+            ▼
+        params()
+            │
+            ▼
+        race (RaceModel)
+            │
+            ▼
+        raceService.live(race.id)
+            │
+            ▼
+        Observable<LiveRace>
+            │
+            ▼
+        map()
+            │
+            ▼
+        RaceModelWithPositions
+            │
+            ▼
+        rxResource
