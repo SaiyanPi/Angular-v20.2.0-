@@ -282,3 +282,260 @@
 
 
 7️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
+
+
+
+--------------------------------------------------------------------------------------------------
+
+
+🫡Explanation:
+
+Let's focus on the code from Live component from step 5️⃣:
+
+    export class Live {
+        private readonly raceService = inject(RaceService);
+        readonly raceId = input.required({ transform: numberAttribute });
+
+        protected readonly initialRace = this.raceService.get(() => this.raceId());
+        private readonly liveRace = rxResource<RaceModelWithPositions, RaceModel | undefined>({
+            params: () => {
+                if (!this.initialRace.hasValue()) {
+                    return undefined;
+                }
+                    return this.initialRace.value();
+                },
+            stream: ({ params: race }) =>
+                this.raceService.live(race.id).pipe(
+                map(live => ({ ...race, poniesWithPosition: live.ponies, status: live.status })),
+                startWith({ ...race, poniesWithPosition: [] })
+            )
+        });
+
+        protected readonly raceModel = computed<RaceModelWithPositions | undefined>(() => {
+            if (!this.initialRace.hasValue()) {
+                return undefined;
+            }
+            const race = this.initialRace.value();
+            return this.liveRace.hasValue() ? this.liveRace.value() : { ...race, poniesWithPosition: [] };
+        });
+    }
+
+
+✅First of all the following code is similar to a what we did in the previous exercise in Bet
+    component(fetch a race). The only difference is the naming. here we call it initialRace and in
+    the previous exercise, we called it raceModel.
+
+        readonly raceId = input.required({ transform: numberAttribute });
+        protected readonly initialRace = this.raceService.get(() => this.raceId());
+
+
+✅ Now let's understand the other code:
+
+        private readonly liveRace = rxResource<RaceModelWithPositions, RaceModel | undefined>({
+            params: () => {
+                if (!this.initialRace.hasValue()) {
+                    return undefined;
+                }
+                    return this.initialRace.value();
+                },
+            stream: ({ params: race }) =>
+                this.raceService.live(race.id).pipe(
+                map(live => ({ ...race, poniesWithPosition: live.ponies, status: live.status })),
+                startWith({ ...race, poniesWithPosition: [] })
+            )
+        });
+
+    ✔️ About the params:
+        ❌ Remember that the params here is not the same params from chapter 17, section 4 that represents
+        the URL search parameters.
+        ✔️ In rxResource, params simply means "What input should i give to the stream?".
+        In our case, that input is the raceModel(initialRace value returned by get method in race service)
+
+    ✔️ About the stream:
+        Think of rxResource as asking you two questions:
+        👉 What input should I use? You answer with params.
+        👉 Given that input, how do I obtain the data? You answer with stream.
+        So conceptually:
+            
+            rxResource({
+                params: ...,
+                stream: ...
+            });
+        
+        we passed the params which holds the raceModel value as the stream parameter. And it is being
+        used as a parameter for calling live method as race.id and spread operator(...race)
+
+
+    ⁉️ Why is it called "stream"?
+        👉 Well, look what this.raceService.live(race.id) returns. It returns an
+        Observable<LiveRaceModel>.
+        👉 An observable doesn't produce just one value. The values forms a stream of data. That's
+        why the callback is named stream.
+
+        🧠Compare it to resource(): It returns a Promise and it It uses loader instead of stream.
+        Conceptually:
+
+            resource({
+                params: ...,
+                loader: ...
+            });
+
+        means "Load one value."
+
+        Whereas,
+
+            rxResource({
+                params: ...,
+                stream: ...
+            });
+
+        means "Subscribe to an Observable that can produce many values over time."
+    
+    ✔️ .pipe(...) transforms every live update.
+
+    ✔️ map operator in RxJS transforms each emitted value into a new value.
+        So the following code creates new object for every emitted live.
+
+            live =>
+            ({
+                ...race,
+                poniesWithPosition: live.ponies,
+                status: live.status
+            })
+        
+        🧠Let's say the race is:
+
+            {
+                id: 3,
+                name: "Grand Prix",
+                startInstant: "...",
+                ponies: [
+                    { id: 1, name: "Bolt", color: "Green },
+                    { id: 2, name: "Flash", color: "Blue }
+                ]
+            }
+        🧠Then for every emitted live object, it creates a new object such as:
+        First emission:
+
+            {
+                id: 3,
+                name: "Grand Prix",
+                startInstant: "...",
+                ponies: [
+                    { id: 1, name: "Bolt", color: "Green, position: 45 },
+                    { id: 2, name: "Bolt", color: "Green, position: 52 }
+                ],
+                status: "RUNNING"
+            }
+        
+        Second emission:
+
+            {
+                id: 3,
+                name: "Grand Prix",
+                startInstant: "...",
+                ponies: [
+                    { id: 1, name: "Bolt", color: "Green, position: 46 },
+                    { id: 2, name: "Bolt", color: "Green, position: 53 }
+                ],
+                status: "RUNNING"
+            }
+        
+        and so on...
+        🧠 Notice the object matches RaceModelWithPositions as mentioned in 5️⃣:
+
+            interface RaceModelWithPositions extends RaceModel {
+                poniesWithPosition: Array<PonyWithPositionModel>;
+            }
+        
+        RaceModel:  {
+                        id: number;
+                        name: string;
+                        ponies: Array<PonyModel>;
+                        startInstant: string;
+                        betPonyId?: number;
+                        status?: 'PENDING' | 'RUNNING' | 'FINISHED';
+                    }
+        
+        PonyModel:  {
+                        id: number;
+                        name: string;
+                        color: string;
+                    }
+        
+         PonyWithPositionModel extends PonyModel:   {
+                                                        id: number;
+                                                        name: string;
+                                                        color: string;
+                                                        position: number 👈
+                                                    }
+
+        RaceModelWithPositions extends RaceModel:   {
+                                                        id: number;
+                                                        name: string;
+                                                        ponies: Array<PonyModel>;
+                                                        startInstant: string;
+                                                        betPonyId?: number;
+                                                        status?: 'PENDING' | 'RUNNING' | 'FINISHED';
+                                                        poniesWithPosition: Array<PonyWithPositionModel> 👈
+                                                    }
+        
+        😮Note that this matches our new object created with map:
+
+        {
+            id: 3,                                                      // id
+            name: "Grand Prix",                                         // name
+            startInstant: "...",                                        // startInstant
+            ponies: [                                                   //poniesWithPosition
+                { 
+                    id: 1,              // id
+                    name: "Bolt",       // name
+                    color: "Green,      // color
+                    position: 46        // position
+                },
+                { 
+                    id: 2,
+                    name: "Bolt",
+                    color: "Green,
+                    position: 53
+                }
+            ],
+            status: "RUNNING"
+        }
+    
+
+    ✔️ Finally, startWith() says: Before the observable emits anything else, emit this value first.
+        ⚠️Without startWith, nothing would be emitted until the first live update arrives.
+
+            startWith({ ...race, poniesWithPosition: [] })
+            
+        imeline without startWith:
+
+            Time 0s  ---- nothing
+            Time 1s  ---- first live update
+            Time 2s  ---- second live update
+
+        With startWith:
+
+            Time 0s
+            {
+                ...race,
+                poniesWithPosition: []
+            }
+
+            Time 1s
+            {
+                ...race,
+                poniesWithPosition: [...],
+                status: RUNNING
+            }
+
+            Time 2s
+            {
+                ...race,
+                poniesWithPosition: [...],
+                status: RUNNING
+            }
+
+        🧠This lets the UI render immediately using the initial race data, even before any live
+        positions have arrived.

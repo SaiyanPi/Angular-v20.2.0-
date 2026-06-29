@@ -42,6 +42,4 @@ export class Live {
     const race = this.initialRace.value();
     return this.liveRace.hasValue() ? this.liveRace.value() : { ...race, poniesWithPosition: [] };
   });
-
-
 }
