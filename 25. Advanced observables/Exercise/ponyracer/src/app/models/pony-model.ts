@@ -2,5 +2,8 @@ export interface PonyModel {
   id: number;
   name: string;
   color: string;
-  // Exercise 5
+}
+
+export interface PonyWithPositionModel extends PonyModel {
+  position: number;
 }

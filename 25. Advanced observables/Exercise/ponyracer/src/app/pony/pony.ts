@@ -10,10 +10,20 @@ import { PonyModel } from '../models/pony-model';
 })
 export class Pony {
   readonly ponyModel = input.required<PonyModel>();
-  protected readonly ponyImageUrl = computed(() => `images/pony-${this.ponyModel().color.toLowerCase()}.gif`);
   readonly ponySelected = output<PonyModel>();
 
   protected selectPony(): void {
     this.ponySelected.emit(this.ponyModel());
   }
+
+  readonly isRunning = input(false);
+  // protected readonly ponyImageUrl = computed(() => {
+  //   return this.isRunning()
+  //   ? `images/pony-${this.ponyModel().color.toLowerCase()}-running.gif`
+  //   : `images/pony-${this.ponyModel().color.toLowerCase()}.gif`
+  // })
+   protected readonly ponyImageUrl = computed(
+    () => `images/pony-${this.ponyModel().color.toLowerCase()}${this.isRunning() ? '-running' : ''}.gif`
+  );
+
 }

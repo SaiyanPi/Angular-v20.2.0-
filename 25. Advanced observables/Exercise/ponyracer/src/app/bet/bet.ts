@@ -3,10 +3,11 @@ import { RaceService } from '../services/race-service';
 import { PrettyDatePipe } from '../shared/pipes/pretty-date-pipe';
 import { PonyModel } from '../models/pony-model';
 import { Pony } from "../pony/pony";
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'pr-bet',
-  imports: [PrettyDatePipe, Pony],
+  imports: [PrettyDatePipe, Pony, RouterLink],
   templateUrl: './bet.html',
   styleUrl: './bet.css'
 })

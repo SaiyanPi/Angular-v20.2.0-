@@ -12,6 +12,7 @@
 
   <h1>{{ race.name }}</h1>
   <p>{{ race.startInstant | prettyDate }}</p>
+  <a [routerLink]="['/races', race.id, 'live']" class="btn btn-primary">Watch live!</a>
   <div class="py-2">Click to bet on your favorite pony</div>
   <div class="row">
     @for (pony of race.ponies; track pony.id) {

@@ -1,0 +1,284 @@
+--------------------------------------------- Live race -------------------------------------------
+
+- DISPLAY THE LIVE RACE FROM FAKE POSITIONS EMITTED BY A HAND-MADE RXJS OBSERVABLE.
+
+- Instructions: Angular Prerequisite "Advanced observables" chapter
+
+- We would now like to create a "live" page to see the ponies when they are racing
+
+
+1️⃣ First, let’s add an input to our Pony to reflect if the pony is running or not, so we can
+    display a nice running pony during the race. To do this, 👉you’ll add an input field called
+    isRunning (false by default). You’ll also need to 👉modify the ponyImageUrl computed field to
+    make it return a URL like images/pony-blue-running.gif if the pony’s color is blue and the
+    flag isRunning is true. When that’s done, add the images into the public/images folder.
+    Pony.ts:
+
+        readonly isRunning = input(false);
+        protected readonly ponyImageUrl = computed(() => {
+            return this.isRunning()
+            ? `images/pony-${this.ponyModel().color.toLowerCase()}-running.gif`
+            : `images/pony-${this.ponyModel().color.toLowerCase()}.gif`
+        })
+    
+    or the 🔥shorthand and more efficient way: 
+
+        readonly isRunning = input(false);
+        protected readonly ponyImageUrl = computed(
+            () => `images/pony-${this.ponyModel().color.toLowerCase()}${this.isRunning() 
+            ? '-running' 
+            : ''}.gif`
+        );
+
+
+2️⃣ Let’s now focus on the "live" page. New page = New component!
+    Create a component live. 👉Add the necessary configuration in the router to be able to navigate
+    to this component using the URL /races/:raceId/live (as a new child of the 'races' path), and
+    👉add a "Watch live!" link in the Bet page, with the correct parameters.
+    app.routes.ts:
+
+        {
+            path: 'races',
+            children: [
+                { path: '', component: Races },
+                { path: ':raceId', component: Bet },
+                { path: ':raceId/live', component: Live },
+            ]
+        }
+    
+    bet.html:
+
+        <a [routerLink]="['/races', race.id, 'live']" class="btn btn-primary">Watch live!</a>
+
+
+3️⃣ Now we need to receive the positions of the ponies during the race. 💡The backend exposes a
+    websocket channel for this, 💡but we are going to work without it first, by emulating these
+    positions using RxJS.
+    👉To represent this position, add another interface called PonyWithPositionModel in pony-model.ts.
+    👉This new interface will extend PonyModel and have a field position of type number. Indeed, the
+    server will emit positions as integers for each pony between 0 (the pony has not started) and
+    100 (the pony has completed the race), until one of the ponies reaches 100.
+    pony-model.ts:
+
+        export interface PonyModel {
+            // omitted
+        }
+        export interface PonyWithPositionModel extends PonyModel {
+            position: number;
+        }
+
+    👉Create also a LiveRaceModel interface in race-model.ts, containing a field ponies as an array
+    of PonyWithPositionModel and a status field.
+    👉This status field is an enum on server-side, with 3 possible values:
+    -> 'PENDING' if the race is not started yet
+    -> 'RUNNING' if it’s currently started
+    -> 'FINISHED' if we missed the action
+    👉Let’s add an optional status? field in our RaceModel, and a mandatory status field in our
+    LiveRaceModel with these values.
+    race-model.ts:
+
+        export interface RaceModel {
+            // omitted
+            status?: 'PENDING' | 'RUNNING' | 'FINISHED';
+        }
+
+        export interface LiveRaceModel {
+            ponies: Array<PonyWithPositionModel>;
+            status?: 'PENDING' | 'RUNNING' | 'FINISHED';
+        }
+
+
+4️⃣ Now 👉add a method in the RaceService called live that will receive the race’s id, and that will
+    return an Observable emitting a LiveRaceModel every second.
+
+        live(raceId: number): Observable<LiveRaceModel> {
+            // to be implemented
+        }
+
+    🔥In the method, use an Observable to emit positions every second. To emit data at regular
+    intervals, RxJS offers the interval function.
+
+        const positions = interval(200);
+        positions.subscribe(position => console.log(position));
+        // logs 0, 1, 2, 3, 4...
+    
+    ✅This will emit a sequence of integer starting from 0 to Infinity, every 200ms. That’s a good
+    start. Adapt it slightly to emit an integer every second.
+    👉We don’t want to emit numbers. We want to emit a live race with an array of positions every
+    second. So add a map operator to the chain, transforming the position received into an object
+    like this one:
+
+        {
+            ponies: [
+                {
+                    id: 1,
+                    name: 'Superb Runner',
+                    color: 'BLUE',
+                    position
+                },
+                {
+                    id: 2,
+                    name: 'Awesome Fridge',
+                    color: 'GREEN',
+                    position
+                },
+                {
+                    id: 3,
+                    name: 'Great Bottle',
+                    color: 'ORANGE',
+                    position
+                },
+                {
+                    id: 4,
+                    name: 'Little Flower',
+                    color: 'YELLOW',
+                    position
+                },
+                {
+                    id: 5,
+                    name: 'Nice Rock',
+                    color: 'PURPLE',
+                    position
+                }
+            ],
+            status: 'RUNNING'
+        }
+    
+    💡As you see the position of each pony is determined by the position received in the map.
+    That means all the ponies will go at the same pace, running one percent of the race every second.
+    ⚠️In reality that will never be the case (the ponies don’t have the same pace), but it will be
+    very handy for us to start coding the "live" component with these positions.
+    💡We only need the ponies to go to the position 100, so that means we need to stop after the
+    101th element emitted. As always with RxJS, there is an operator for that: take(n).
+    for example:
+
+        const positions = interval(200).pipe(
+            take(2)
+        );
+        positions.subscribe(position => console.log(position));
+        // logs only 0 and 1 and stops
+
+    👉Add the take operator to the chain to stop emitting value after the 101th one.
+    race-service.ts:
+
+        live(raceId: number): Observable<LiveRaceModel> {
+            return 👉interval(1000).pipe(
+            take(101), 👈
+          👉map(position => ({
+                ponies: [
+                {
+                    id: 1,
+                    name: 'Superb Runner',
+                    color: 'BLUE',
+                    position
+                },
+                {
+                    id: 2,
+                    name: 'Awesome Fridge',
+                    color: 'GREEN',
+                    position
+                },
+                {
+                    id: 3,
+                    name: 'Great Bottle',
+                    color: 'ORANGE',
+                    position
+                },
+                {
+                    id: 4,
+                    name: 'Little Flower',
+                    color: 'YELLOW',
+                    position
+                },
+                {
+                    id: 5,
+                    name: 'Nice Rock',
+                    color: 'PURPLE',
+                    position
+                }
+                ],
+                status: 'RUNNING'
+            }))
+            );
+        }
+    
+    We should now have everything we need in the service: a method returning an observable, which
+    is emitting a live race with an array of positions every second.
+
+
+5️⃣ Let’s go back to our Live component. We want to:
+    👉first, fetch the race details (to get the name, the start instant, the initial status, etc…​)
+    Create a required input named raceId, transformed with numberAttribute, so the router can
+    bind the dynamic URL parameter to it. create a first resource field to store the result of
+    RaceService.get().       
+    live.ts:
+
+        private readonly raceService = inject(RaceService);
+        readonly raceId = input.required({ transform: numberAttribute });
+        protected readonly initialRace = this.raceService.get(() => this.raceId());
+
+    👉then, fetch the live information with the updated status and the positions of the ponies.
+    We’ll store these information in an object described by the following interface (that you
+    can add in the live.ts file):
+
+        interface RaceModelWithPositions extends RaceModel {
+            poniesWithPosition: Array<PonyWithPositionModel>;
+        }
+    
+    (As you can see RaceModelWithPositions is the same as the RaceModel interface, but with an
+    additional field poniesWithPosition, representing the ponies with their positions.)
+    👉Then add a new resource, that depends on the initial race resource and call RaceService.live()
+    only once the race has been loaded. You can use rxResource() for that:
+    live.ts:
+
+        protected readonly initialRace = this.raceService.get(() => this.raceId());
+        private readonly liveRace = rxResource<RaceModelWithPositions, RaceModel | undefined>({
+            params: () => {
+                if (!this.initialRace.hasValue()) {
+                    return undefined;
+                }
+                return this.initialRace.value();
+            },
+            stream: ({ params: race }) =>
+                this.raceService.live(race.id).pipe(
+                    map(live => ({ ...race, poniesWithPosition: live.ponies, status: live.status })),
+                    startWith({ ...race, poniesWithPosition: [] })
+                )
+        });
+
+    👉Add a computed() field named raceModel that returns undefined while the initial race is not
+    loaded, or the value of the live resource once available:
+    live.ts:
+
+        protected readonly raceModel = computed<RaceModelWithPositions | undefined>(() => {
+            if (!this.initialRace.hasValue()) {
+                return undefined;
+            }
+            const race = this.initialRace.value();
+            return this.liveRace.hasValue() ? this.liveRace.value() : { ...race, poniesWithPosition: [] };
+        });
+
+
+
+6️⃣ Then, 👉use the raceModel field in an h1 element to display the name of the race in the template.
+    The last thing to do is to display our moving ponies. In the template 👉add a div with a class
+    pony-wrapper, which will be repeated for each pony in the poniesWithPosition array.
+    👉Inside this div, add a Pony for the current pony, with an attribute isRunning set to true
+    (to make the pony run, of course. (property binding)).
+
+    👉We now need to "move" our ponies based on their positions. To do this, set the 'margin-left'
+    style property to (pony.position - 5)%, by adding [style.marginLeft.%]="pony.position - 5" to
+    the div wrapping the pony.
+    live.html:
+
+        @if (raceModel(); as raceModel) {
+            <h1>{{ raceModel.name }}</h1>
+            @for (pony of raceModel.poniesWithPosition; track pony.id) {
+                <div class="pony-wrapper" [style.marginLeft.%]="pony.position - 5" style="transition: margin-left 1s linear">
+                <pr-pony [ponyModel]="pony" [isRunning]="true" />
+                </div>
+            }
+        }
+
+
+7️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
