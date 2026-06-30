@@ -1,0 +1,110 @@
+Content: ng-content:
+
+
+- 💡Another common thing that we usually need as developers is the ability to build UI components
+    whose content will be dynamic.
+    For example, let’s say you want to build a "card" component using the Bootstrap CSS framework.
+    The template of such a card looks like this:
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Card title</h4>
+                <p class="card-text">Some quick example text</p>
+            </div>
+        </div>
+    
+    You can of course duplicate this HTML every time you need it in your application. But at this
+    point, you are probably thinking about building a component. Two parts are dynamic in the card
+    (the title and the content), so this is probably what you will come up with:
+
+        @Component({
+            selector: 'ns-card',
+            template: `
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ title() }}</h4>
+                        <p class="card-text">{{ text() }}</p>
+                    </div>
+                </div>
+            `
+        })
+        export class Card {
+            readonly title = input('');
+            readonly text = input('');
+        }
+    
+    And then use it like this:
+    
+        <ns-card title="Card title" text="Some quick example text" />
+    
+    ⚠️This works perfectly. But looking more closely to your need, you realize that the content of
+    the card can also be complex HTML, and not just text, which is supported by Bootstrap!
+
+
+
+- 🔥Of course, Angular has your back, and it’s easy to "pass" HTML to a child component, thanks
+    to <ngcontent>.
+    🔥🔥ng-content is a special tag you can use in your templates to include HTML provided by the
+    parent component:
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">{{ title() }}</h4>
+                <p class="card-text">
+                    <ng-content /> 👈
+                </p>
+            </div>
+        </div>
+    
+    ✅And you can now use the component like this:
+
+        <ns-card title="Card title"> Some quick <strong>example</strong> text </ns-card>
+    
+    🤔Later, you realize that the title can also be some complex HTML. 🔥🔥Of course, there is a way
+    to pass multiple contents to the card component, using multiple ng-content with a selector.
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">
+                    <ng-content select="[title]"></ng-content> 👈
+                </h4>
+                <p class="card-text">
+                    <ng-content select="[content]"></ng-content> 👈
+                </p>
+            </div>
+        </div>
+    
+    ✅and use it like this:
+        <ns-card>
+            <span title>Card <strong>title</strong></span>
+            <p content>Some quick <strong>example</strong> text</p>
+        </ns-card>
+
+    ✅This will produce the following result:
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">
+                    <span title>Card <strong>title</strong></span>
+                </h4>
+                <p class="card-text">
+                    <p content>Some quick <strong>example</strong> text</p>
+                </p>
+            </div>
+        </div>
+
+
+
+- 🔥🔥Since Angular v18, it is possible to define a fallback content, which will be used if no
+    content is provided by the parent:
+
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">
+                    <ng-content select="[title]">Default title👈</ng-content>
+                </h4>
+                <p class="card-text">
+                    <ng-content select="[content]"></ng-content>
+                </p>
+            </div>
+        </div>

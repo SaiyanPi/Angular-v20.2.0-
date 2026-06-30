@@ -1,0 +1,152 @@
+View queries: viewChild:
+
+
+- In the Template chapter 9, we talked about a nice feature called "local variables", allowing you
+    to get a reference to a DOM element in the template. For example, you can give the focus to
+    an input with a button easily:
+
+        <input #myInput />
+        <button (click)="myInput.focus()">Focus</button>
+
+
+
+- 🤔We also saw this same feature in the Forms chapter for example, when we wanted to grab a
+    reference to a specific directive:
+
+        <input name="login" [(ngModel)]="user.login" required #loginCtrl="ngModel" />
+            @if (loginCtrl.touched && loginCtrl.hasError('required')) {
+            <div>The login field is required</div>
+        }
+    
+    ⁉️What if we need to have these references in our component code, and not only in the template?
+    ✅That is where "view queries" enter the scene and can save the day!
+
+
+
+- 🔥🔥For example, you may want to focus an input as soon as your component is displayed.
+    To do so, we need to grab a reference to the input, using the viewChild function.
+
+        @Component({
+            selector: 'ns-login',
+            template: `<input #loginInput name="login" [(ngModel)]="credentials.login" required />`,
+            imports: [FormsModule]
+        })
+        export class Login implements AfterViewInit {
+            protected readonly credentials = { login: '' };
+            readonly loginInput = viewChild.required<ElementRef<HTMLInputElement>>('loginInput');
+            ngAfterViewInit(): void {
+                this.loginInput().nativeElement.focus();
+            }
+        }
+
+        🧠The viewChild and viewChild.required functions are the modern, signal-based
+        alternatives to the @ViewChild decorator, in the same way as input and
+        input.required are the modern, signal-based alternatives to the @Input decorator.
+
+    👉We declare a field called loginInput, and we initialize it with viewChild.required. This
+    function needs a selector as parameter: here we use the local variable(loginInput) declared in
+    our template.
+
+    👉The function indicates to the framework that it needs to query the template to find an element
+    with this local variable name. The signal will be initialized with this element, of type
+    ElementRef<T>. This type has only one field, nativeElement of type T, which is a reference on
+    the underlying DOM element.
+
+    🔥The example also showcases a nice use of the lifecycle method ngAfterViewInit. This method is
+    called as soon as the view is created, so you are sure that the element you are waiting for is
+    indeed present. ❌If you try to do the same in the constructor or in ngOnInit, it won’t work.
+    🔥There is also another method called ngAfterViewChecked, which is called every time the view is
+    checked (after each change detection).
+
+ 
+    🔥🔥If you wanted to have this feature in a lot of different components, you could create a
+    directive for this, instead of duplicating the code in each component.
+        
+        @Directive({
+            selector: '[nsFocus]'
+        })
+        export class Focus implements AfterViewInit {
+            ngAfterViewInit(): void {
+            }
+        }
+    
+    ⚠️This directive does nothing yet, but it would be used like this in a template:
+        
+        <input nsFocus />
+
+    🔥🔥The directive needs to access its host element to give it the focus. That’s where
+    ElementRef is interesting, as it can be injected into our directive:
+
+        @Directive({
+            selector: '[nsFocus]'
+        })
+        export class Focus implements AfterViewInit {
+            protected readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
+            ngAfterViewInit(): void {
+                this.element.nativeElement.focus();
+            }
+        }
+
+    ✅And we’re done: using this directive will give the focus to its host element!
+
+
+
+- Let’s go back to our viewChild function: 🔥it can also accept a type as a selector.
+    For example, in the Forms chapter, we saw that 🧠to submit a form in the template-driven way,
+    you can use two-way binding, or you can grab a reference to the form and pass its value to the
+    submit method as:
+
+        <form (ngSubmit)="authenticate(form.value)" #form="ngForm">
+            <!-- ... -->
+        </form>
+
+    🔥🔥But we can also use a viewChild for this:
+
+        @Component({
+            selector: 'ns-login',
+            template: `
+                <form (ngSubmit)="authenticate()">
+                    <!-- ... -->
+                </form>
+            `,
+            imports: [FormsModule]
+        })
+        export class LoginForm {
+            readonly credentialsForm = viewChild.required(NgForm); 👈
+            protected authenticate(): void {
+                if (this.credentialsForm().valid) {
+                    console.log(this.credentialsForm().value);
+                }
+            }
+        }
+
+    🔥The cool thing with viewChild is that it is a dynamic query: it will always be up to date
+    with the template. If the queried element is destroyed, the signal will be set to undefined.
+
+
+
+- This function also has a twin called viewChildren. 🔥🔥Unlike viewChild which will get a reference
+    to one element matching the selector (the first if there are several ones), viewChildren will get
+    a reference to all the matching elements.
+
+    🔥🔥Let’s say we have a Race displaying a list of Pony - we can easily be notified every time a
+    Pony is added or removed:
+        
+        @Component({
+            selector: 'ns-race',
+            templateUrl: './race.html',
+            imports: [Pony]
+        })
+        export class Race {
+            readonly raceModel = input.required<RaceModel>();
+            readonly ponies = viewChildren(Pony);
+            constructor() {
+                effect(() => {
+                    console.log(this.ponies().length);
+                });
+            }
+        }
+
+
+
+- ✅Try exercise "Charts in your app !" You’ll use viewChild to build a chart component.

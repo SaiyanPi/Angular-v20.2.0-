@@ -1,0 +1,41 @@
+Input transforms:
+
+
+- 🔥Since Angular v16.1, it is possible to transform an input with the transform option of the @Input
+    decorator. Of course, the input() function also supports this feature.
+
+- 🔥🔥It allows transforming the value passed to the input before it is stored in the input signal.
+    The transform option requires a function that takes the value as input and returns the transformed
+    value. 🔥🔥As the most common use cases are to transform a string to a number or a boolean,
+    Angular provides two built-in functions to do that: numberAttribute and booleanAttribute in
+    @angular/core.
+    
+    👉Here is an example of using booleanAttribute:
+        
+        readonly disabled = input(false, { transform: booleanAttribute });
+    
+    This will transform the value passed to the input to a boolean so that the following code will
+    work:
+        
+        <ns-button disabled />
+        <ns-button disabled="true" />
+        <!-- Before, only the following was properly working -->
+        <ns-button [disabled]="true" />
+    
+    👉The numberAttribute function works the same way but transforms the value to a number.
+        
+        readonly value = input(0, { transform: numberAttribute });
+    
+    🔥🔥It also allows to define a fallback value, in case the input is not a proper number
+    (default is NaN):
+        
+        readonly value = input(0, { transform: (value: unknown) => numberAttribute(value, 42)});
+    
+    🧠"If the value can't be converted into a valid number, use 42 instead."
+    
+    This can then be used like this:
+        
+        <ns-value value="42" />
+        <ns-value value="not a number" />
+        <!-- Before, only the following was properly working -->
+        <ns-value [value]="42" />

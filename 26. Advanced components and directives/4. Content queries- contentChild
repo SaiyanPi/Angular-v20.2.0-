@@ -1,0 +1,117 @@
+Content queries: contentChild:
+
+
+- ⚠️⚠️When you are using these ng-content tags, the projected content will not be queried by
+    viewChild or viewChildren. For these contents, you have to use two other functions: contentChild
+    and contentChildren.
+
+    Let’s say you are building another UI component based on Bootstrap, this time a "tabs"
+    (https://getbootstrap.com/docs/5.3/components/navs-tabs/) component. The HTML must look like
+    this according to the docs:
+
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link">Races</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link">About</a>
+            </li>
+        </ul>
+
+    But we would like to offer a nice component to our team, something like:
+        
+        <ns-tabs>
+            <ns-tab title="Races" />
+            <ns-tab title="About" />
+        </ns-tabs>
+    
+    🔥We need an outer Tabs component, which must find out how many ns-tab directives are embedded
+    inside the component template, iterate through each of them and generate the appropriate markup.
+    To do so, let’s start by creating a directive Tab:
+
+        @Directive({
+            selector: 'ns-tab'
+        })
+        export class Tab {
+            readonly title = input('');
+        }
+    
+    The directive doesn’t do much: it only has an input to get the tab title. Note that we are
+    using an element as the selector, ns-tab.
+    Now we need to build the Tabs:
+
+        @Component({
+            selector: 'ns-tabs',
+            template: `
+                <ul class="nav nav-tabs">
+                👉 @for (tab of tabs(); track tab) {
+                        <li class="nav-item">
+                        <a class="nav-link">{{ tab.title() }}</a>
+                    </li>
+                    }
+                </ul>
+            `,
+            imports: []
+        })
+        export class Tabs {
+            readonly tabs = contentChildren(Tab); 👈
+        }
+
+    🔥As you can see, the template iterates through an array of tabs to generate an li element for
+    each of them. 
+    ⁉️But where does this tabs array come from? How can the component know about the two ns-tab
+    directives embedded inside the ns-tabs component?
+    ✅That’s what the contentChildren function allows you to do.
+
+
+
+- 🔥🔥To grab the list of the tabs, we need to use contentChildren, with Tab as parameter. This
+    gives us an array of tabs, that you can use in a for loop. As each element of this list is a Tab,
+    we can then access the public property title, and display the tab’s title!
+
+    ⚠️ Note that if, for whatever reason, you had a template like this one:
+
+        <ns-tabs>
+            <div>
+                <ns-tab title="Races" />
+            </div>
+            <ns-tabgroup>
+                <ns-tab title="About" />
+            </ns-tabgroup>
+        </ns-tabs>
+    
+    ⚠️Then the array in Tab will only contain the first Tab. 🔥🔥contentChild and contentChildren
+    are indeed only looking for direct descendants, and will stop at the ns-tabgroup component.
+
+    ✅ If we want our component to still work with this, there is an option you can pass to
+    contentChildren:
+
+        @Component({
+            selector: 'ns-tabs',
+            template: `
+                <ul class="nav nav-tabs">
+                👉 @for (tab of tabs(); track tab) {
+                        <li class="nav-item">
+                        <a class="nav-link">{{ tab.title() }}</a>
+                    </li>
+                    }
+                </ul>
+            `,
+            imports: []
+        })
+        export class Tabs {
+            readonly tabs = contentChildren(Tab, { descendants: true }); 👈
+        }
+    
+    Now it finds all the Tab again!
+
+
+
+- 🔥The tabs property is a signal, so you can also be notified of the changes, like we saw for
+    viewChildren. Once again, ❌the signal value is not accessible in the component constructor or
+    even in ngOnInit. ✅To be sure that the content can be queried, use the ngAfterContentInit
+    lifecycle hook. ✅You can also use the ngAfterContentChecked hook, which is called every time
+    the content is checked.
+
+
+- Try exercise Advanced components.
