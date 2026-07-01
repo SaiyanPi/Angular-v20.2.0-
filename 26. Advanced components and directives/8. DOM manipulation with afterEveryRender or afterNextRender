@@ -1,0 +1,181 @@
+DOM manipulation with afterEveryRender or afterNextRender:
+
+
+- 🔥In Angular 16.2, two new functions have been added to Angular: afterEveryRender and
+    afterNextRender. ⚠️They’re not traditional hooks implemented as methods of a component.
+    🔥🔥Instead, those are functions that a component can call, whenever it needs to, in order to
+    register a function that must be executed EVERY TIME (for afterEveryRender) or THE NEXT TIME
+    (for afterNextRender) ANGULAR HAS UPDATED THE DOM OF THE WHOLE APPLICATION.
+
+- 🔥🔥They’re thus useful for DOM manipulation. For example, if some event listener method
+    modifies the state of the application, which will in turn have impacts on the DOM, and if you
+    want to apply some transformation on this new DOM, calling afterNextRender inside the event
+    listener method is a good way of doing that.
+
+- ⚠️Beware though: these functions, like inject, are contextual functions. If you call them of a
+    constructor, you’ll need to pass the component’s injector as an option.
+
+- 🔥Here’s an example of usage of afterNextRender: 
+    clicking a button allows displaying an input to enter the name of a new pony. Once the input
+    has appeared in the DOM, it must take the focus immediately. Of course, simply setting the
+    boolean to true doesn’t make the input appear immediately. We must wait until Angular has
+    rendered the DOM before accessing the input and giving it the focus. Using afterNextRender is
+    a perfect way of doing that. And since we’re not calling it from the constructor, we must pass
+    it the injector associated to the component, that has been injected in the constructor.
+
+        @Component({
+            selector: 'ns-new-pony',
+            template: `
+                <button (click)="showPonyForm()">New pony</button>
+                @if (ponyFormDisplayed()) {
+                    <label for="pony-name">New pony name:</label>
+                    <input id="pony-name" #ponyName />
+                }
+            `
+        })
+
+        export class NewPony {
+            protected readonly ponyFormDisplayed = signal(false);
+            readonly ponyName = viewChild<ElementRef<HTMLInputElement>>('ponyName');
+            private readonly injector = inject(Injector);
+
+            protected showPonyForm() {
+                // display the form
+                this.ponyFormDisplayed.set(true);
+                // and give the focus to the new input once the DOM is rendered
+                afterNextRender(() => this.ponyName()!.nativeElement.focus(), { injector: this
+                .injector });
+            }
+        }
+
+
+- Another feature of those functions is that the callback you give them is never executed on the
+    server, when you use Server-Side rendering (SSR). So if you need to only execute code on the
+    client, for example because it accesses the window or some other API that is not available on
+    the server, placing this code inside a function passed to afterNextRender() is a good way of
+    doing it.
+
+- Try exercise Advanced directives ! You’ll build a directive that use HostBinding! Then you’ll
+    learn how libraries like ng-bootstrap use these pattern in the exercise Integrate with a UI
+    library
+
+
+
+------------------------------------------------------------------------------------------------------
+
+
+
+Explanation.
+
+- ⚠️Beware though: these functions, like inject, are contextual functions. If you call them of a
+    constructor, you’ll need to pass the component’s injector as an option.
+
+
+🧠Let's understand what the above line means:
+
+    🔥A contextual function is a function that only works when Angular knows which object (component,
+    directive, service, etc.) is currently being created.
+    For example,
+
+        @Component({...})
+        export class MyComponent {
+            private service = inject(MyService);
+        }
+
+    ✅This works because, Angular is creating MyComponent. At that moment, Angular knows:
+        -> which injector to use
+        -> which providers are available
+        -> what the current injection context is
+
+    But
+
+        @Component({...})
+        export class MyComponent {
+            constructor() {}
+
+            load() {
+                const service = inject(MyService);
+            }
+        }
+    
+    Then later
+
+        const component = new MyComponent();
+        component.load();
+
+    ❌ This doesn't work because When load() runs, Angular is not creating anything anymore.
+        -> There is no injection context.
+        -> Angular has no idea which injector you mean.
+
+
+
+
+
+
+    ⁉️ But Why does it work in field initializers?
+
+            export class MyComponent {
+                service = inject(MyService);
+                logger = inject(LoggerService);
+            }
+
+        🧠because these initializers execute while Angular is constructing the component.
+        🧠The injection context still exists.
+
+    ----------------------------------------------------------------------------------------
+
+    🫡Similar thing with the afterNextRender():
+        For example:
+
+            @Component({...})
+            export class MyComponent {
+
+                constructor() {
+                    afterNextRender(() => {
+                        console.log('Rendered!');
+                    });
+                }
+            }
+
+    ✅This works because you're calling afterNextRender() while Angular is constructing the
+        component. Angular knows which component this callback belongs to.
+
+    But 
+
+        @Component({...})
+        export class MyComponent {
+
+            constructor() {}
+
+            start() {
+                afterNextRender(() => {
+                    console.log('Rendered!');
+                });
+            }
+        }
+    
+    Then later
+    
+        const component = new MyComponent();
+        component.start();
+
+    ❌ This doesn't work because Angular doesn't know which rendering context should own this
+        callback. Just like inject(), afterNextRender() needs an injection context.
+    
+    🔥🔥 That's why the documentation says IF YOU CALL THEM OUTSIDE OF A CONSTRUCTOR, YOU'LL NEED
+    TO PASS THE COMPONENT'S INJECTOR like:
+
+        @Component({...})
+        export class MyComponent {
+
+            private injector = inject(Injector);
+
+            start() {
+                afterNextRender(() => { 
+                        console.log('Rendered!'); 
+                    }, 👉{ injector: this.injector }
+                );
+            }
+        }
+    
+    ✅Now Angular knows exactly which injector (and therefore which component context) to use.

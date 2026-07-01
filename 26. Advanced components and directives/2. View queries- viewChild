@@ -52,7 +52,7 @@ View queries: viewChild:
     ElementRef<T>. This type has only one field, nativeElement of type T, which is a reference on
     the underlying DOM element.
 
-    🔥The example also showcases a nice use of the lifecycle method ngAfterViewInit. This method is
+    👉The example also showcases a nice use of the lifecycle method ngAfterViewInit. This method is
     called as soon as the view is created, so you are sure that the element you are waiting for is
     indeed present. ❌If you try to do the same in the constructor or in ngOnInit, it won’t work.
     🔥There is also another method called ngAfterViewChecked, which is called every time the view is

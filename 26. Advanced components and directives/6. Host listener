@@ -1,0 +1,104 @@
+Host listener:
+
+
+- When writing a directive, it can be fairly common to interact with the host element.
+
+    💡Let’s take a simple example: our customer wants to easily clear the content of some text
+    inputs by double-clicking on them. This is the kind of behavior that you can encapsulate in a
+    custom directive, let’s say InputClear. Its selector will be an attribute, let’s say
+    nsInputClear. When this attribute is added to an element, we want to listen for a double-click
+    on this host element.
+
+        ⚠️This example is simple, but not very realistic. More realistic (but also morecomplex)
+        applications of this feature would be, for example, to display a tooltip or a popover
+        when an element is being hovered or clicked.
+
+    1️⃣
+    Let’s create the directive:
+        
+        @Directive({
+            selector: '[nsInputClear]',
+        })
+        export class InputClear {
+            private readonly element = inject<ElementRef<HTMLInputElement>>(ElementRef);
+        }
+
+    And use our directive like this:
+        
+        <input nsInputClear />
+    
+    2️⃣
+    🔥We now need to react to a 'dblclick' event on our host element (here, the input) to clear
+    the value.
+    🔥🔥That’s where we can use the host metadata in the @Component decorator. The syntax is almost
+    identical to the one we would use in a template:
+
+        host: {
+            '(eventtype)': 'statement()'
+        }
+    
+    In our case, we can write:
+
+        @Directive({
+            selector: '[nsInputClear]',
+            host: {
+                '(dblclick)': 'clearContent()'
+            }
+        })
+        export class InputClear {
+            private readonly element = inject<ElementRef<HTMLInputElement>>(ElementRef);
+            protected clearContent(): void {
+                this.element.nativeElement.value = '';
+            }
+        }
+    
+    ✅Now, every time a 'dblclick' event is triggered on the host element, the directive will
+    clear the input value.
+
+
+
+- 🔥🔥Note that it is also possible to listen to global events, like window:resize for example:
+
+        @Directive({
+            selector: '[nsWindowResize]',
+            host: {
+                '(window:resize)': 'resize($event)'
+            }
+        })
+        export class WindowResize {
+            protected resize(event: Event): void {
+                const innerWidth = (event.target as Window).innerWidth;
+                console.log(`The screen is being resized to ${innerWidth}`);
+            }
+        }
+
+
+- ✅Another way to achieve the same thing is to decorate a method of the directive with @HostListener.
+    This was the recommended way in previous versions of Angular, but the host metadata are now the
+    preferred way.
+
+
+--------------------------------------------------------------------------------------------------
+
+Notice we defined selector as:
+
+    selector: '[nsInputClear]'
+    
+and not as:
+
+    selector: 'ns-InputClear'
+
+👉 The square brackets [] mean "match an HTML element that has this attribute." Therefore it is
+    called an attribute selector
+
+👉 Usage: 
+    <button nsInputClear></button>
+    or
+    <span nsInputClear></span>
+    or
+    <input nsInputClear />
+
+👉 Explanation:
+    The directive will be applied to any HTML element that has the attribute nsInputClear, and
+    the directive will be able to interact with the host element (the element that has this
+    attribute).

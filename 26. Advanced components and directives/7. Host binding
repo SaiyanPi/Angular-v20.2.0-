@@ -1,0 +1,108 @@
+Host binding:
+
+
+- 🔥We often need to automatically add a CSS class or style, or bind a specific DOM property on
+    the host element of a directive or component. 🔥The host metadata, as we just saw, allow to
+    declare event bindings on the host element(previous section). 🔥🔥We can use the same host
+    metadata to also declare property bindings.
+
+    💡Let’s say we want to add a specific CSS class (is-required) to a label if the associated field
+    is required. Maybe this class adds a nice marker next to the label, or a small asterisk -
+    that’s not really important. This will not validate the field in any way - it will simply grab
+    the form state, and use this result to style the label.
+
+    This is, again, a task that perfectly fits a directive:
+
+        @Directive({
+            selector: 'label[nsAddClassIfRequired]',
+        })
+        export class AddClassIfRequired {
+        }
+
+    We will use it in a signal form:
+        
+        <label for="firstName" 👉[nsAddClassIfRequired]="userForm.firstName">First name</label>
+        <input id="firstName" [formField]="userForm.firstName" />
+    
+    🔥We then need to grab a reference to the state of the field in our directive. With signal forms,
+    each field is represented by a FieldTree(remember from chapter 21, section 2 😉).
+
+        @Directive({
+            selector: 'label[nsAddClassIfRequired]',
+        })
+        export class AddClassIfRequired {
+          👉readonly fieldTree = input.required<FieldTree<unknown>>({ alias: 'nsAddClassIfRequired' });
+        }
+    
+    Now that we have a reference to the FieldTree, 🔥it’s easy to know if the field is required, by
+    reading its current state and calling required(). 🔥The last step requires us to add the class
+    is-required to our host element if that’s the case. That’s where the host property binding
+    enters the scene! Once again, the syntax is almost identical to the syntaxdoes html label 
+    we would use in a template:
+
+        host: {
+            '[prop]': 'expression'
+        }
+
+    🔥🔥And that would automatically update the host’s property prop, every time the expression
+    changes.
+
+
+    In our case, we can define a computed signal that returns true or false, depending on whether
+    the field is currently required.
+
+        @Directive({
+            selector: 'label[nsAddClassIfRequired]',
+            host: {
+                '[class.is-required]': 'isRequired()' 👈
+            }
+        })
+        export class AddClassIfRequired {
+            readonly fieldTree = input.required<FieldTree<unknown>>({ alias: 'nsAddClassIfRequired' });
+         👉 protected readonly isRequired = computed(() => {
+                const fieldTree = this.fieldTree();
+                const state = fieldTree();
+                return state.required();
+            });
+        }
+
+
+- ⚠️Note that the directive we built has a custom selector, 🔥🔥but if you decide that you want
+    to apply these directives to every label, you can change their selector to label, and they will
+    automatically be applied on every label of your application.
+
+    Currently our selector:
+
+        selector: 'label[nsAddClassIfRequired]'
+
+    ✅so Angular applies it only here:
+        
+        <label for="firstName" 👉[nsAddClassIfRequired]="userForm.firstName">First name</label>
+
+    ❌But not here:
+
+        <label>LastName</label>
+    
+    But if we change the selector into label,
+
+        selector: 'label'
+    
+    ✅then, these would all get the directive automatically:
+
+        <label>FirstName</label>
+        <label>LastName</label>
+        <label>Email</label>
+        <label>Password</label>
+
+
+
+- 😮These few lines of code are really powerful: every time the directive is used in a form, Angular
+    will automatically add or remove our custom class depending on the current field configuration
+    or state!
+
+- 🔥It can be used to bind other kinds of properties, not just CSS classes. For example, some
+    component libraries use it to add accessibility attributes (aria.xxx) to a host element.
+
+- Another way to achieve the same thing is to decorate a property with @HostBinding. This was the
+    recommended way in previous versions of Angular, ✅but the host metadata are now the preferred
+    way

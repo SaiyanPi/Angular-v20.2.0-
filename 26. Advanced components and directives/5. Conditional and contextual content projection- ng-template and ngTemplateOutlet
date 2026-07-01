@@ -1,0 +1,142 @@
+Conditional and contextual content projection: ng-template and ngTemplateOutlet:
+
+
+- ⚠️⚠️ng-content falls short if you want to insert some dynamic HTML content inside your template
+    conditionally, or in a loop, or if you want to provide some context to this dynamic content.
+
+    Let’s illustrate such a case with a simple enough example. ✅We would like to create a progress
+    bar component. This component accepts a min value, a max value, and a value, computes a
+    percentage, and displays it inside a progress bar.
+
+    1️⃣Let’s start with the skeleton of our component:
+
+        export class Progress {
+            readonly min = input(0);
+            readonly max = input(100);
+            readonly value = input.required<number>();
+            protected readonly percentage = computed(() => (100 * (this.value() - this.min())) /
+                (this.max() - this.min()));
+        }
+    
+    And its template:
+
+        <div class="progress">
+            <div
+                class="progress-bar"
+                role="progressbar"
+                [style.width.%]="percentage()"
+                [ariaValueNow]="value()"
+                [ariaValueMin]="min()"
+                [ariaValueMax]="max()"
+            >
+            </div>
+        </div>
+
+    Nothing new until now
+    2️⃣
+    But we would also like to display the percentage value inside the component. And the user of
+    the component should also be able to customize the way the percentage is displayed.
+    So, inside the template, we want the following, where the formatter is something that the
+    user of the component can provide as input.
+
+        <div class="progress">
+            <div
+                class="progress-bar"
+                role="progressbar"
+                [style.width.%]="percentage()"
+                [ariaValueNow]="value()"
+                [ariaValueMin]="min()"
+                [ariaValueMax]="max()"
+            >
+                @if (formatter(); as f) {
+                <span>
+                </span>
+                } @else {
+                    {{ percentage() | number }}%
+                }
+            </div>
+        </div>
+    
+    ⚠️This formatter is not a value. It’s not a function either, because the user must be able to
+    format the value using Angular-enriched HTML.
+    🔥🔥Such a piece of Angular-enriched HTML snippet that can be passed around and inserted anywhere
+    is modelled by Angular by an <ng-template>. Its TypeScript counterpart is an object of type
+    TemplateRef.
+
+    🔥🔥In this case, the formatter’s responsibility is to display a percentage. So it needs a
+    rendering context containing this percentage. This rendering context is the generic type of the
+    TemplateRef that the component will accept as input.
+
+     👉interface ProgressContext {
+            percentage: number;
+        }
+        export class Progress {
+            // ...
+         👉readonly formatter = input<TemplateRef<ProgressContext>>();
+         👉protected readonly formatterContext = computed<ProgressContext>(() => ({
+                percentage: this.percentage()
+            }));
+        }
+
+    ⁉️Now, how can we insert this TemplateRef inside the component’s template and give it its
+    context?
+    ✅That’s the role of the structural directive *ngTemplateOutlet. Here’s how we use it:
+
+        @if (formatter(); as f) {
+            <span>
+         👉<ng-container *ngTemplateOutlet="f; context: formatterContext()" />
+            </span>
+        } @else {
+            {{ percentage() | number }}%
+        }
+    
+
+    3️⃣
+    ⁉️Finally, how can the user use this progress component and provide a formatter? 
+    🔥Simply by defining an element <ng-template>, assigning a variable to it, and pass this
+    variable as the formatter input to the progress component.
+
+    🔥🔥Inside the <ng-template>, we can of course access all the properties of the current component.
+    🔥🔥But we can also access the elements of the context, coming from the progress component, by
+    using this weird let-p="percentage" syntax. p is simply an alias to the context element named
+    percentage (we could choose any other alias name, like for example let-progress="percentage").
+
+        <!-- without formatter -->
+        <ns-progress [value]="75" />
+
+        <!-- with formatter -->
+       👉<ng-template #myFormatter let-p="percentage"><strong>Your</strong> progress: {{ p | number }}%
+        </ng-template>
+        <ns-progress [value]="75" 👉[formatter]="myFormatter" />
+    
+
+
+- 🧠🧠If, inside the context interface, we choose to name a property $implicit (instead of percentage
+    here for example), then we can simply use let-p instead of let-p="percentage" to access this
+    property.
+
+        interface ProgressContext {  $implicit: number; }
+    
+    Then, <ng-template let-p>
+
+
+- In fact, structural directives work like that. 🔥🔥All the directives that we use with a *, like
+    ngIf or ngFor, have an <ng-template> as host element. Angular defines a micro-syntax for structural
+    directives, which allows declaring a directive on a <ng-template> in a concise way.
+    Let’s take ngFor as an example (ngFor is the directive we used to use before @for was introduced).
+    When we write a simple ngFor as the following:
+        
+        <div *ngFor="let pony of ponies; i as index">
+            {{ i }} - {{ pony }}
+        </div>
+
+    😮Then it is the same as writing the following template:
+        
+        <ng-template 👉ngFor [ngForOf]="ponies" let-pony let-i="index">
+            <div>{{ i }} - {{ pony }}</div>
+        </ng-template>
+    
+    It’s less readable, of course. That’s why we always use *ngFor. But it shows that in fact,
+    Angular itself uses this pattern based on ng-template! ngFor is nothing more than a directive
+    applied on ngtemplate, with an input ngForOf that expects a collection, and a context
+    containing an $implicit property with the current element, and other properties like the index.
