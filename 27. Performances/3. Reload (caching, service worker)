@@ -1,0 +1,100 @@
+Reload (caching, service worker):
+
+
+- Once your user has opened the application once, it’s possible to speed up the subsequent visits.
+
+
+1️⃣Caching:
+
+    - 🔥You should always cache the assets of your application (images, styles, JS bundles…). This is
+    done by configuring your server and leveraging the Cache-Control and ETag headers. All the servers
+    on the market allow you to do so. 🔥You can also use a CDN for this purpose, which will additionally
+    allow the users to download the assets from a server close to their location. If you do so, the
+    next time your users open the application, the browser won’t have to send a request to fetch the
+    assets because it will have them already
+
+    - ⁉️But a cache is always tricky: you need to have a way to tell the browser "hey, I deployed a new
+    version in production, please fetch the new assets!".
+
+    - 🔥The easiest way to do this is to have a different name for the asset you updated. That means
+    instead of deploying an asset named main.js, you deploy main.xxxx.js where xxxx is a unique
+    identifier. 🧠This technique is called cache busting. 🔥And, again, the CLI is there for you: in
+    production mode, it will name all your assets with a unique hash, derived from the content of the
+    file. It also automatically updates the sources of the scripts in index.html to reflect the unique
+    names, the sources of the fonts, the sources of the stylesheets, etc.
+
+    - 🔥🔥If you use the CLI, you can safely deploy a new version and cache everything, except the
+    index.html (as this will contain the links to the fresh assets deployed)!
+    🧠Deploying using CLI means Use the Angular CLI to produce the production files, then deploy those
+    files
+
+
+2️⃣Service Worker:
+
+    - If you want to go a step further, you can use service workers.
+
+    - 🔥Service Workers are an API that most modern browsers support, and to simplify, they act like a
+    proxy in the browser. 🔥You can register a service worker in your application and every GET request
+    will then go through it, allowing you to decide if you really want to fetch the requested resource,
+    or if you want to serve it from cache. You can then cache everything, even your index.html, which
+    guarantees the fastest startup time (no request to the server).
+
+    - ⁉️You may be wondering how a new version can be deployed if everything is cached, but you’re
+    covered: ✅the service worker will serve from cache and then check if a new version is available.
+    It can then force the refresh, or ask the users if they want it immediately or later.
+
+    - 😮It even allows you to go offline, as everything is cached!
+
+    - 🔥Angular offers a dedicated package called @angular/service-worker, which is relatively easy to
+    setup, and can help you transform your Angular application into a Progressive Web App (PWA).
+
+
+3️⃣Profiling:
+
+    - Now that we have talked about first load and reload, we can start talking about runtime
+    performances. 🔥But if you run into a performance issue, before trying any of the following tips,
+    you should start by measuring and profiling the application.
+
+    - 🧠Browsers nowadays offer nice developer tools, especially Chrome, which allows you to record your
+    application, and analyze its behavior, the function call hierarchy, the time spent by each function,
+    etc. You can also simulate some conditions, like using a slower processor, or using a 3G network.
+
+    - In addition to the native browser developer tools, 🔥You can install the official Angular
+    DevTools browser extension. It has profiling capabilities allowing for example to analyze its
+    change detection.
+
+    - 🔥But Angular also offers a precious, little-known tool: ng.profiler. It allows you to measure
+    how long a change detection takes in the current page. 🔥Profiling the change detection is
+    important when your application relies on the brute-force change detection mechanism which consists
+    in evaluating all the expressions of all the components in the tree. 🔥🔥Hopefully, when all your
+    components rely on signals to signal a change and ZoneJS isn’t used anymore, the time taken by
+    change detection shouldn’t be much of a concern anymore.
+
+    But before we get there, you can try to apply one of the tips which we’ll look at, and measure
+    again to see if there is any improvement.
+
+    👉 In your main.ts file, replace the application bootstrapping code with the following:
+        
+        bootstrapApplication(App, appConfig)
+        .then(applicationRef => {
+            const componentRef = applicationRef.components[0];
+            // allows to run `ng.profiler.timeChangeDetection();`
+            enableDebugTools(componentRef);
+        })
+        .catch(err => console.log(err));
+    
+    👉 Then go to the page you want to profile, open your browser console, and execute the following
+    instruction:
+        
+        > ng.profiler.timeChangeDetection()
+        ran 489 change detection cycles
+        1.02 ms per check
+    
+    🧠The Angular team recommends having a time per check below 3ms, to leave enough time for the
+    application logic, the UI updates and the browser’s rendering pipeline to fit within a 16ms frame
+    (assuming a 60 FPS target frame rate).
+
+
+- When optimizing your code, using the techniques that we will explain in the following sections, it can
+    help to use these tools to measure before and after, and see if it was actually worth it.
+    Let’s discover these tips! 🤩🤩

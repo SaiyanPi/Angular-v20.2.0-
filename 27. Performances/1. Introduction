@@ -1,0 +1,19 @@
+Performances:
+
+
+    ⚠️Be careful with premature optimization. Always measure before and after. Beware
+    of the benchmarks you find on the internets: it’s pretty easy to make them say
+    what the authors want.
+
+- Performances can mean a lot of things: speed, CPU usage (battery consumption), memory pressure… 
+    Everything is not important for everybody: you have different needs if you are programming for a
+    mobile website, an e-commerce platform, or a classic CRUD application.
+
+- Performances can also be split into different categories, that, once more, won’t all matter to you:
+    first load, reload, and runtime performances.
+
+    🧠First load is when you open an application for the first time. 🧠Reload is when you come back to
+    that application. 🧠Runtime performances is what happens when the application is running. 🔥Some
+    of the following recommendations are very generic, and could be applied to any framework. We wrote
+    them down because we think it’s worth knowing. 🔥And because when you talk about performances,
+    the framework is sometimes the bottleneck, but really (really) often not.

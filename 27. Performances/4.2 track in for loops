@@ -1,0 +1,103 @@
+track in for loops:
+
+
+- 🔥If you use the control flow syntax, you know that track is mandatory in @for loops. 🔥🔥To
+    understand why, let me explain how modern JS frameworks (at least all major ones) handle collections.
+    When you have a collection of 3 ponies and want to display them in a list, you’ll write something
+    like:
+
+        <ul>
+            @for (pony of ponies(); track pony) {
+                <li>{{ pony.name }}</li>
+            }
+        </ul>
+    
+    🧠When you add a new pony, Angular will add a DOM node in the proper position. If you update the
+    name of one of the ponies, Angular will change just the text content of the right/appropriate li.
+
+    ⁉️How does it do that? ✅By keeping track of which DOM node references which object reference.
+    Angular will have an internal representation looking like:
+        
+        node li 1 -> pony #e435 // { id: 3, color: blue }
+        node li 2 -> pony #8fa4 // { id: 4, color: red }
+    
+    🧠It works great, and if you change an object for another one, Angular will destroy just that node
+    and build another one.
+        
+        node li 1 (recreated) -> pony #c1ea // { id: 1, color: green }
+        node li 2 -> pony #8fa4 // { id: 4, color: red }
+
+    🧠🔥If the whole collection is updated with new objects, the complete DOM list will be destroyed and
+    recreated. Which is fine, except 🧠🔥when you just refresh a list with almost the same content: in
+    that case, Angular destroys the complete node list and recreates it, even if there is no need to.
+    For example, when you fetch the same results from the server, you will have the same content, but
+    different references as your collection will have been recreated.
+
+            ✅Just the Refresh Explanation:
+
+            Imagine your first server response
+
+            You fetch ponies from the server:
+
+                [
+                    { id: 1, name: 'Rainbow Dash' },
+                    { id: 2, name: 'Twilight Sparkle' }
+                ]
+
+            Let's call these objects:
+
+                Object A → { id: 1, name: 'Rainbow Dash' }
+                Object B → { id: 2, name: 'Twilight Sparkle' }
+
+            Angular renders
+
+                <li>Rainbow Dash</li>
+                <li>Twilight Sparkle</li>
+
+            Later, you refresh the list. You call the server again.
+
+            The server returns
+
+                [
+                    { id: 1, name: 'Rainbow Dash' },
+                    { id: 2, name: 'Twilight Sparkle' }
+                ]
+
+            The data is identical. But JavaScript creates new objects. Now you have
+
+                Object C → { id: 1, name: 'Rainbow Dash' }
+                Object D → { id: 2, name: 'Twilight Sparkle' }
+
+            Notice:
+
+                Object A !== Object C
+                Object B !== Object D
+
+            Even though
+
+                A.id === C.id
+                A.name === C.name
+
+            they are different objects in memory.
+    
+
+    ✅🔥🔥The solution for this use-case is to help Angular track the objects, not by their references,
+    but by something that you know will uniquely identify the object, typically an ID:
+
+        <ul>
+            @for (pony of ponies(); track pony.id 👈) {
+                <li>{{ pony.name }}</li>
+            }
+        </ul>
+
+    With this track expression, Angular will only recreate a DOM node if the ID of the pony changes. On
+    a very big list which doesn’t change much, it can save a ton of DOM deletions/creations. Since this
+    optimization technique is quite cheap to implement, Angular decided to force you to specify a track
+    expression in @for loops.
+
+
+- track is also necessary if you want to use animations. If a DOM element’s style is supposed to be
+    animated (by transitioning smoothly from the previous value to the new one), and the list of ponies
+    is replaced by a new one when refreshed, then a correct track is a must: 🔥with a track by identity,
+    the animation will never happen, because the style of the element never changes. Instead, it’s the
+    element itself which is being replaced by Angular

@@ -1,0 +1,16 @@
+Production mode:
+
+
+- 🧠While you’re developing (using ng serve to serve your application), the CLI sets an internal
+    variable called ngDevMode that the framework uses to know if it needs to do some extra work or
+    not.
+
+- In this mode, 🔥error messages are more detailed. 🔥The generated DOM contains additional attributes
+    useful for debugging. And more importantly, 🔥🔥every change detection does two traversals of the
+    component tree instead of just one. 🔥🔥The second traversal ensures that all the expressions return
+    the same thing as in the first traversal, and throws an error otherwise. 🧠This makes sure that you
+    respect the one-way data flow principle.
+
+- ⚠️⚠️Make sure to detect and fix these errors, because the production build (that you obtain when
+    executing ng build) won’t do these additional traversals, which will thus make the application
+    faster⬆️. Such a problem will thus not cause any error being logged in the console.

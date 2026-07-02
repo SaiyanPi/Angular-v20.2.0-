@@ -1,0 +1,14 @@
+Runtime performances:
+
+
+- 🔥Angular’s magic relies on its change detection mechanism: the framework automatically detects
+    changes in the state of the application and updates the DOM accordingly. So, 🔥🔥as a general rule
+    of thumb, you’ll want to help Angular and limit the change detection triggering and the amount of
+    DOM to update/create/delete.
+    (💡Read chapter 23 if you want to recap on how the angular chang detection works)
+
+- To be honest, most applications will be fine, even when displaying a lot of stuff.
+    But some of us will have to recode Excel in the browser for their enterprise, or will have a
+    component with a tree displaying 10,000 customers, or another unreasonable thing to do in a
+    browser. These things are tricky, whatever framework you use. They tend to update a lot of DOM,
+    and have to check a lot of components. A few of the tricks in a following can help.

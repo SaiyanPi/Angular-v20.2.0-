@@ -1,0 +1,143 @@
+First load (bundling, compression, lazy-loading,server side rendering):
+
+
+- When you load a modern Web application in your browser, a few things happen. 🧠First, the index.html
+    is loaded and parsed by the browser. 🧠Then the JS scripts and other assets referenced are fetched.
+    When one of the assets is received, the browser parses it, and executes it if it is a JS file.
+
+#) Asset sizes:
+    - 🔥So the first tip is very obvious: be careful with your asset sizes!
+        ⚠️The assets loading phase depends on how many assets you want to load. A lot will be slow.
+        Big ones will be slow. Especially if the network is not that good, which happens more often
+        than you think: you might test your application on an optical fiber connection, but some of
+        your actual users might be in the middle of nowhere, using slow 3G. Here is what you can do.
+
+
+1️⃣Bundle your application:
+
+    - When you write your Angular application, you have imports all over the place, and your code is
+    split across hundreds of files. But you don’t want your users to load hundreds of files! So before
+    shipping your application, you want to make a "bundle": group all the JavaScript files into one
+    file.
+
+    - 🔥esbuild's(https://esbuild.github.io/) job is to take all your JavaScript files (and CSS, and
+    template HTML files) and build bundles. It’s not an easy tool to master, but the Angular CLI does
+    a pretty good job at hiding its complexity.
+
+
+2️⃣Tree-shaking:
+
+    - 🧠esbuild (and other bundlers like Rollup or Webpack) starts from the entry point of your
+    application (the main.ts file that the CLI generated for you, and which you probably never touched),
+    then resolves all the imports graph, and outputs the bundle. 
+    🧠This is cool because the bundle will only contain the files from your codebase and your third
+    party libraries that have been imported. The rest is not embedded. 🧠So even if you have a dependency
+    in your package.json that you don’t use anymore (so you don’t import it anymore), it will not end up
+    in the bundle.
+
+    - It’s even a bit smarter than that. 🧠If you have a file models exporting two classes, let’s say
+    PonyModel and RaceModel, and then only import PonyModel into the rest of the application, but
+    never RaceModel, then the bundler only puts PonyModel in the final bundle, and drops RaceModel.
+    This process is called tree-shaking.
+
+    - And every framework and library in the JavaScript ecosystem is fighting hard to be tree-shakable!
+    In theory, it means that your final bundle contains only what is really needed! ⚠️But in practice,
+    bundlers are a bit conservative, and can’t figure out some stuff. For example, if you have a class
+    Pony with two methods eat and run, but you only use run, the code of the eat method will be in the
+    final bundle. So it’s not perfect, but it does a good job 👍.
+
+    - To avoid bundles that are too large, ⚠️be wary of the external components and libraries you use,
+    and of their transitive dependencies. What is their additional weight? Are they really useful?
+    Isn’t there a native way of doing the same thing, or isn’t it simple enough to do it by yourself?
+
+
+3️⃣Minification and dead code elimination:
+
+    - 🧠When your bundle has been built, the code is usually minified and dead code will be eliminated.
+    That means all variables, method names, class names… are renamed to use a one or two characters
+    name through the entire codebase. 😉This is a bit scary and sounds like it could break things, but
+    the tools have been doing a great job.
+
+
+4️⃣Other assets:
+
+    - While the above sections were about JS specifically, your application also contains other
+    assets, like styles, images, fonts… 🧠You should have the same concerns about them, and do your
+    best to keep them at a reasonable size. Applying all kinds of crazy techniques to optimize your JS
+    bundle sizes, but loading several MBs of images, wouldn’t have a big impact on your page loading
+    time and your bandwidth! As this is not really the scope of this ebook, I won’t dig into this topic,
+    but 🔥let me point out a great online resource by Addy Osmani about image optimization: Essential
+    Image Optimization(https://web.dev/learn/images/).
+
+    - 🔥Angular has a directive NgOptimizedImage that enforces some of these best practices.
+
+        <img [ngSrc]="imageUrl" alt="Pony" width="100" height="100" />
+
+
+5️⃣Compression:
+
+    - 🧠All the modern browsers accept a compressed version of an asset when they ask the server for it.
+    That means you can serve a compressed version to your users, and the browser will unzip it before
+    parsing it. This is a must-do because it will save you tons of bandwidth and loading time.
+
+    - 🧠Every server on the market gives the option of activating the compression of assets or even
+    dynamic http responses. Generally the first user to request an asset will pay the cost of the
+    compression on the fly, and then the following ones will receive the compressed asset directly.
+
+    - 🔥The most common compression algorithm used is GZIP, but some others like Brotli
+    (https://github.com/google/brotli) are also popular.
+
+
+6️⃣Lazy-loading:
+
+    - 🧠Sometimes, despite doing your best to keep your JS bundle small, you end up with a big file
+    because your app has grown to several dozens of components, using various third party libraries.
+    And not only will this big bundle increase the time needed to fetch the JavaScript, it will also
+    increase the time needed to parse it and execute it.
+
+    - 🔥The solution to this problem is to use lazy-loading. It means that instead of having a big
+    bundle of JavaScript, you split your application into several parts and tell the bundler to split
+    it in several bundles.
+
+    - 🔥🔥The good news is that Angular (its router in particular) makes this task easy to achieve.
+    You can read our chapter about lazy-loading if you want to learn more. The templates can also use
+    the @defer instruction to lazy load components and their dependencies. Read the chapter about defer
+    to learn everything about it.
+
+    - Lazy-loading can vastly improve the loading time, as you can make the first bundle really small,
+    with only what’s needed to display the home page, and let Angular load additional bundles on
+    demand, when your user navigates to another part. 🧠You can also use prefetching strategies to tell
+    Angular to start loading the other bundles when it’s idle.
+
+
+7️⃣Server Side Rendering (SSR):
+    - ⚠️I’d like to start by saying that this technique is for 0.0001% of you. 🧠It’s mainly useful for
+    public web sites, but not so much for applications, especially intranet applications. 🧠Server side
+    rendering (SSR) is the technique that consists of pre-rendering the pages on the server before
+    serving them to the users. With this, when users ask for /dashboard, they will receive a
+    pre-rendered version of the dashboard, instead of receiving the almost empty index.html.
+
+    - It can lead to vast improvements in perceived startup time. 🔥🔥Angular CLI offers an option --ssr
+    for the ng new command which generates a project pre-configured for server side rendering. Angular
+    can then pre-render the pages on a Node.js server and serve them to your users. The page will
+    display very fast and once Angular has started in the browser, it will do the "hydration" of the page
+    and then run as usual. The hydration consists in taking the control of the DOM: add the necessary
+    event listeners, start the change detection, and sometimes add some parts that can only be
+    rendered on the client-side.
+
+    - 🔥🔥SSR is also a big win if you want your website to be crawlable by search engines or social
+    networks which don’t execute JavaScript, since you can serve them pre-rendered pages, instead of a
+    blank page.
+
+    - The bad news is that it’s not as easy as adding an option when you create your project. ⚠️Your
+    application needs to follow some best practices (⚠️no direct DOM manipulation for example, as the
+    server won’t have a real DOM to manipulate). Then you need to set up your server and think about
+    the strategy you want to adopt. 🤔Do you want to pre-render all pages or just a few? 🤔Do you want
+    to pre-render the whole page, with the data fetching and authorization check it will need, or just
+    some critical parts of the page? 🤔Do you want to pre-render them on build, or to pre-render them
+    on demand and cache them? 🤔Do you want to do this for all the possible profiles and languages or
+    just some? All these questions depend on the type of application you are building, and the effort
+    can vary greatly depending on your goal.
+
+    - ⚠️So, again, I would advise you to use server side rendering only if it is critical for your
+    application, and not based on the hype…

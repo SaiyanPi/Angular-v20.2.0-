@@ -1,0 +1,168 @@
+Change detection strategies:
+
+
+- 🧠When we explained how Angular detects the changes in your application, we showed the tree of
+    components and said that Angular starts by checking the root component, then its children, then its
+    grand-children, until all components are checked. Then all the necessary DOM updates are applied
+    in one batch.
+
+    🔥But you may be wondering if it is a very good idea to check every component on every change. And
+    you’re right, that’s often not really necessary.
+
+
+- Angular offers two change detection strategies: 🔥Eager (which was previously named Default), and
+    OnPush. 🔥Until Angular 21, the default strategy was Eager. 🔥Since Angular 22, the default
+    strategy is OnPush.
+
+    🔥🔥A component using the OnPush strategy will only be checked in four cases:
+        • one of the inputs of the component changed (to be more accurate, when the reference of one of
+            the inputs changes);
+        • an event handler of the component was triggered;
+        • the value of a signal read by the template of the component changed;
+        • the component has been marked for check.
+
+
+- ✅If you (and the Angular libraries you use) respect the rules described in this book regarding the
+    use of signals, then the OnPush strategy (which is now the default one) shouldn’t cause any bug,
+    and is the most performant choice. It avoids skipping a component (and its descendants) during the
+    tree traversal if the state displayed by its template hasn’t changed.
+
+    👏If all your components use OnPush and your application works fine, it’s a good sign that your code
+    is already ready for zoneless synchronization.
+
+
+- 🐛Let’s however demonstrate some of the gotchas of the OnPush strategy with small examples, so that
+    you can identify the bugs in your code causing it to fail
+
+    Imagine that we have 3 components working fine, but using the Eager strategy.
+    👉A very simple Image:
+
+        @Component({
+            selector: 'ns-img',
+            template: `
+                <p>{{ check() }}</p>
+                <img [src]="src()" />
+            `,
+            changeDetection: ChangeDetectionStrategy.Eager
+        })
+        export class Image {
+            readonly src = input.required<string>();
+            protected check(): void {
+                console.log('image component view checked');
+            }
+        }
+
+    👉used in a Pony:
+
+        @Component({
+            selector: 'ns-pony',
+            template: `
+                <p>{{ check() }}</p>
+                <ns-img [src]="ponyImageUrl()" />
+            `,
+            imports: [Image],
+            changeDetection: ChangeDetectionStrategy.Eager
+        })
+        export class Pony {
+            readonly ponyModel = input.required<PonyModel>();
+            protected readonly ponyImageUrl = computed(() => `images/pony-${this.ponyModel
+                ().color}-running.gif`);
+
+            protected check(): void {
+                console.log('pony component view checked');
+            }
+        }
+
+    👉used itself in a Race:
+
+        @Component({
+            selector: 'ns-race',
+            template: `
+                <h2>Race</h2>
+                <p>{{ check() }}</p>
+                @for (pony of ponies(); track pony.id) {
+                    <div>
+                        <ns-pony [ponyModel]="pony" />
+                    </div>
+                }
+                <button (click)="changeColor()">Change color</button>
+            `,
+            imports: [Pony],
+            changeDetection: ChangeDetectionStrategy.Eager
+        })
+        export class Race {
+            protected readonly ponies = signal<Array<PonyModel>>([
+                { id: 1, color: 'green' },
+                { id: 2, color: 'orange' }
+            ]);
+            protected readonly colors: Array<string> = ['green', 'orange', 'blue'];
+
+            protected check(): void {
+                console.log('race component view checked');
+            }
+
+            protected changeColor(): void {
+                const ponies = this.ponies();
+                ponies[0].color = this.randomColor();   // change color of the first pony
+                this.ponies.set([...ponies]);
+            }
+        }
+    
+    💡The Race displays two ponies, and the user can change the color of the first one by clicking on
+    the Change color button.
+
+    🧠🔥With the Eager change detection strategy, every time that we have a change in the application,
+    all 3 components are checked.
+
+    We added a check() method in each component, called in each template: it allows us to track if the
+    component is checked or not. And indeed in our example, we can see in our console:
+
+        pony component view checked
+        image component view checked
+        pony component view checked
+        image component view checked
+        race component view checked
+    
+    (we can see that twice actually, because we are in development mode - see the section about the
+    production mode).
+
+
+------------------------------------------------------------------------------------------------------
+
+Explanation:
+
+    pony component view checked
+    image component view checked
+    pony component view checked
+    image component view checked
+    race component view checked
+    
+⁉️ We got this log but Why this specific order?
+
+    ❌ Angular does not check all parents first and then all children.
+    ✅ Instead, it performs a DEPTH-FIRST TRAVERSAL of the component tree.
+
+    When the button is clicked Angular starts with the root component(Race). It starts evaluating the
+    template from top to bottom.
+    -> it executes check() and logs race component view checked
+    -> Angular reaches the first Pony <ns-pony [ponyModel]="pony1" />
+    -> Before it can continue with the rest of Race's template, it must check the child component.
+        So angular enters Pony and inside Pony's template encounters <p>{{ check() }}</p>
+        and logs pony component view checked
+    -> Pony's template continues. Angular reaches <ns-img [src]="ponyImageUrl()" /> and enters Image
+        and inside Image's template encounters <p>{{ check() }}</p>
+        and logs image component view checked
+    -> Image has no child components.
+        Angular returns back to Pony.
+        Pony is finished.
+        Angular returns back to Race.
+    -> Angular continues with Race in the same way for the second pony <ns-pony [ponyModel]="pony2" />
+        we get the same log for the second pony and its image and at last we get the logs
+
+        race component view checked
+        pony component view checked
+        image component view checked
+        pony component view checked
+        image component view checked
+
+        This logs is different from the logs from this book so we have to look into it in more detail.
