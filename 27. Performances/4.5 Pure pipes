@@ -1,0 +1,125 @@
+Pure pipes:
+
+
+- As you know, you can build your own pipes to format and display your data.
+    For example, to display the full name of a user, you can either write a method in your component:
+
+        @Component({
+            selector: 'ns-menu',
+            template: `
+                <p>{{ userName() }}</p>
+                <p>...</p>
+                <p>{{ userName() }}</p>
+            `
+        })
+        export class Menu {
+            protected readonly user = signal<UserModel>({
+                id: 1001,
+                firstName: 'Jane',
+                lastName: 'Doe',
+                title: 'Miss'
+            });
+         👉 protected userName(): string {
+                return `${this.user().title} ${this.user().firstName} ${this.user().lastName}`;
+            }
+        }
+    
+    🔥or better, define a computed signal:
+
+        @Component({
+            selector: 'ns-menu',
+            template: `
+                <p>{{ userName() }}</p>
+                <p>...</p>
+                <p>{{ userName() }}</p>
+            `
+        })
+        export class Menu {
+            protected readonly user = signal<UserModel>({
+                id: 1001,
+                firstName: 'Jane',
+                lastName: 'Doe',
+                title: 'Miss'
+            });
+         👉 protected readonly userName = computed(() => `${this.user().title} ${this.user().firstName}
+                ${this.user().lastName}`);
+        }
+
+    🔥🔥The computed version is more efficient, because the computation is memoized instead of being
+    executed each time the expression is evaluated in the template.
+
+    ⚠️This is fine when you have a signal containing a single user. But if you need to have an array of
+    objects each having a user as a property, it can be tedious to transform all these users into user
+    names inside a computed.
+
+    ✅🔥A custom pipe is an easier solution to encapsulate this logic:
+
+        @Component({
+            selector: 'ns-menu',
+            template: `
+                <p>{{ user | displayName }}</p>
+                <p>...</p>
+                <p>{{ user | displayName }}</p>
+            `,
+            imports: [DisplayNamePipe]
+        })
+        export class Menu {
+            protected readonly user: UserModel = {
+                id: 1001,
+                firstName: 'Jane',
+                lastName: 'Doe',
+                title: 'Miss'
+            };
+        }
+
+    DisplayNamePipe:
+
+        @Pipe({
+            name: 'displayName'
+        })
+        export class DisplayNamePipe implements PipeTransform {
+            transform(user: UserModel): string {
+                return `${user.title} ${user.firstName} ${user.lastName}`;
+            }
+        }
+    
+    This takes a little bit more work, but 🔥🔥writing a pipe allows you to reuse it in any template
+    (obviously right).
+
+
+- What you may not know is that using a 🔥🔥pipe also offers the same performance benefit as using a
+    computed signal. 🧠🔥By default, a pipe is "pure". In computer science, we call "pure" a function
+    that has no side effect, and whose result only depends on its entries. 🧠🔥A pure pipe is pretty
+    much the same: the result of its transform method only depends on arguments. Knowing that, Angular
+    applies the same optimization as for the computed signal: it memoizes the transformation.
+    🧠🔥The transform method is only called if the reference of the value it transforms changes or if
+    one of the other arguments changes (yes, a bit like the OnPush strategy for components).
+
+
+- 🔥🔥By default, a custom pipe is pure, so that’s great! ⚠️But sometimes it’s not a right fit.
+    
+    In my example, ⚠️⚠️if we mutate the user to set its firstName to a different value, the pipe never
+    refreshes… It’s pretty much the same issue that we had with the OnPush strategy: 🔥the reference of
+    the value doesn’t change, so the pipe does not run again
+
+    ✅Here you have two solutions:
+    • carefully use the pipe with immutable objects (do not mutate the user - create a new user with
+        the new firstName);
+    • mark the pipe as "impure", and Angular will run it every time. You lose a tiny bit in performance,
+        but you are sure that the displayed value is refreshed.
+        🔥🔥To mark a pipe as impure, just add pure: false in its decorator:
+
+        @Pipe({
+            name: 'displayName',
+            pure: false
+        })
+        export class DisplayNameImpurePipe implements PipeTransform {
+            transform(user: UserModel): string {
+                return `${user.title} ${user.firstName} ${user.lastName}`;
+            }
+        }
+
+
+- To sum up:
+    • ✅a pure pipe is not called as often as a method in a component
+    • ⚠️but it doesn’t run again if the input value is mutated, so use it carefully.

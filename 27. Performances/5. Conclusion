@@ -1,0 +1,19 @@
+Conclusion:
+
+
+- This chapter hopefully taught you some techniques which can help solve performance problems.
+    🔥🔥But remember the golden rules of performance optimization:
+    • don’t
+    • don’t… yet
+    • profile before optimizing.
+
+    As a famous computer scientist said:
+    PREMATURE OPTIMIZATION IS THE ROOT OF ALL EVIL. — Donald Knuth
+
+
+- 🔥🔥So strive to make the code as simple and correct and readable as possible, and only start
+    thinking about profiling, then optimizing, if you have a proven performance problem.
+
+
+- 🔥🔥For new components, relying on signals makes it easy to apply the OnPush strategy, and to be
+    ready for zoneless change detection.

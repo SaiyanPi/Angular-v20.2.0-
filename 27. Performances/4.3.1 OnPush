@@ -1,0 +1,179 @@
+OnPush:
+
+
+- But in this case, it’s a waste of time: ⚠️we know that if the pony doesn’t change, the template of
+    the Pony doesn’t need to be checked. ⚠️Same thing for the Image: if the src input is the same,
+    there is no need to recompute the image URL. So let’s switch these components to OnPush:
+
+        🔥🔥Starting with v22, you can simply remove the changeDetection property from the
+        decorator to use OnPush, since it’s the default strategy.
+    
+    Image Component:
+
+        @Component({
+            selector: 'ns-img',
+            template: `
+                <p>{{ check() }}</p>
+                <img [src]="src()" />
+            `,
+            changeDetection: ChangeDetectionStrategy.OnPush
+        })
+        export class Image {
+            readonly src = input.required<string>();
+            protected check(): void {
+                console.log('image component view checked');
+            }
+        }
+
+
+    Pony Component:
+
+        @Component({
+            selector: 'ns-pony',
+            template: `
+                <p>{{ check() }}</p>
+                <ns-img [src]="ponyImageUrl()" />
+            `,
+            imports: [Image],
+            changeDetection: ChangeDetectionStrategy.OnPush
+        })
+        export class Pony {
+            readonly ponyModel = input.required<PonyModel>();
+            protected readonly ponyImageUrl = computed(() => `images/pony-${this.ponyModel
+                ().color}-running.gif`);
+
+            protected check(): void {
+                console.log('pony component view checked');
+            }
+        }
+    
+
+    Race component:
+
+        @Component({
+            selector: 'ns-race',
+            template: `
+                <h2>Race</h2>
+                <p>{{ check() }}</p>
+                @for (pony of ponies(); track pony.id) {
+                    <div>
+                        <ns-pony [ponyModel]="pony" />
+                    </div>
+                }
+                <button (click)="changeColor()">Change color</button>
+            `,
+            imports: [Pony],
+            changeDetection: ChangeDetectionStrategy.Eager 
+        })
+        export class Race {
+            protected readonly ponies = signal<Array<PonyModel>>([
+                { id: 1, color: 'green' },
+                { id: 2, color: 'orange' }
+            ]);
+            protected readonly colors: Array<string> = ['green', 'orange', 'blue'];
+
+            protected check(): void {
+                console.log('race component view checked');
+            }
+
+            protected changeColor(): void {
+                const ponies = this.ponies();
+                ponies[0].color = this.randomColor();   // change color of the first pony
+                this.ponies.set([...ponies]);
+            }
+        }
+
+
+    🔥🔥When we click to change the color, we will only see in the console:
+        
+        race component view checked
+
+    Which is awesome, because it means that we don’t check the components that we don’t need to
+    check \o/.
+
+
+----------------------------------------------------------------------------------------------------
+
+Explanation:
+
+✅First: Notice the change detection startegy in the Race component is still Eager. We could change
+    it into OnPush but for the sake of clarity, i decided not to change it.
+    Eager or OnPush, it doesn't matter, it doesn't change the log because 🧠A COMPONENT'S CHANGE DETECTION
+    STRATEGY ONLY DETERMINES WHETHER ANGULAR WILL CHECK THAT COMPONENT'S OWN VIEW
+
+    In simple words, It doesn't matter whether Race is Eager or OnPush in this example because the click
+    event originates inside Race. Angular automatically marks Race as dirty, so it will always be
+    checked.
+
+
+⁉️ Why don't we get the logs from Pony and Image components?
+
+    Well first of all, 🔥🧠The key idea behind OnPush is that Angular doesn't check a component on every
+    change detection cycle. Instead, it only checks the when angular has a reason to believe something
+    affecting that component may have changed.
+    The evidence depends on the trigger:
+        1️⃣A new input reference:
+            -> Angular stores the previous input value.
+            -> During a parent's check, it compares the old and new values using ===.
+            -> If they are different, Angular has evidence that the child's input changed, so it marks the
+                child for checking.
+        
+        2️⃣An event in the component's subtree:
+            -> Angular itself handled the event (e.g. (click), (input)).
+            -> Since the event originated inside that subtree, Angular has evidence that code there may
+                have modified state.
+            -> So it checks that subtree, even if the components use OnPush.
+
+        3️⃣A signal changes:
+            -> When the template reads a signal (e.g. count()), Angular records that dependency.
+            -> Later, when the signal's value changes, the signal notifies Angular.
+            -> That notification is the evidence that the component needs checking.
+        
+        4️⃣An async pipe receives a new value:
+            -> The async pipe subscribes to the observable.
+            -> When the observable emits, the async pipe tells Angular to mark the component for checking.
+            -> The emission is the evidence.
+
+        5️⃣markForCheck() or detectChanges():
+            -> You're explicitly telling Angular, "This component may have changed."
+            -> Angular trusts you and performs the check.
+    
+    😵‍💫So when the user clicks the Change color button, the color might change from green to blue so
+    does not this mean that the input of the first Pony component has changed? 
+        
+        const objectA = { id: 1, color: 'green' };
+        const objectB = { id: 1, color: 'blue' };
+    
+    So objectA === objectB is false, so angular should check the first Pony component right?
+
+    ✅ Before answering that let's get the understanding correct. Even if we have objectA and objectB as:
+
+        const objectA = { id: 1, color: 'green' };
+        const objectB = { id: 1, color: 'green' };
+    
+    objectA === objectB is still false because they are two different objects in memory. Regardless,
+    Angular should do the change detection in both cases. 🧠BUT WE ARE NOT CREATING NEW OBJECTS, WE ARE
+    MUTATING THE EXISTING OBJECT(creating new object from the existing one with different color property). 
+
+        const ponies = this.ponies();
+        ponies[0].color = this.randomColor(); 👈 mutates
+        this.ponies.set([...ponies]);   // creates a new array, but its elements are still the same objects
+
+    SO THE OBJECT IS STILL THE SAME(REFERENCE IS NOT CHANGED), WE HAVE JUST CHANGE ITS color PROPERTY.
+    SO EVEN IF WE HAVE A DIFFERENT COLOR, THE OBJECT IS STILL THE SAME, 
+        
+        objectA = { id: 1, color: 'green' };
+
+    became
+
+        objectA = { id: 1, color: 'blue' };
+
+    so objectA === objectB is true
+    SO ANGULAR DOES NOT CHECK THE PONY COMPONENT. ⚠️✅And since the Pony component is not checked, the
+    Image component is not checked either(remember this for next sub section). Therefore, we only get
+    "race component view checked".
+
+
+    😜  const objectA = { id: 1, color: 'green' };
+        const objectB = objectA;
+        console.log(objectA === objectB);   // true

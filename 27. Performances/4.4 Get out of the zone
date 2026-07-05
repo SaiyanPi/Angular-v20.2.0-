@@ -1,0 +1,56 @@
+Get out of the zone:
+
+
+- 🔥🔥There is another way to avoid useless change detections in legacy applications using Zone.js:
+    you can completely run some code outside of Zone.js. To do so, you can inject NgZone, and then use
+    its runOutsideAngular method to execute code outside its watch.
+
+- 🔥🔥This can be really useful to wrap something that handles a lot of events, typically something
+    coming from a third-party library.
+    For example, 🧠let’s imagine you have a chart in your application, built with Chart.js. A user
+    hovering over the chart will trigger hundreds of mouse events. The fact that hundreds of events
+    are fired isn’t really a problem. That also happens with any DOM element. What is a problem is that
+    the library calls addEventListener() to handle these events, for example to display tooltips, and
+    that’s what triggers hundreds of change detections!
+
+        readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('chart');
+        constructor() {
+            effect(() => {
+                const ctx = this.canvas().nativeElement;
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Green', 'Red'],
+                        datasets: [{ label: 'Score', data: [12, 21] }]
+                    }
+                });
+            });
+        }
+    
+    🔥🔥In that case, you can inject NgZone and use runOutsideAngular to ignore the events from
+    Chart.js:
+
+        readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('chart');
+        constructor() {
+            const ngZone = inject(NgZone); 👈
+            effect(() => {
+                const ctx = this.canvas().nativeElement;
+             👉 ngZone.runOutsideAngular(() => {
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Green', 'Red'],
+                            datasets: [{ label: 'Score', data: [12, 21] }]
+                        }
+                    });
+                });
+            });
+        }
+    
+    ✅This produces the same results, and the rest of the component would still be checked automatically
+    by Angular, but we no longer trigger change detection when using the chart.
+
+
+- 🫩Having to do this to avoid performance problems when using Angular is one of the big problems
+    caused by the usage of ZoneJS. 🤩It’s one of the reasons signals have been introduced and Angular
+    decided to adopt zoneless change detection.

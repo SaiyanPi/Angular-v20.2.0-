@@ -1,0 +1,78 @@
+OnPush, Observables, signals, and the async pipe:
+
+
+- Let’s say we now have only one component, our well-known Pony. It subscribes to an observable
+    from a ColorService that returns a new color every second. We obviously expect the image to
+    change every second. 😎The developer of this component thought that an OnPush change detection
+    strategy couldn’t hurt. What do you think?
+    Pony component:
+
+        @Component({
+            selector: 'ns-pony',
+            template: `
+                <p>New color every 1s</p>
+                @if (color) {
+                <img [src]="'pony-' + color + '.gif'" [alt]="color" />
+            }
+            `,
+            changeDetection: ChangeDetectionStrategy.OnPush
+        })
+        export class Pony {
+            protected color: string | undefined;
+            constructor() {
+                inject(ColorService)
+                    .get()
+                    .pipe(takeUntilDestroyed())
+                    .subscribe(color => (this.color = color));
+            }
+        }
+
+    ⚠️Sadly, this doesn’t work. With the OnPush strategy, 🔥Angular only refreshes the template if one
+    of the inputs changed (here, there is no input), or if an event was triggered (there is none either),
+    or if a signal read by the template changed (no signal is used here) (remember for sub section
+    4.3.1 😜). 🧠So the color field is updated every second, but the template is never refreshed… 
+
+    ✅🔥This can be fixed by turning the color property into a signal and setting the signal value when
+    the observable emits a new color. 🔥🔥But there’s an even simpler solution: using toSignal to
+    transform the observable into a signal:
+
+        Component({
+            selector: 'ns-observable-on-push-with-signal',
+            template: `@if (color(); as c) {
+                <img [src]="'pony-' + c + '.gif'" [alt]="c" />
+                }`,
+            changeDetection: ChangeDetectionStrategy.OnPush
+        })
+        export class Pony {
+            protected readonly color: Signal<string | undefined> = toSignal(inject(ColorService).get());
+        }
+
+
+- ✅Before signals were introduced, the solution to this problem was to use the async pipe to let the
+    template subscribe (and unsubscribe) for you
+
+        @Component({
+            selector: 'ns-observable-on-push-with-async',
+                template: `@if (color$ | async; as c 👈) {
+                <img [src]="'pony-' + c + '.gif'" [alt]="c" />
+                }`,
+            imports: [AsyncPipe],
+            changeDetection: ChangeDetectionStrategy.OnPush
+        })
+        export class Pony {
+            protected color$: Observable<string> = inject(ColorService).get();
+        }
+
+    🔥When a new value is received from the observable, the async pipe marks the component to be
+    checked during the next change detection.
+
+    ⚠️Note that async can lead to several HTTP requests if used several times in a template, It also
+    makes it more difficult to access the color from inside the TypeScript code. ✅So our preference
+    goes to the toSignal solution, which has all the advantages of async without its disadvantages.
+
+
+- ⚠️⚠️Those two examples show why migrating components to OnPush shouldn’t be done lightly, especially
+    with legacy components that don’t use signals. However, migrating components to OnPush helps
+    preparing them for zoneless change detection. So if you want to prepare your legacy application for
+    zoneless, you should consider, at least for new components, to use signals for their state and to
+    use the OnPush strategy.

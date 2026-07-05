@@ -123,7 +123,7 @@ Change detection strategies:
         image component view checked
         race component view checked
     
-    (we can see that twice actually, because we are in development mode - see the section about the
+    (🧠we can see that twice actually, because we are in development mode - see the section about the
     production mode).
 
 
@@ -166,3 +166,4 @@ Explanation:
         image component view checked
 
         This logs is different from the logs from this book so we have to look into it in more detail.
+        (confirmed from multiple AIs, logs from this book is incorrect and the logs above is correct👍.)

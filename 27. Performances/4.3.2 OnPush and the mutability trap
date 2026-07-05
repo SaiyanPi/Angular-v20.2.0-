@@ -1,0 +1,46 @@
+OnPush and the mutability trap:
+
+
+- ⚠️But… there is a slight problem: the pony’s color doesn’t change anymore!
+    I picked this example on purpose: even if OnPush is really powerful, it can be tricky.
+    Why doesn’t it work in our case?
+
+    Take a closer look at our Race, and its changeColor method:
+
+        protected changeColor(): void {
+            const ponies = this.ponies();
+            ponies[0].color = this.randomColor(); 👈mutates
+            this.ponies.set([...ponies]);
+        }
+    
+    🔥This method mutates the pony in the ponies collection, and 🧠this pony is the input of our Pony.
+    🔥🔥Now that we shifted our component to be OnPush, Angular will only run the change detection if
+    the reference of the pony input changes. And when you mutate an object, it’s still the same object,
+    so the reference doesn’t change, and Angular thinks there is no need to run the change detection
+    (as described in the explanation section of previous section)
+
+
+- ✅🔥The simple way to fix our issue is to not mutate our pony in changeColor, but to create a new
+    object:
+
+        protected changeColor(): void {
+            const ponies = this.ponies();
+            const pony = ponies[0];
+            // 🔥👇create a new pony with the old attributes and the new color
+            ponies[0] = { ...pony, color: this.randomColor() };
+            this.ponies.set([...ponies]);
+        }
+
+    Once you’ve done that, the application is faster and correct. If the user clicks on the button, the
+    changeColor method creates a new pony object with the old attributes and the new color.
+    🔥🔥As this is a new object, Angular will run the change detection in the Pony (an input changed),
+    and then the src input of the Image will also change, and the image will display the correct color.
+    🔥🔥And, of course, if another event triggers the change detection in Race, the children component
+    will not be checked (if their inputs did not change).
+
+
+- ⚠️⚠️As you can see, you can quickly fall into a trap when migrating a component to the OnPush
+    strategy, so be careful (unit tests are your friend).
+
+
+- ⚠️There is a last topic we need to talk about: observables.
