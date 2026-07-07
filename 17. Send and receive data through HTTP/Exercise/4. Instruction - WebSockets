@@ -1,0 +1,313 @@
+⚠️ Start this exercise only after you're done with the Live race exercise from chapter 25 Advanced 
+    observables.
+⚠️ project for this exercise is ponyracer - from chapter 22
+
+
+
+------------------------------------------- WebSockets ------------------------------------------------
+
+
+- GET REAL TIME DATA FROM THE SERVER OVER WEBSOCKETS!
+
+- Time to do some real-time communication!
+    🧠WebSockets are a (relatively) recent protocol to do bi-directional real-time communication with
+    your server: it will open a TCP connection with your server and both the browser and the server
+    can send data to each other.
+
+- ⚠️An error can sometimes happen because of a proxy or a firewall in your network infrastructure that
+    would not let WebSocket communications go through. If it is the case for you, try with another
+    internet connection without proxy or firewall (for example from a cellphone connection): it should
+    then be OK.
+
+- Instruction:
+
+1️⃣ 🔥RxJS is well suited to WebSockets: you can create an Observable from a WebSocket connection directly
+    with the webSocket operator!
+    🔥We are also going to use a higher level protocol called Stomp over WebSockets, with a library
+    called webstomp-client. 🔥This allows to do broadcasting, in a pub/sub fashion, over a classic
+    WebSocket connection (really handy on the server side).
+
+    Add this library to your application:
+
+        npm install --save-exact webstomp-client@1.2.6
+    
+    To use this library, we also need to make the TypeScript compiler happy.
+    For many libraries, this is pretty easy, as their typings are already included in the NPM package
+    or available in the DefinitelyTyped repository, and we can install them using NPM with
+    
+        npm install --save-dev --save-exact @types/my-library
+    
+    (all the typings from DefinitelyTyped are available as a NPM package under the @types scoped package).
+    🧠 after installing webstomp-client, if you see inside the folder
+
+        node_modules
+        |- webstomp-client
+            |- package.json
+            |- index.d.ts
+        
+    (inside package.json)
+        {
+            "types": "index.d.ts",
+        }
+
+    it reads the package's package.json, finds the "types" entry, loads index.d.ts, and now it knows:
+    -> what functions exist,
+    -> what parameters they accept,
+    -> what they return.
+    ✅No additional installation is necessary. Therefore we don't actually need to run second command.
+    For Webstomp, the typings are also included by default in the NPM package, so nothing to do!
+    😜Let’s now use this library!
+
+
+
+2️⃣ To encapsulate the WebSockets logic, create a new service ws with Angular CLI.
+
+    🔥This service should have a connect method, subscribing to a Stomp channel, and returning an
+    Observable<T>. 🔥🔥Indeed an Observable is a really good representation of a Stomp subscription:
+    messages or errors can happen at any time, and the stream can complete.
+
+    🔥We are going to wrap our WebSocket connection in an Observable. To do so the connect method
+    should return a new Observable right away created with:
+
+        connect<T>(channel): Observable<T> {
+            return new Observable((observer: Observer<T>) => {
+                // TODO create the WebSocket connection
+                // TODO create the stomp client with Webstomp
+                // TODO connect the stomp client
+                // TODO subscribe to the specific channel and store the subscription
+                // TODO handle incoming messages
+                // TODO handle the unsubscription
+            });
+        }
+    
+    🧠✅Note that the method is generically typed with <T>, allowing us to call it like
+    ws.connect<UserModel>() to let TypeScript know that the Observable returned emits events of type
+    UserModel.
+
+    🧠new Observable((observer: Observer<T>) => {}) creates an observable. The function passed as a
+    parameter to the constructor is called the subscribe function: it will be responsible for emitting
+    events and errors, and to complete when done.
+    
+    🧠For example, if you want to create an Observable which emits 1, then 2, then completes, you could do:
+
+        const numbers = new Observable(observer => {
+            observer.next(1);
+            observer.next(2);
+            observer.complete();
+        });
+    
+    🧠Now we could subscribe to such an observable:
+
+        numbers.subscribe({
+            next: number => console.log(number),
+            error: error => console.log(error),
+            complete: () => console.log('Complete!')
+        });
+        // Will log:
+        // 1
+        // 2
+        // Complete!
+    
+    🧠The function passed to new Observable() can also return a function that will be called on the
+    unsubscription:
+
+        const numbers = new Observable(observer => {
+            observer.next(1);
+            observer.next(2);
+            observer.complete();
+            return () => console.log('The subscriber decided to unsubscribe!') 👈
+        });
+
+        const subscription = numbers.subscribe(
+            // we unsubscribe as soon as we receive a number
+            number => subscription.unsubscribe()
+        );
+        // Will log:
+        // The subscriber decided to unsubscribe!
+    
+    🔥That’s really useful if you have some cleanup to do (like us, because we’ll need to close the
+    communication when the observable will be unsubscribed).
+
+
+
+3️⃣ We now need to implement the logic of each TODO inside the subscribe function. 
+    🧠🔥To create the connection, we’ll use WebSocket, an object provided by the browser. Create a new
+    connection:
+
+        const connection: WebSocket = new WebSocket(`${environment.wsBaseUrl}/ws`);
+    
+    This will attempt to establish a WebSocket connection with our backend. Create the wsBaseUrl
+    attribute in the environment constant with the value: wss://ponyracer.ninja-squad.com.
+
+    🧠🔥Now let’s use Webstomp to create the stomp client:
+
+        const stompClient: WebstompClient.Client = WebstompClient.over(connection);
+    
+    🧠🔥Don’t forget the necessary import:
+
+        import * as WebstompClient from 'webstomp-client';
+    
+    🧠🔥Webstomp gives us a client on which we can call connect(headers, connectionCallback). We
+    don’t have specific headers to give, so we’ll give it { login: '', passcode: '' }:
+
+        let subscription: WebstompClient.Subscription;
+        stompClient.connect({ login: '', passcode: '' }, () => {
+            // TODO subscribe to the specific channel
+            // TODO emit the message received, after extracting the JSON from the body
+        }, error => {
+            // propagate the error
+            observer.error(error);
+        });
+        // TODO handle the unsubscription
+    
+    🧠🔥To subscribe to a specific channel, there is a method called subscribe(channel, onMessageCallback):
+
+        subscription = stompClient.subscribe(channel, message => {
+            // TODO emit the message received, after extracting the JSON from the body
+        });
+    
+    🧠🔥The final step is to handle the incoming messages in the callback, and send them into our
+    Observable by using observer.next(message):
+
+        const bodyAsJson = JSON.parse(message.body) as T;
+        observer.next(bodyAsJson);
+    
+    🧠🔥And to return the function to call on an unsubscription, where we’ll close all our
+    communications (Webstomp subscription and WebSocket connection):
+
+        return () => {
+            if (subscription) {
+                subscription.unsubscribe();
+            }
+            connection.close();
+        };
+    
+    ✅ Final connect method:
+
+        connect<T>(channel: string): Observable<T> {
+            return new Observable((observer: Subscriber<T>) => {
+                // 👇create the WebSocket connection
+                const connection: WebSocket = new WebSocket(`${environment.wsBaseUrl}/ws`);
+
+                // 👇create the stomp client with Webstomp
+                const stompClient: WebstompClient.Client = WebstompClient.over(connection);
+
+                // 👇connect the stomp client
+                let subscription: WebstompClient.Subscription;
+                stompClient.connect({ login: '', passcode: '' }, () => {
+                    // 👇subscribe to the specific channel
+                    subscription = stompClient.subscribe(channel, message => {
+                        // 👇emit the message received, after extracting the JSON from the body
+                        const bodyAsJson = JSON.parse(message.body) as T;
+                        observer.next(bodyAsJson);
+                    });
+                    }, error => {
+                    // 👇propagate the error
+                    observer.error(error);
+                });
+
+                // 👇handle the unsubscription
+                return () => {
+                    if (subscription) {
+                    subscription.unsubscribe();
+                    }
+                    connection.close();
+                };
+            });
+        }
+
+
+
+4️⃣ Yay! Now let’s use our new service in RaceService. Inject the WsService in RaceService and replace
+    the code in the live method to use our brand new connect method with the channel /race/${raceId}.
+    🧠We want to stop listening to the live race when its status is finished, 🔥so we’re going to
+    chain a call to the takeWhile operator. As we want to include the last message, where the status
+    will be FINISHED, we can use the inclusive parameter of the takeWhile operator:
+
+        live(raceId: number): Observable<LiveRaceModel> {
+            return this.wsService
+            .connect<LiveRaceModel>(`/race/${raceId}`)
+            .pipe(takeWhile(liveRace => liveRace.status !== 'FINISHED', /* include last value */ true));
+        }
+
+    Relaunch your application: everything should work!
+
+
+
+5️⃣ ⚠️⚠️But the WsService is sadly not very testable: it uses WebSocket and Webstomp directly, so we
+    can’t mock these in our tests…​Like with our UserService we did not want to make real HTTP requests
+    in tests, here we don’t want to establish a real WebSocket connection for our unit tests.
+
+    🧠Let’s refactor our WsService a bit to make it testable and we’re done.
+
+    🔥🔥That’s a great time to play with an advanced feature of the dependency injection system!
+    The goal is to inject WebSocket and Webstomp in WsService rather than using them directly. Once
+    they are injected, a unit test can easily replace them with fake implementations
+    (read the chapter 14 on Dependency Injection if that’s not clear).
+
+    ✅ First we need to create two tokens for the two dependencies, and map them to the real WebSocket
+    and Webstomp symbols. To do so, create a new file app.tokens.ts and add the two following
+    InjectionToken, which is the recommended way to create an injection token
+    (it makes sure that the tokens are unique).
+    app.tokens.ts:
+
+        import { InjectionToken, Type } from '@angular/core';
+        import * as WebstompClient from 'webstomp-client';
+
+        export const WEBSOCKET = new InjectionToken<Type<WebSocket>>('WebSocket', 
+            { providedIn: 'root', factory: () => WebSocket });
+        export const WEBSTOMP = new InjectionToken<typeof WebstompClient>('WebstompClient', 
+            { providedIn: 'root', factory: () => WebstompClient });
+    
+
+
+6️⃣ With these providers, it is now possible to inject the dependencies in WsService. To do so, use
+    the following injection:
+
+        private readonly WebSocket: Type<WebSocket> = inject(WEBSOCKET);
+        private readonly Webstomp: typeof WebstompClient = inject(WEBSTOMP);
+    
+    As you can see we are now injecting two private fields WebSocket and Webstomp using inject().
+    🔥The first field we inject is the type WebSocket, but the second one is, sadly, not easy to type,
+    so we’ll go with typeof WebstompClient.
+
+    ✅Use these fields in the connect method (you just have to add this. in front of WebSocket and
+    Webstomp 😉).
+
+        connect<T>(channel: string): Observable<T> {
+            return new Observable((observer: Subscriber<T>) => {
+                // 👇create the WebSocket connection
+                const connection: WebSocket = new this.WebSocket(`${environment.wsBaseUrl}/ws`);
+
+                // 👇create the stomp client with Webstomp
+                const stompClient: WebstompClient.Client = this.Webstomp.over(connection);
+
+                // 👇connect the stomp client
+                let subscription: WebstompClient.Subscription;
+                stompClient.connect({ login: '', passcode: '' }, () => {
+                    // 👇subscribe to the specific channel
+                    subscription = stompClient.subscribe(channel, message => {
+                        // 👇emit the message received, after extracting the JSON from the body
+                        const bodyAsJson = JSON.parse(message.body) as T;
+                        observer.next(bodyAsJson);
+                    });
+                    }, error => {
+                    // 👇propagate the error
+                    observer.error(error);
+                });
+
+                // 👇handle the unsubscription
+                return () => {
+                    if (subscription) {
+                    subscription.unsubscribe();
+                    }
+                    connection.close();
+                };
+            });
+        }
+    
+    ✅You can now add the unit tests and have a look at how they are built to test the WsService!
+
+
+
+7️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK. 
