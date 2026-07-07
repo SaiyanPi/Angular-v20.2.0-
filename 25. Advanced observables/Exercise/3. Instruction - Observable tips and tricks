@@ -1,0 +1,197 @@
+⚠️ In the previous Exercise - Live race we hard coded the live race in the race service. We implemented
+    the WebSockets in the chapter 17: HTTP. ponyracer for implementing WebSockets is the other ponyrace
+    from the exercise folder which implements the hard coded live race in the previous instruction live
+    race. So for this exercise we copied the ponyracer from chapter 17 which implements the WebSockets.
+
+
+--------------------------------------- Observable tips and tricks -----------------------------------
+
+
+- HANDLE LIVE RACE ERRORS, COMPLETION, WINNERS, AND BET RESULTS WITH RXJS AND RESOURCES.
+
+- Angular Prerequisite "Advanced observables" chapter
+
+- Ponies are now moving, with real data coming from a server in real time, and that’s great!
+    As we strive to make an application of professional quality grade, we now have to handle errors,
+    completion, unsubscription, etc…​Right now we subscribe to the Observable returned by the live
+    method, ⚠️but we don’t act when we have no more events coming in.
+
+    We should do a few things when a pony (or several ones) wins the race:
+    👉 complete the observable to inform the subscribers that the race is over
+    👉 stop the "running animation" of our ponies
+    👉 display a message with the winners of the race, and if the bet is won or lost.
+
+    👉Similarly, we should handle potential errors (the connection could break for example), with at
+    least an error message if something goes wrong.
+
+    This gives us an opportunity to learn a few advanced tricks with RxJS. Let’s go 💪!
+
+
+1️⃣ Now we are going to slightly refactor our Live. ⚠️Right now, we always subscribe to the live
+    positions, even if the race is already finished. We need to do better, and ✅only subscribe to
+    these positions when the race is not finished yet.
+    
+    To do so, change the params function of the liveRace resource to:
+    👉 return undefined if the initial race is not loaded yet;
+    👉 return undefined if the race is finished;
+    👉 return the race otherwise.
+
+        params: () => {
+            if (!this.initialRace.hasValue()) {
+                return undefined;
+            }
+            const race = this.initialRace.value();
+            return race.status === 'FINISHED' ? undefined : race; 
+        }
+
+
+
+2️⃣ We also need to handle the potential errors during the live✅. Add a liveError?: boolean property to
+    our RaceModelWithPositions interface, and add a catchError operator after the startWith operator
+    in the stream of liveRace to return of({ …​race, poniesWithPosition: [], liveError: true }) in case
+    of an error.
+
+        interface RaceModelWithPositions extends RaceModel {
+            poniesWithPosition: Array<PonyWithPositionModel>;
+            liveError?: boolean; 👈
+        }
+        // omitted
+        export class Live {
+           // omitted
+            private readonly liveRace = rxResource<RaceModelWithPositions, RaceModel | undefined>({
+                params: () => {
+                    // omitted
+                },
+                stream: ({ params: race }) =>
+                this.raceService.live(race.id).pipe(
+                    map(live => ({ ...race, poniesWithPosition: live.ponies, status: live.status })),
+                    startWith({ ...race, poniesWithPosition: [] }),
+                    catchError(() => of({ ...​race, poniesWithPosition: [], liveError: true })) 👈
+                )
+            });
+            // omitted
+        }
+
+
+
+3️⃣ Now, we are going to add two computed fields in our Live:
+   1. winners, an array of PonyWithPositionModel, with all the ponies that have reached the finish
+    line.
+   2. betWon, a boolean that will be true if the user has bet on one of the pony contained in the
+    winners computed field.
+    
+    🧠To find the race winners, use the poniesWithPosition array and filter the ponies with a position
+    greater than or equal to 100 (use the filter operator on the poniesWithPosition array). 
+    🧠To find the bet result, check if the winners array contains a pony with the same id as the
+    betPonyId property of the raceModel. You can do that using the some operator available on arrays
+    (array.some(predicate) returns true if at least one element satisfies the predicate function).
+
+        protected readonly winners = computed<PonyWithPositionModel[] | undefined>(() =>
+            this.raceModel()?.poniesWithPosition.filter(p => p.position >= 100)
+        );
+        protected readonly betWon = computed<boolean | undefined>(() =>
+            this.winners()?.some(p => p.id === this.raceModel()?.betPonyId)
+        );
+
+
+
+4️⃣ Then add in the template:
+
+    -> a div, with CSS class alert alert-danger and the accessibility attribute role="alert", if the
+    property liveError is defined, with a content displaying "A problem occurred during the live."
+
+    -> a div containing the following template to replace the current representation of the ponies.
+    This div will contain a different template based on the raceModel.status.
+
+        @switch (raceModel.status) {
+            @case ('FINISHED') {
+                <!-- TODO -->
+            }
+            @case ('PENDING') {
+                <!-- TODO -->
+            }
+            @case ('RUNNING') {
+                <!-- TODO -->
+            }
+        }
+    
+
+    👉If the race is finished and we don’t have any winner, that means we are too late, so we display
+    'The race is over.'. If the race is finished and we have winners, we display them, and we also
+    display an alert to inform the user if they have won or lost the bet.
+
+        @case ('FINISHED') {
+            <div>
+                @if (winners()?.length === 0) {
+                    <div>The race is over.</div>
+                } @else {
+                    @if (betWon()) {
+                        <div class="alert alert-success" role="alert">You won your bet!</div>
+                    } @else if (raceModel.betPonyId) {
+                        <div class="alert alert-warning" role="alert">You lost your bet.</div>
+                    }
+                    <div>Most Valuable Ponies</div>
+                    <div class="row">
+                        @for (winner of winners(); track winner.id) {
+                            <div class="col-12 col-md-2" [class.selected]="winner.id === raceModel.betPonyId">
+                                <pr-pony [ponyModel]="winner" />
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    
+
+    👉If the race is pending, we simply display the ponies engaged, and add a class selected on the
+    pony the user has bet on.
+
+        @case ('PENDING') {
+            <div>
+                <div>The race will start {{ raceModel.startInstant | prettyDate }}</div>
+                <div class="row">
+                @for (pony of raceModel.ponies; track pony.id) {
+                    <div class="col-sm-2" [class.selected]="pony.id === raceModel.betPonyId">
+                    <pr-pony [ponyModel]="pony" />
+                    </div>
+                }
+                </div>
+            </div>
+        }
+    
+
+    👉 Finally, if the race is running, we use the same template we were using before, with a few CSS
+    improvements (a finish line and a flag \o/). We also add the selected class on the correct pony.
+
+        @case ('RUNNING') {
+            <div>
+                <div style="margin-left: 95%; margin-bottom: 5px">
+                    <span class="fa fa-flag" style="font-size: x-large"></span>
+                </div>
+                <div style="width: 95%; border-right: 3px dotted lightgray">
+                    @for (pony of raceModel.poniesWithPosition; track pony.id) {
+                        <div
+                        class="pony-wrapper"
+                        [class.selected]="pony.id === raceModel.betPonyId"
+                        [style.marginLeft.%]="pony.position - 5"
+                        style="transition: margin-left 1s linear"
+                        >
+                            <pr-pony [ponyModel]="pony" [isRunning]="true" />
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    
+
+    Let’s add a CSS rule in live.css:
+
+        .selected {
+            border-left: 3px solid green;
+        }
+    
+    And We’re all set 🤩!
+
+
+
+5️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
