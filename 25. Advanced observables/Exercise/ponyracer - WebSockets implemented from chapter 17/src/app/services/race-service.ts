@@ -37,4 +37,8 @@ export class RaceService {
       .pipe(takeWhile(liveRace => liveRace.status !== 'FINISHED', /* include last value */ true));
   }
 
+  boost(raceId: number, ponyId: number): Observable<void> {
+    return this.http.post<void>(`${environment.baseUrl}/api/races/${raceId}/boosts`, { ponyId });
+  }
+
 }

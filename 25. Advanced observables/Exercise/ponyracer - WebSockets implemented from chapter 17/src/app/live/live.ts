@@ -2,7 +2,7 @@ import { Component, computed, inject, input, numberAttribute } from '@angular/co
 import { RaceService } from '../services/race-service';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RaceModel } from '../models/race-model';
-import { catchError, map, of, startWith } from 'rxjs';
+import { catchError, EMPTY, filter, map, of, scan, startWith, Subject, switchMap, Timestamp, timestamp } from 'rxjs';
 import { Pony } from "../pony/pony";
 import { PonyWithPositionModel } from '../models/pony-model';
 import { PrettyDatePipe } from "../shared/pipes/pretty-date-pipe";
@@ -51,11 +51,41 @@ export class Live {
     return this.liveRace.hasValue() ? this.liveRace.value() : { ...race, poniesWithPosition: [] };
   });
 
-  protected readonly winners = computed<PonyWithPositionModel[] | undefined>(() =>
-    this.raceModel()?.poniesWithPosition.filter(p => p.position >= 100)
-  );
+  // protected readonly winners = computed<PonyWithPositionModel[] | undefined>(() =>
+  //   this.raceModel()?.poniesWithPosition.filter(p => p.position >= 100)
+  // );
+  protected readonly winners = computed(() =>
+    this.raceModel()?.poniesWithPosition.filter(pony => pony.position >= 100));
 
-  protected readonly betWon = computed<boolean | undefined>(() =>
-    this.winners()?.some(p => p.id === this.raceModel()?.betPonyId)
-  );
+  // protected readonly betWon = computed<boolean | undefined>(() =>
+  //   this.winners()?.some(p => p.id === this.raceModel()?.betPonyId)
+  // );
+  protected readonly betWon = computed(() =>
+    this.winners()?.some(pony => pony.id === this.raceModel()?.betPonyId));
+
+  protected readonly clickSubject = new Subject<PonyWithPositionModel>();
+
+  constructor() {
+    this.clickSubject
+      .pipe(
+        timestamp(),
+        scan((acc: Array<Timestamp<PonyWithPositionModel>>, click) => {
+          if (acc.length === 5) {
+            return [click];
+          } else {
+            return [...acc, click]
+            .filter(c => c.value.id === click.value.id && c.timestamp > click.timestamp - 1000);
+          }
+        }, []),
+        filter(clicks => clicks.length === 5),
+        map(clicks => clicks[0].value.id),
+        switchMap(ponyId => this.raceService.boost(this.raceModel()!.id, ponyId).pipe(catchError(() => EMPTY)))
+      )
+      .subscribe();
+  }
+
+  protected onSelection(pony: PonyWithPositionModel): void {
+    this.clickSubject.next(pony);
+  }
+
 }

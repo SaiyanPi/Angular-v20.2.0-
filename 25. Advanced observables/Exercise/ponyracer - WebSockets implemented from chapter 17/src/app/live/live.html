@@ -52,7 +52,7 @@
               [style.marginLeft.%]="pony.position - 5"
               style="transition: margin-left 1s linear"
             >
-              <pr-pony [ponyModel]="pony" [isRunning]="true" />
+              <pr-pony [ponyModel]="pony" [isRunning]="true" [isBoosted]="pony.boosted" (ponySelected)="onSelection(pony)"/>
             </div>
           }
         </div>

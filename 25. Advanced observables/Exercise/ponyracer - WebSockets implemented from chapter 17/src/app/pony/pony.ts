@@ -17,13 +17,11 @@ export class Pony {
   }
 
   readonly isRunning = input(false);
-  // protected readonly ponyImageUrl = computed(() => {
-  //   return this.isRunning()
-  //   ? `images/pony-${this.ponyModel().color.toLowerCase()}-running.gif`
-  //   : `images/pony-${this.ponyModel().color.toLowerCase()}.gif`
-  // })
-   protected readonly ponyImageUrl = computed(
-    () => `images/pony-${this.ponyModel().color.toLowerCase()}${this.isRunning() ? '-running' : ''}.gif`
+  readonly isBoosted = input(false);
+
+  protected readonly ponyImageUrl = computed(
+    () => `images/pony-${this.ponyModel().color.toLowerCase()}${this.isBoosted() ? '-rainbow' : this.isRunning() ? '-running' : ''}.gif`
   );
+
 
 }

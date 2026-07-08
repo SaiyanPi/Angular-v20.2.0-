@@ -1,0 +1,142 @@
+⚠️we will continue working in the ponyracer from previous instruction (Observable tips and tricks)
+
+
+----------------------------------- Boost a pony --------------------------------------------------
+
+- WE CAN MAKE A PONY MUCH FASTER BY CLICKING ON IT: A GOOD EXCUSE TO LEARN SOME ADVANCED RXJS.
+
+- Now that we have a race, we just lack the bit of fun of the app: the possibility to boost your
+    favorite pony by clicking repeatedly on it!
+    When a pony is "boosted", its image changes to have a beautiful rainbow tail and its speed
+    increases in the race for a brief moment. So much fun!
+
+
+1️⃣ Let’s begin by adding an input isBoosted to our Pony. This input is of type boolean and false
+    by default. It should be used to compute the image URL. When isBoosted is true, the URL should
+    have a suffix -rainbow, like images/pony-blue-rainbow.gif.
+    Don’t forget to copy the assets from the resources into public/images.
+    live.ts:
+
+        readonly isBoosted = input(false);
+        protected readonly ponyImageUrl = computed(
+            () => `images/pony-${this.ponyModel().color.toLowerCase()}${this.isBoosted() ? 
+            '-rainbow' : this.isRunning() ? '-running' : ''}.gif`
+        );
+
+
+2️⃣ Modify the template of Live to bind this input to the boosted attribute of the pony. Of course,
+    you should update PonyWithPositionModel to have an boosted field.
+    pony-model.ts:
+
+        export interface PonyWithPositionModel extends PonyModel {
+            position: number;
+            boosted: boolean; 👈
+        }
+    
+
+    live.html:
+
+        @case ('RUNNING') {
+            // omitted
+            <pr-pony [ponyModel]="pony" [isRunning]="true" 👉 [isBoosted]="pony.boosted" />         
+        }
+
+
+3️⃣ Let’s code a method boost in our RaceService. The method will receive a raceId and a ponyId,
+    and will call the backend API (https://ponyracer.ninja-squad.com/apidoc#resources-boost)
+    race-service.ts:
+
+        boost(raceId: number, ponyId: number): Observable<void> {
+            return this.http.post<void>(`${environment.baseUrl}/api/races/${raceId}/boosts`, { ponyId });
+        }
+
+
+4️⃣ Now we need to trigger this boost. Here is the broad picture: we want to boost a pony if a
+    player has clicked at least 5 times over a second on a pony. RxJS and a few of its operators
+    will help us to achieve that.
+
+    🔥We need to start listening to the ponySelected event emitted by our ponies when we click on
+    them. Add a method onSelection in our Live. This method will receive the pony clicked and
+    should be called when a ponySelected event arises during a running race.
+
+    🔥Create a field in the component called clickSubject, of type Subject<PonyWithPositionModel>,
+    and initialize it with a new Subject. The onSelection method should simply emit the received
+    pony with clickSubject.
+
+    live.html:
+
+        @case ('RUNNING') {
+            // omitted
+            <pr-pony [ponyModel]="pony" [isRunning]="true" [isBoosted]="pony.boosted" 
+            👉(ponySelected)="onSelection(pony)"/>     
+        }
+
+    live.ts:
+
+        protected readonly clickSubject = new Subject<PonyWithPositionModel>();
+        protected onSelection(pony: PonyWithPositionModel): void {
+            this.clickSubject.next(pony);
+        }
+
+    🔥🔥We now have a stream of clicks, that we need to transform to only call the boost method
+    of the RaceService if we have at least 5 clicks on the same pony in less than a second.
+
+
+
+5️⃣ We now have a stream of clicks, that we need to transform to only call the boost method of the
+    RaceService if we have at least 5 clicks on the same pony in less than a second.
+
+    🔥A simple way to do that is to keep the recent clicks in memory. 🔥🔥RxJS offers the timestamp
+    operator, which wraps each click with the instant when it occurred. That gives us enough
+    information to compute a sliding window of recent clicks.
+
+    🔥🔥We can then use scan to build an array containing only the recent clicks for the current
+    pony. For each new click:
+        👉 if we already have 5 clicks stored, we reset the accumulator with the latest click;
+        👉otherwise, we add the new click and keep only the clicks on the same pony, emitted less
+        than one second ago
+    
+    This means that mixed clicks on several ponies do not count together: 2 clicks on pony1, then
+    2 on pony2, then 3 on pony1 will still only count as 3 recent clicks on pony1.
+
+    🔥🔥Once the accumulator reaches 5 elements, we know we have 5 clicks on the same pony within
+    the last second. We can then:
+        👉 filter to keep only the arrays of length 5;
+        👉 map to extract the pony ID from the first stored click;
+        👉 switchMap to call the boost method.
+    
+    As we don’t need the value returned by boost, we can simply end with .subscribe();.
+
+    The call to boost can fail, though. If we don’t handle this error, the whole stream stops
+    listening forever. Add a catchError operator after the boost call and return EMPTY.
+
+        this.clickSubject
+        .pipe(
+            timestamp(),
+            scan((acc: Array<Timestamp<PonyWithPositionModel>>, click) => {
+            if (acc.length === 5) {
+                return [click];
+            } else {
+                return [...acc, click]
+                .filter(c => c.value.id === click.value.id && c.timestamp > click.timestamp - 1000);
+            }
+            }, []),
+            filter(clicks => clicks.length === 5),
+            map(clicks => clicks[0].value.id),
+            switchMap(ponyId => this.raceService.boost(this.raceModel()!.id, ponyId).pipe(catchError(() => EMPTY)))
+        )
+        .subscribe();
+    
+    ✅When that’s done you can try to click 5 times quickly on a pony during a race: that should
+    trigger a request to our backend. The next poniesWithPosition received will contain the boosted
+    pony with a true value in its boosted attribute, and thus we should have a pony with a beautiful
+    rainbow!
+
+
+
+6️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
+
+    🔥As usual, I think you’ll find the tests provided for this exercise interesting: they leverage
+    fakeAsync a lot to emulate a fake time, and allow us to test various scenarios without too much
+    hassle and without slowing the tests (we don’t have to physically wait for several seconds as
+    we emulate a fake time).

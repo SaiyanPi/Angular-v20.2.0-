@@ -93,6 +93,12 @@
             this.winners()?.some(p => p.id === this.raceModel()?.betPonyId)
         );
 
+    or
+
+        protected readonly winners = computed(() => 
+            this.raceModel()?.poniesWithPosition.filter(pony => pony.position >= 100));
+        protected readonly betWon = computed(() => 
+            this.winners()?.some(pony => pony.id === this.raceModel()?.betPonyId));
 
 
 4️⃣ Then add in the template:
