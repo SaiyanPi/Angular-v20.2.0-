@@ -1,0 +1,92 @@
+⚠️we will continue working in the ponyracer from previous instruction (Boost a pony).
+
+------------------------------------ Reactive user score -------------------------------------------
+
+- OUR USER SCORE SHOULD UPDATE IN REAL TIME. ANOTHER USE-CASE FOR OBSERVABLES AND SIGNALS!
+
+- We now have a nice WebSocket service, and we are going to use it again to have real time updates
+    on the user’s score.
+
+- ✅Indeed, the score displayed on the right of the menu is not really accurate. Every time we bet
+    on a pony, we lose a bit of money, and every time we win a bet we earn some.
+    It would be really neat if the "money" counter was updated in real time
+
+
+1️⃣ To do so, the backend offers an API to receive the player data
+    (https://ponyracer.ninja-squad.com/apidoc#_getting_score_updates), on the WebSocket channel
+    /player/{myUserId}. Create a new method in UserService called scoreUpdates, that accepts a
+    userId, uses our WsService to connect to this API and returns the Observable created.
+    user-service.ts:
+
+        scoreUpdates(userId: number): Observable<UserModel> {
+            return this.wsService.connect<UserModel>(`/player/${userId}`);
+        }
+
+
+
+2️⃣ Now, in our Menu, let’s update the initialization logic.
+    Until now, we were using currentUser directly. 🔥Now we need to chain this with a call to our
+    new scoreUpdates method, to subscribe to the score updates. ⚠️Note that the object emitted when
+    the score changes is a UserModel, like the value stored in the currentUser signal when a user
+    logs in.
+    🧠To do so, initialize the user field with rxResource. 🔥🔥The params function should return
+    this.userService.currentUser(). 🔥🔥The stream function then receives the current user in params.
+    🔥🔥If we have a user, return the Observable created by the call to scoreUpdates(user.id). If we
+    don’t have a user, we don’t want to call the API, so we’ll return of(undefined).
+    menu.ts:
+
+        protected readonly user = rxResource({
+            params: () => this.userService.currentUser(),
+            stream: ({ params: user }) => {
+                return user ? this.userService.scoreUpdates(user.id) : of(undefined)
+            }
+        })
+    
+    Looks good, but the user will now only be received when the score of the user changes. We also
+    want to receive the user as it is now.
+
+        time                       1sec                           2sec
+    ------U--------------------------------------------------------------|- currentUser
+
+    rxResource({ params: () => currentUser(), 
+    stream: ({ params: user }) => user ? /* scoreUpdates */ : of(undefined) })
+
+    -------------------------------U1--------------------U2--------------|- scoreUpdates
+
+
+    What we want is an Observable that looks like:
+
+        time                       1sec                           2sec
+    ------U--------------------------------------------------------------|- currentUser
+
+    rxResource({ params: () => currentUser(), stream: ({ params: user }) => user ?
+        /* scoreUpdates */.pipe(startWith(user)) :
+        of(undefined)
+    })
+
+    ------U------------------------U1--------------------U2--------------|- scoreUpdates
+
+
+    We need to start the score updates observable with the current user: that’s where the RxJS
+    startWith operator comes handy.
+    And Last thing: ⚠️⚠️the score updates can potentially throw an error (the network connection
+    may break), and if that happens, the whole observable will stop! That means the user would never
+    change again if a score update fails. To fix this, you need to add a catchError operator that
+    returns an empty observable if an error arises:
+
+        protected readonly user = rxResource({
+            params: () => this.userService.currentUser(),
+            stream: ({ params: user }) => {
+                return user ? this.userService.scoreUpdates(user.id)
+                .pipe(startWith(user), catchError(() => EMPTY)) :
+                of(undefined)
+            }
+        })
+        
+
+
+3️⃣ Previously user was a signal. Now After the step 2️⃣, it is a rxResource so update the template
+    accordingly with user.value().
+
+
+4️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.

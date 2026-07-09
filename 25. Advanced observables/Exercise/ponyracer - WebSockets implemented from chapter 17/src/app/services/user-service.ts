@@ -3,6 +3,7 @@ import { UserModel } from '../models/user-model';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment.development';
+import { WsService } from './ws-service';
 
 const USER_LOCAL_STORAGE_KEY = 'rememberMe';
 
@@ -14,6 +15,8 @@ export class UserService {
   private readonly http = inject(HttpClient);
   private readonly user = signal<UserModel | undefined>(this.retrieveUser());
   readonly currentUser = this.user.asReadonly();
+
+  public readonly wsService = inject(WsService);
 
   constructor() {
     effect(() => {
@@ -51,4 +54,9 @@ export class UserService {
     }
     return undefined;
   }
+
+  scoreUpdates(userId: number): Observable<UserModel> {
+    return this.wsService.connect<UserModel>(`/player/${userId}`);
+  }
 }
+

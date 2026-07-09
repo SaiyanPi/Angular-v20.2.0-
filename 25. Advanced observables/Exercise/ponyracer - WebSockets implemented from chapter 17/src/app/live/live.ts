@@ -73,8 +73,7 @@ export class Live {
           if (acc.length === 5) {
             return [click];
           } else {
-            return [...acc, click]
-            .filter(c => c.value.id === click.value.id && c.timestamp > click.timestamp - 1000);
+            return [...acc, click].filter(c => c.value.id === click.value.id && c.timestamp > click.timestamp - 1000);
           }
         }, []),
         filter(clicks => clicks.length === 5),
