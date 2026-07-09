@@ -78,7 +78,8 @@ export class Live {
         }, []),
         filter(clicks => clicks.length === 5),
         map(clicks => clicks[0].value.id),
-        switchMap(ponyId => this.raceService.boost(this.raceModel()!.id, ponyId).pipe(catchError(() => EMPTY)))
+        switchMap(ponyId =>
+          this.raceService.boost(this.raceModel()!.id, ponyId).pipe(catchError(() => EMPTY)))
       )
       .subscribe();
   }

@@ -376,8 +376,10 @@ describe('Live', () => {
 
       const tester = new LiveTester(await RouterTestingHarness.create('/races/12/live'));
 
-      await vi.advanceTimersByTimeAsync(5);
-
+      // await vi.advanceTimersByTimeAsync(5);
+      await vi.advanceTimersByTimeAsync(50);
+      await tester.fixture.whenStable();
+      tester.fixture.detectChanges();
 
       await expect.element(tester.ponies).toHaveLength(1);
       await expect.element(tester.firstPonyFigure).toBeVisible();
@@ -431,7 +433,10 @@ describe('Live', () => {
 
       const tester = new LiveTester(await RouterTestingHarness.create('/races/12/live'));
 
-      await vi.advanceTimersByTimeAsync(5);
+      // await vi.advanceTimersByTimeAsync(5);
+      await vi.advanceTimersByTimeAsync(50);
+      await tester.fixture.whenStable();
+      tester.fixture.detectChanges();
 
       await expect.element(tester.ponies).toHaveLength(2);
       await expect.element(tester.firstPonyFigure).toBeVisible();
@@ -472,7 +477,10 @@ describe('Live', () => {
 
       const tester = new LiveTester(await RouterTestingHarness.create('/races/12/live'));
 
-      await vi.advanceTimersByTimeAsync(5);
+      // await vi.advanceTimersByTimeAsync(5);
+      await vi.advanceTimersByTimeAsync(50);
+      await tester.fixture.whenStable();
+      tester.fixture.detectChanges();
 
       await expect.element(tester.ponies).toHaveLength(1);
       await expect.element(tester.firstPonyFigure).toBeVisible();
@@ -523,7 +531,10 @@ describe('Live', () => {
 
       const tester = new LiveTester(await RouterTestingHarness.create('/races/12/live'));
 
-      await vi.advanceTimersByTimeAsync(5);
+      // await vi.advanceTimersByTimeAsync(5);
+      await vi.advanceTimersByTimeAsync(50);
+      await tester.fixture.whenStable();
+      tester.fixture.detectChanges();
 
       await expect.element(tester.ponies).toHaveLength(1);
       await expect.element(tester.firstPonyFigure).toBeVisible();
