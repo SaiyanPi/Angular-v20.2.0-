@@ -1,0 +1,12 @@
+@if (races.isLoading()) {
+  <div role="status">Loading...</div>
+} @else if (races.hasValue()) {
+  @for (race of races.value(); track race.id) {
+    <div>
+      <pr-race [raceModel]="race" />
+      <a [routerLink]="['/races', race.id]" class="btn btn-primary mb-2">Bet on {{ race.name }}</a>
+    </div>
+  }
+} @else if (races.error()) {
+  <div class="alert alert-danger" role="alert">An error occurred while loading races.</div>
+}

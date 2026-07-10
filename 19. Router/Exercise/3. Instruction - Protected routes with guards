@@ -1,6 +1,126 @@
+⚠️ ponyracer for this exercise is copied from chapter 25: Advanced Observables named
+ponyracer-WebSockets implemented from chapter 17. 
+
+⚠️ we will rename the project into ponyracer-Routes guard implemented
+
+
 ------------------------------ Protected routes with guards ----------------------------------------
 
 - LET'S USE GUARDS TO PROTECT PARTS OF OUR APP.
 
 - Instruction: Angular Prerequisite "Router" chapter (Advanced routing section)
 
+1️⃣ 🔥All the pages related to races should only be accessible if the user is logged in. ⚠️There is
+    no link to any of these pages if the user is not logged in, but that doesn’t prevent anyone to
+    enter their URL in the location bar. 💡We would like to redirect to the home page (which has
+    links to the login and register pages) if a user tries to access any of the routes under races.
+
+    That’s what a canActivate guard is for. Generate a loggedInGuard functional guard using:
+
+        ng generate guard logged-in --guardType=CanActivate
+
+
+2️⃣ The guard must allow the navigation if the user is logged in. If the user is not logged in, it must
+    prevent the navigation, and navigate to the home page. To redirect the user, you can inject the
+    Router service in your guard (using inject), and return the new URL by building it using the
+    parseUrl method. To check if the user is logged in, use the currentUser from the user service
+    and check if it is not undefined.
+
+        export const loggedInGuard: CanActivateFn = () => {
+            const router = inject(Router);
+            const userService = inject(UserService);
+
+            return userService.currentUser() !== undefined || router.parseUrl('/');
+        };
+
+
+3️⃣ Now let's apply this loggedInGuard tho the routes related to the races.
+
+        {
+            path: 'races',
+            canActivate: [loggedInGuard],
+            children: [
+                { path: '', component: Races },
+                { path: ':raceId', component: Bet },
+                { path: ':raceId/live', component: Live },
+            ]
+        }
+
+
+4️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.
+
+
+--------------------------------------------------------------------------------------------------
+
+
+Explanation: specifically let's understand the expression:
+
+    return userService.currentUser() !== undefined || router.parseUrl('/');
+
+
+👉 userService.currentUser() !== undefined
+
+    First we should know that userService.currentUser() returns a signal value of type
+    UserModel | undefined
+    So, if we do:
+
+        return userService.currentUser() || router.parseUrl('/');
+    
+    ⚠️ we will have an error because userService.currentUser() returns a signal value of type
+    UserModel | undefined. It must return a boolean.
+    Therefore 
+        
+        userService.currentUser() !== undefined
+
+    is required because it produces a boolean.
+
+    ✅If a user of UserModel exists then it produces true 
+
+        userService.currentUser()
+        // { id: 1, login: 'john' }
+
+        userService.currentUser() !== undefined
+        // true
+
+    ✅ if undefined then false
+
+        userService.currentUser()
+        // undefined
+
+        userService.currentUser() !== undefined
+        // false
+
+
+👉 return userService.currentUser() || router.parseUrl('/');
+
+    ✅ The || operator means: "Return the first truthy value. If the first value is falsy, evaluate
+        and return the second value."
+
+    ✅ Case 1: User exists
+        
+            userService.currentUser() !== undefined
+            // true
+            return true || router.parseUrl('/');
+
+        Since the left side is already true, JavaScript does not even evaluate the right side.
+        Result:
+
+            return true;
+    
+    ✅ Case 2: No user
+            
+            userService.currentUser() !== undefined
+            // false
+            return false || router.parseUrl('/');
+
+        Now JavaScript must evaluate the right side:
+
+            router.parseUrl('/');
+
+        This creates a UrlTree representing the / route.
+        Result:
+
+            return UrlTree('/');
+
+        🔥Angular interprets a returned UrlTree as: "Cancel the current navigation and redirect to this
+        URL." So the user is redirected to /.
