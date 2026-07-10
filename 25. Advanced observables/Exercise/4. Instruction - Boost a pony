@@ -140,3 +140,181 @@
     fakeAsync a lot to emulate a fake time, and allow us to test various scenarios without too much
     hassle and without slowing the tests (we don’t have to physically wait for several seconds as
     we emulate a fake time).
+
+
+---------------------------------------------------------------------------------------------------
+
+⚠️⚠️ Boost test error in live.spec.ts:
+
+        it('should buffer clicks over a second and call the boost method', async () => {
+            // omitted
+            const tester = new LiveTester(await RouterTestingHarness.create('/races/12/live'));
+            await vi.advanceTimersByTimeAsync(5); 👈 
+
+            await expect.element(tester.ponies).toHaveLength(1);
+            // omitted
+        });
+
+        it('should filter click buffer that are not at least 5', async () => {
+            // omitted
+            const tester = new LiveTester(await RouterTestingHarness.create('/races/12/live'));
+            await vi.advanceTimersByTimeAsync(5); 👈
+
+            await expect.element(tester.ponies).toHaveLength(1);
+            // omitted
+        });
+        .
+        .
+        .
+    
+    With the above code,test fails because:
+
+    👉 RaceService.get() was mocked using: of(race).pipe(delay(5))
+
+            function mockRaceResource(race: RaceModel) {
+                return () => rxResource({ stream: () => of(race).pipe(delay(5)) });
+            }
+
+        🔥so the race data was loaded asynchronously.
+    
+
+    👉 The test only waited for:
+
+            await vi.advanceTimersByTimeAsync(5);
+        
+        🔥 "advance/Move the fake clock from 0 ms all the way to 5ms."
+        🔥 So This only triggered the RxJS delay(5) timer.
+    
+
+    👉 In Angular 22, after the timer completes:
+        -> rxResource updates its value.
+        -> Signals/computed values are scheduled.
+        -> Angular still needs another change detection cycle to update the DOM.
+    
+    👉 The test checked the DOM too early:
+
+            await expect.element(tester.ponies).toHaveLength(1);
+
+        ⚠️At that moment, the pony hadn't been rendered yet, so the expectation timed out.
+        ❌Because no pony was rendered:
+            no click occurred,
+            onSelection() never ran,
+            clickSubject never emitted,
+            boost() was never called.
+
+
+✅ Why this fixed it
+
+        it('should buffer clicks over a second and call the boost method', async () => {
+            // omitted
+            const tester = new LiveTester(await RouterTestingHarness.create('/races/12/live'));
+
+            await vi.advanceTimersByTimeAsync(50); 👈
+            await tester.fixture.whenStable(); 👈
+            tester.fixture.detectChanges(); 👈
+
+            await expect.element(tester.ponies).toHaveLength(1);
+            // omitted
+        });
+    
+    👉 advanceTimersByTimeAsync(50)
+        Gives enough time for the mocked delay(5) timer to complete.
+
+    👉 whenStable()
+        Waits for Angular to finish all pending asynchronous work (resources, signals, microtasks,
+        etc.).
+
+    👉 detectChanges()
+        Forces Angular to update the template with the latest signal/resource values.
+    
+    👉 After these three steps:
+        ✅ rxResource has finished loading.
+        ✅ raceModel() has been recomputed.
+        ✅ The pony is rendered.
+        ✅ The click reaches the component.
+        ✅ The boost pipeline executes.
+        ✅ The test passes.
+
+
+-----------------------------------------------------------------------------------------------
+
+😵‍💫Confusion with the await vi.advanceTimersByTimeAsync(50);
+
+    👉 It advances the fake clock to a from 0 to all the way to 50ms.
+    👉 For clarity assume the followind code:
+
+        (👇this represents the starting line of the test file mockRaceResource of live.spec.ts)
+        of('Hello').pipe(
+            delay(5)
+        ).subscribe(() => {
+            console.log('Received');
+        });
+
+        await vi.advanceTimersByTimeAsync(10);  // test
+    
+    1) of('Hello') 
+        -> Observable is created
+
+    2) .pipe(delay(5))
+        -> RxJS says "Before I emit 'Hello', wait 5 milliseconds."
+    
+    3) .subscribe(...)
+        -> Observable starts running.
+        -> delay(5) timer is started.
+        -> nothing has been emitted yet.
+    
+    4) await vi.advanceTimersByTimeAsync(10);
+        -> Now test executes
+        -> This says "Move the fake clock from 0 ms all the way to 10 ms."
+        -> 🔥Notice we're not instantly jumping to 10 ms. Vitest moves through time and checks
+            every timer along the way.
+        -> 🔥While moving from 0 ms → 10 ms, Vitest reaches 5 ms. It notices:
+            delay(5) has expired.
+            So it immediately executes it. That causes RxJS to emit: "Hello"
+    
+    5) The subscriber receives the value.
+
+            .subscribe(() => {
+                console.log('Received');
+            });
+
+        -> Now this runs. and "Received" is logged
+    
+    6) 🔥Vitest isn't finished yet.
+        -> Even though the delay(5) timer has fired, you asked it to advance to 10 ms.
+            So it continues moving:
+
+                6 ms
+                7 ms
+                8 ms
+                9 ms
+                10 ms
+
+        -> 🔥It looks for more timers. There aren't any. So it stops.
+        -> Final state:
+                Current fake time: 10 ms
+                No pending timers.
+    
+    
+    🧠 Timeline:
+
+            0 ms
+            │
+            ├── delay(5) starts waiting
+            │
+            ├── advanceTimersByTimeAsync(10)
+            │
+            ├── reaches 5 ms
+            │      │
+            │      ├── delay timer expires
+            │      ├── Observable emits "Hello"
+            │      └── subscribe callback runs
+            │
+            ├── continues...
+            │
+            ├── 6 ms
+            ├── 7 ms
+            ├── 8 ms
+            ├── 9 ms
+            │
+            └── reaches 10 ms
