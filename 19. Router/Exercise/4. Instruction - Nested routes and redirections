@@ -1,5 +1,84 @@
+⚠️ We will continue in the ponyracer-routes guard implemented from the previous exercise.
+
+
 ------------------------------ Nested routes and redirections ----------------------------------------
+
 
 - A REAL APPLICATION OFTEN HAS NESTED ROUTES AND REDIRECTIONS.
 
 - Instruction: Angular Prerequisite "Router" chapter (Advanced routing section)
+
+- 🤩Currently, the races page only displays the pending races. We would like to show the finished
+    races, too, in a separate tab.
+
+1️⃣ Create two components pending-races and finished-races in the races directory:
+
+        ng generate component races/pending-races --skip-selector
+        ng generate component races/finished-races --skip-selector
+
+    👉 The pending-races component should display what the races component currently shows.
+    👉 The finished-races component should display all the finished races, the same way, but without
+    the links to bet on the races.
+    Both templates should also keep the same loading and error handling as the previous races
+    list: display <div role="status">Loading.</div> while the resource is loading, and display
+    <div class="alert alert-danger" role="alert">An error occurred while loading races.</div>
+    if the loading fails.
+
+
+
+2️⃣ To load the finished races, change the signature of the RaceService.list() method to
+    RaceService.list(status: 'PENDING' | 'RUNNING' | 'FINISHED').
+    race-service.ts:
+
+        list(status: 'PENDING' | 'RUNNING' | 'FINISHED'): ResourceRef<Array<RaceModel> | undefined> {
+            return httpResource<Array<RaceModel>>(() => ({
+                url: `${environment.baseUrl}/api/races`,
+                params: { status }
+            }));
+        }
+
+    pending-races.ts and finished-races.ts:
+
+        protected readonly races = inject(RaceService).list('PENDING');
+
+
+
+2️⃣ The races component should display tabs (see the Bootstrap documentation to know how to
+    generate tabs), and should use a nested router-outlet directive to display the active tab
+    content.
+    Regarding the routes:
+    👉 /races should redirect to /races/pending;
+    👉 /races/pending should show the pending races (and make the first tab, Pending races, active);
+    👉 /races/finished should show the finished races (and make the second tab, Finished races,
+        active).
+    app.routes.ts:
+
+        {
+            path: 'races',
+            canActivate: [loggedInGuard],
+            children: [
+            { path: '', component: Races,
+                children: [
+                { path: '', pathMatch: 'full', redirectTo: 'pending' },
+                { path: 'pending', component: PendingRaces },
+                { path: 'finished', component: FinishedRaces }
+                ]
+            },
+            { path: ':raceId', component: Bet },
+            { path: ':raceId/live', component: Live }
+            ]
+        }
+    
+    
+    races.html:
+
+        <h1>Races</h1>
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link" routerLinkActive="active" routerLink="pending">Pending</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" routerLinkActive="active" routerLink="finished">Finished</a>
+            </li>
+        </ul>
+        <router-outlet />

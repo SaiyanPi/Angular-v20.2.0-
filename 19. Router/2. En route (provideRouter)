@@ -27,7 +27,7 @@ framework.
             providers: [provideRouter(routes)]
         }).catch(err => console.error(err));
     
-    🔥🔥 Registering router configuration inside the rpoviders array of bootstrapApplication in main.ts
+    🔥🔥 Registering router configuration inside the poviders array of bootstrapApplication in main.ts
     file works but it is messy and not scalable. ✅So the better place for registering is inside the
     providers array of app.config.ts file. 
 

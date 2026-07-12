@@ -12,10 +12,10 @@ export class RaceService {
   private readonly http = inject(HttpClient);
   private readonly wsService = inject(WsService);
 
-  list(): ResourceRef<Array<RaceModel> | undefined> {
+  list(status: 'PENDING' | 'RUNNING' | 'FINISHED'): ResourceRef<Array<RaceModel> | undefined> {
     return httpResource<Array<RaceModel>>(() => ({
       url: `${environment.baseUrl}/api/races`,
-      params: { status: 'PENDING' }
+      params: { status }
     }));
   }
 

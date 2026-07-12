@@ -1,15 +1,13 @@
-import { Component, inject } from '@angular/core';
-import { Race } from '../race/race';
-import { RaceService } from '../services/race-service';
-import { RouterLink } from "@angular/router";
+import { Component } from '@angular/core';
+import { RouterLink, RouterOutlet, RouterLinkActive } from "@angular/router";
 
 @Component({
   selector: 'pr-races',
-  imports: [Race, RouterLink],
+  imports: [RouterLink, RouterOutlet, RouterLinkActive],
   templateUrl: './races.html',
   styleUrl: './races.css'
 })
 export class Races {
-  // Since RhttpResource() returns a resource, the component no longer needs toSignal().
-  protected readonly races = inject(RaceService).list();
+  // // Since RhttpResource() returns a resource, the component no longer needs toSignal().
+  // protected readonly races = inject(RaceService).list('PENDING');
 }

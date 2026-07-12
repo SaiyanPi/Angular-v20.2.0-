@@ -1,4 +1,4 @@
-<!-- @if (races.isLoading()) {
+@if (races.isLoading()) {
   <div role="status">Loading...</div>
 } @else if (races.hasValue()) {
   @for (race of races.value(); track race.id) {
@@ -7,21 +7,6 @@
       <a [routerLink]="['/races', race.id]" class="btn btn-primary mb-2">Bet on {{ race.name }}</a>
     </div>
   }
-
 } @else if (races.error()) {
   <div class="alert alert-danger" role="alert">An error occurred while loading races.</div>
-} -->
-
-
-<h1>Races</h1>
-
-<ul class="nav nav-tabs mb-4">
-  <li class="nav-item">
-    <a class="nav-link" routerLinkActive="active" routerLink="pending">Pending</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" routerLinkActive="active" routerLink="finished">Finished</a>
-  </li>
-</ul>
-
-<router-outlet />
+}
