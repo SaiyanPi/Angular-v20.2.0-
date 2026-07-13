@@ -1,0 +1,196 @@
+⚠️ we will continue working on the ponyracer-routes guard implemented
+
+---------------------------------------- Lazy loading ----------------------------------------------
+
+- LAZY-LOAD RACE AND USER ROUTES, INSPECT THE GENERATED BUNDLES, AND ENABLE PRELOADING.
+
+- Instruction: Angular Prerequisite "Router" chapter (Advanced routing section)
+
+1️⃣ Our application has grown in size quite a bit since the beginning. You can have an idea of the
+    size of the app by running:
+
+        ng build --named-chunks
+    
+    👉 ng build builds the app with the production configuration, pre-compiles the templates and 
+    then minifies the result. It also adds a unique SHA1 to the files: it’s a feature known as
+    "cache-busting", as it guarantees that your users will never have a stale resource when you
+    redeploy your application. It also enables special optimizations to have a better tree-shaking,
+    resulting in smaller files. Tree-shaking and dead-code elimination are the features that remove
+    the unneeded portions of the code after a static analysis.
+
+    👉 --named-chunks will give nice names to the files when you have lazy-loaded routes
+    (races.routes-xxx.js instead of chunk-xxx.js).
+
+    You can explore the dist/ponyracer/browser directory. It will contain all the necessary assets
+    for the application. The ones that interest us the most are the main JS files, that the
+    ng build command lists:
+
+        Initial chunk files | Names         |  Raw size | Estimated transfer size
+        main-PCLFI7CR.js    | main          | 384.31 kB |               102.76 kB
+        styles-5G46XTEI.css | styles        | 310.29 kB |                39.56 kB
+
+                            | Initial total | 694.60 kB |               142.32 kB
+    
+    main-xxxx.js contains the app logic and the 3rd party libraries (like Angular, RxJS, date-fns…​).
+    The styles file contains the CSS needed by the application.
+
+    You may not have exactly the same results, but that should be in this ball-park. It means that
+    when users load our application for the first time, they get 694.60 kB of JavaScript, which is
+    quite a bit to download on a poor mobile connection.
+
+    To be more accurate, we should measure the file sizes when they are gzipped. Browsers won’t
+    mind if they receive a gzipped version of the file: they are able to unzip it and go on. And
+    it saves us a lot of bandwidth (and loading time), as you can see in the right column of the
+    build result (Estimated Transfer Size). 🔥With compression enabled, we go from 694.60 kB to
+    142.32 kB! That’s good, but can we do even better 🤔?
+
+    ✅🔥Yes we can. Because right now, these files contain the whole application, whereas a user
+    probably doesn’t need every single component, pipe, service and 3rd party library for the first
+    page!
+
+    🔥🔥We can split the application in chunks, and lazy-load those chunks when they’re really
+    needed.
+
+
+
+2️⃣ OK let’s go! The biggest win is probably to use lazy-loading for all the race related business,
+    and only load them when the user navigates to a URL starting with /races.
+
+    Now we need to make these routes a part of our application. To do so, we need to:
+    👉 create a file named races.routes.ts in the races directory
+    👉 extract all the children routes of /races in app.routes.ts, and add them in races.routes.ts,
+    export them as racesRoutes
+    👉 in app.routes.ts, replace the children key with a loadChildren key The value of loadChildren
+    should be the function () => import('./races/races.routes').then(m => m.racesRoutes).
+
+    races.routes.ts:
+
+     👉 export const racesRoutes: Routes = [
+            { path: '', component: Races,
+                children: [
+                { path: '', pathMatch: 'full', redirectTo: 'pending' },
+                { path: 'pending', component: PendingRaces },
+                { path: 'finished', component: FinishedRaces }
+                ]
+            },
+            { path: ':raceId', component: Bet },
+            { path: ':raceId/live', component: Live }
+        ];
+    
+
+    app.routes.ts:
+
+        export const routes: Routes = [
+            { path: '', component: Home },
+            {
+                path: 'races',
+                canActivate: [loggedInGuard],
+             👉 loadChildren: () => import('./races/races.routes').then(m => m.racesRoutes)
+            },
+            { path: 'login', component: Login },
+            { path: 'register', component: Register }
+        ];
+
+
+    🔥Now, whenever a user will click on a link starting with /races, a JavaScript file containing all
+    the races related components/pipes/services will be fetched.
+
+    If you rebuild the application (ng build --named-chunks), you should now have a new file named
+    like races.routes-xxx.js: this is the chunk extracted by the CLI. Let’s have a look at the sizes:
+
+        Initial chunk files      | Names         |  Raw size | Estimated transfer size
+        styles-5G46XTEI.css      | styles        | 310.29 kB |                39.56 kB
+        chunk-NLFYUZV3.js        | -             | 290.44 kB |                80.59 kB
+        main-IKLAGFUW.js         | main          |  72.64 kB |                18.13 kB
+
+                                 | Initial total | 673.37 kB |               138.28 kB 👈
+
+        Lazy chunk files         | Names         |  Raw size | Estimated transfer size
+        races.routes-YMHFYYGL.js | races-routes  |  22.99 kB |                 7.01 kB
+    
+    ✅The total size is a bit more, but now the first page will only load 138.28 kB worth of JavaScript,
+    which is quite a nice gain!
+
+
+
+3️⃣ Let’s explore the bundles generated. 🔥A nice tool called source-map-explorer allows to generate a
+    diagram of what is inside the bundle.
+
+    Rebuild the application with the sourcemaps:
+
+        ng build --named-chunks --source-map
+    
+    And explore the bundles:
+
+        npx source-map-explorer dist/ponyracer/browser/races.routes-xxx.js --no-border-checks
+    
+    ✅This should open your browser and display the content of the bundle. 😶‍🌫️As you will spot, part of
+    the bundle is date-fns. 🧠🧠Indeed, as we moved the component that uses FromNowPipe into the
+    lazy-loaded route, the CLI has now packaged date-fns into the chunk instead of into the main
+    bundle. (see the image racesRoutesMap.png)
+
+    ⚠️The main chunk still contain useless stuff for the first page, like all the "users" related
+    components: Register and Login. (see the image mainMap.png)
+
+        npx source-map-explorer dist/ponyracer/browser/main-xxx.js --no-border-checks
+    
+    ⚠️More importantly, these components are responsible for the inclusion of the forms APIs from
+    @angular/forms/signals. And you can see that these forms-related dependencies are quite a big
+    part of the main bundle.
+
+    🔥🔥We can check manually which components use the package @angular/forms/signals, or, even
+    better, use a tool to help us! Run the following command:
+
+        npx @rx-angular/import-graph-visualizer --entry-points ./src/main.ts
+    
+    ✅This should open your browser with a nice interface that allows you to explore the import graph
+    of your application. Enter @angular/forms/signals in the Import target field, and you will see
+    that BirthYearInput, Register and Login are the only components that use it.
+    (see importGraphVisualizer.png)
+
+
+
+4️⃣ Let’s try to create other lazy-loaded routes for /register and /login, using loadComponent:
+    app.routes.ts:
+
+        { path: 'login', loadComponent: () => import('./login/login').then(m => m.Login) },
+        { path: 'register', loadComponent: () => import('./register/register').then(m => m.Register) }
+    
+    All right, let’s rebuild the app and see what changed!
+
+        Initial chunk files      | Names         |  Raw size | Estimated transfer size
+        main-VQHEMKU5.js         | main          | 361.07 kB |                95.95 kB
+        styles-5G46XTEI.css      | styles        | 310.29 kB |                39.56 kB
+
+                                 | Initial total | 671.36 kB |               135.52 kB 👈
+
+        Lazy chunk files         | Names         |  Raw size | Estimated transfer size
+        races.routes-Bbz1Pg48.js | races-routes  |  23.16 kB |                 6.97 kB
+        register-WTqA405W.js     | register      |   5.50 kB |                 1.83 kB
+        login-DnMoEwAS.js        | login         |   2.35 kB |               981 bytes
+    
+    ✅We did manage to cut some weight again! The build now shows lazy chunks for the routes and
+    components that are loaded on demand: races.routes, register and login. Now the first page load
+    is only 134.97 kB!
+
+
+
+5️⃣ Now the time required to load the extra components is delayed to the moment when the user
+    navigates to /races, /register or /login. 🔥🔥But we can ask Angular to preload these chunks when
+    the application is done loading and idle. With this option, our users won’t even have to wait for
+    the chunk to be downloaded when they click on a link. To do so, add
+    withPreloading(PreloadAllModules) as an additional parameter to the
+    provideRouter(routes, withComponentInputBinding()) call in app.config.ts. Now if you reload your
+    app, you’ll see that the chunks are downloaded just after the end of the page load.
+    app.config.ts:
+
+        export const appConfig: ApplicationConfig = {
+            providers: [
+                // omitted
+                provideRouter(routes, withComponentInputBinding(), 👉 withPreloading(PreloadAllModules))
+            ]
+        };
+    
+
+
+6️⃣ 😜 No test for this exercise as we've only played around with the routes for lazy loading.
