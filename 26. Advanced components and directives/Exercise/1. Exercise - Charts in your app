@@ -1,0 +1,200 @@
+⚠️ pony racer for this exercise is from the chapter 19: Router named ponyracer - Routes guard
+    implemented. and we will be renaming it into just ponyracer.
+
+---------------------------------------- Charts in your app ------------------------------------------
+
+- ADD A SCORE HISTORY PAGE AND RENDER IT WITH CHART.JS.
+
+- Instructions: Angular Prerequisite "Advanced components" chapter
+
+- Every serious business application includes a chart, and we aren’t going to be different!
+
+1️⃣ Chart.js is a nice little charting library and we are going to add it to our application and
+    see how to use it with Angular. We could use one of the libraries already ready for Angular,
+    but the point is also to understand how these kinds of pure JavaScript libraries can interact
+    with Angular.
+
+    The idea is to add a new page in our application where we can follow the history of our score,
+    as we lose some and win some on every bet.
+
+    Let’s begin by adding chart.js to our app:
+
+        npm install --save-exact chart.js@4.5.1
+    
+    We also need an adapter to let chart.js use date-fns to format the dates:
+
+        npm install --save-exact chartjs-adapter-date-fns@3.0.0
+
+
+
+2️⃣ Now, let’s create a new component called ScoreHistory:
+
+        ng g c score-history
+    
+
+
+3️⃣ Add the proper configuration to app.routes.ts, so we can (lazily) navigate to this component
+    with the path /score-history.
+
+        { path: 'score-history', loadComponent: () => import('./score-history/score-history')
+            .then(m => m.ScoreHistory)}
+
+
+
+4️⃣ In our menu, wrap the span id="current-user" class="me-2" into an <a class="nav-link">, and add
+    to it a routerLink to our new route. Replace the navbar-text class on the surrounding li with
+    a nav-item class to restore the vertical alignement:
+
+        <li class="nav-item">
+            <a class="nav-link" routerLink="/score-history">
+                <span id="current-user" class="me-2">
+                {{ user.login }}
+                <span class="fa fa-star"></span>
+                {{ user.money | number }}
+                </span>
+            </a>
+        </li>
+
+
+
+5️⃣ The backend offers an API to fetch the score history
+    (https://ponyracer.ninja-squad.com/apidoc#resources-money-history). Let’s add a
+    getScoreHistory() method to our user service, that calls this API and returns the result. Add
+    a new model in the models directory to represent the entity returned: ScoreHistoryModel, with
+    two fields: instant and money.
+
+        getScoreHistory(): Observable<ScoreHistoryModel[]>  {
+            return this.http.get<ScoreHistoryModel[]>(`${environment.baseUrl}/api/money/history`);
+        }
+        //💡Observable<Array<ScoreHistoryModel>> and Observable<ScoreHistoryModel[]> are same thing
+
+
+
+6️⃣ Now let’s go back to our component ScoreHistory. As you can see in the official Chart.js
+    (https://www.chartjs.org/docs/latest/getting-started/) docs, we need to have a canvas element
+    in our template. Let’s add one:
+    score-history.html
+        
+        <div>
+            <h1>Score history</h1>
+            <canvas #chart></canvas>
+        </div>
+
+
+
+7️⃣ 🔥🔥Since the chart constructor needs a reference to the canvas DOM element, you’ll need to
+    grab a reference to this element (name it canvas) and initialize the chart when this reference
+    is available, with the data received from a resource calling the new getScoreHistory() method
+    offered by our user service.
+
+    To do so, create a history resource with rxResource, whose stream function simply returns
+    this.userService.getScoreHistory(). 
+    score-history.ts:
+
+        protected readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('chart');
+        private readonly history = rxResource({
+            stream: () => this.userService.getScoreHistory()
+        })
+
+
+
+8️⃣ Then use an effect to create the chart once history.value() is available.
+    To do so, you need to import Chart from chart.js, and call the constructor by giving it:
+        👉 a context: in our case, it’s the nativeElement property of our canvas signal;
+        👉 a configuration, with an attribute type, for us 'line' and an attribute data. data is
+            an object composed of labels, in our case an array of the instants of the fetched
+            history, and of datasets, an array of objects, that should look like:
+        
+    score-history.ts:
+
+        constructor() {
+            effect(onCleanup => {
+                const history = this.history.value();
+                if (!history) {
+                    return;
+                }
+                const chart = new Chart(this.canvas().nativeElement, {
+                    type: 'line',
+                    data: {
+                     👉 labels: history.map(event => event.instant),
+                     👉 datasets: [
+                            {
+                                label: 'Score history',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                fill: 'origin',
+                                tension: 0.5,
+                                data: history.map(event => event.money)
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                type: 'time'
+                            }
+                        }
+                    }
+                });
+                onCleanup(() => chart.destroy());
+            });
+        }
+
+    The configuration accepts a third attribute options. To make our chart prettier, we can format
+    the instants using date-fns (that Chart.js uses thanks to the adapter), and let Chart.js
+    figure out what is the most comfortable unit to use based on the size of the scale.
+    👉 Add an options attribute like this to indicate our x-axis is a time series:
+    score-history.ts
+
+        constructor() {
+            effect(onCleanup => {
+                const history = this.history.value();
+                if (!history) {
+                    return;
+                }
+                const chart = new Chart(this.canvas().nativeElement, {
+                    type: 'line',
+                    data: {
+                        labels: history.map(event => event.instant),
+                        datasets: [
+                            {
+                                label: 'Score history',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                fill: 'origin',
+                                tension: 0.5,
+                                data: history.map(event => event.money)
+                            }
+                        ]
+                    },
+                 👉 options: {
+                        scales: {
+                            x: {
+                                type: 'time'
+                            }
+                        }
+                    }
+                });
+                onCleanup(() => chart.destroy());
+            });
+        }
+
+    👉You also need to import the adapter:
+    score-history.ts:
+
+        import 'chartjs-adapter-date-fns';
+
+
+
+9️⃣ 🔥Chart.js is doing its best to be tree-shakeable, so we need to manually register what parts of
+    the library we want to use. Above the component, add:
+
+        Chart.register(LineController, LinearScale, TimeScale, PointElement, LineElement, Legend,
+            Filler, Tooltip);
+
+    ✅That should do the trick! Try to bet several times if you didn’t already, and go to our new
+    page to see your score history.
+
+
+
+🔟 Do not forget to copy all the test files and run ng test to be sure that everything is OK.

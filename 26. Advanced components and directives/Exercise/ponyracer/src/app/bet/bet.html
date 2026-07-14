@@ -1,0 +1,26 @@
+@if (raceModel.isLoading()) {
+  <div role="status">Loading...</div>
+} @else if (raceModel.hasValue()) {
+  @let race = raceModel.value();
+
+  @if (betFailed()) {
+    <div class="alert alert-danger alert-dismissible mb-3" role="alert">
+      <button type="button" class="btn-close" aria-label="Close" (click)="betFailed.set(false)"></button>
+      The race is already started or finished
+    </div>
+  }
+
+  <h1>{{ race.name }}</h1>
+  <p>{{ race.startInstant | prettyDate }}</p>
+  <a [routerLink]="['/races', race.id, 'live']" class="btn btn-primary">Watch live!</a>
+  <div class="py-2">Click to bet on your favorite pony</div>
+  <div class="row">
+    @for (pony of race.ponies; track pony.id) {
+      <div class="col-12 col-md-2" [class.selected]="isPonySelected(pony)">
+        <pr-pony [ponyModel]="pony" (ponySelected)="betOnPony(pony)" />
+      </div>
+    }
+  </div>
+}@else if (raceModel.error()) {
+  <div class="alert alert-danger" role="alert">An error occurred while loading the race.</div>
+}

@@ -33,7 +33,7 @@ View queries: viewChild:
         })
         export class Login implements AfterViewInit {
             protected readonly credentials = { login: '' };
-            readonly loginInput = viewChild.required<ElementRef<HTMLInputElement>>('loginInput');
+            readonly loginInput = viewChild.required<ElementRef<HTMLInputElement>>('loginInput'); 👈
             ngAfterViewInit(): void {
                 this.loginInput().nativeElement.focus();
             }
