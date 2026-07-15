@@ -1,0 +1,145 @@
+---------------------------------- Building advanced directives --------------------------------------
+
+- BUILD A FORM-LABEL DIRECTIVE USING HOST BINDING AND SIGNAL FORMS FIELD STATE.
+
+- Instructions: Angular Prerequisite "Advanced components" chapter
+
+- Bootstrap has a really good support for forms, and we started to use it. When we have a touched
+    field in error, we add the is-invalid class to the input element to have a red border around it
+    (🔥🔥done my [formField] directive). now we’d like to add a class text-danger on the label:
+
+        <div class="mb-3">
+            <label for="input-error-1" class="form-label 👉text-danger">Input with error</label>
+            <input type="text" class="form-control is-invalid" id="input-error-1">
+        </div>
+    
+    Of course, we only want to add this class if the field itself is in error and touched: sounds like
+    the perfect job for a directive!
+
+A DIRECTIVE TO HAVE A RED LABEL
+
+1️⃣ We want to add a class on the label if the input next to it is invalid and touched. 🔥It’s easy
+    to create a directive that will add the class depending on a condition if we give it the state
+    of the field.
+
+    🔥Let’s start by creating a directive called FormLabel that will add text-danger on the label
+    if necessary:
+
+        ng g d form-label
+
+
+
+2️⃣ We want the directive to act on the label, so we could use a very broad selector like label.
+    But that feels a bit too broad. So 🔥let’s choose a custom selector: label[prFormLabel]. That
+    means we’ll have to add an attribute prFormLabel on the labels of our forms
+    (add them in register.html and login.html).
+    register.html:
+
+        <form [formRoot]="userForm">
+            <div class="mb-3">
+                <label for="login" class="form-label" 👉[prFormLabel]="userForm.login">Login</label>
+                // omitted
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label" 👉[prFormLabel]="userForm.password">Password</label>
+               // omitted
+            </div>
+
+            <div class="mb-3">
+                <label for="confirm" class="form-label" 👉[prFormLabel]="userForm.confirmPassword">Confirm password</label>
+                // omitted
+            </div>
+
+            <div class="mb-3">
+                <label for="birth-year" class="form-label" 👉[prFormLabel]="userForm.birthYear">Birth year</label>
+               // omitted
+            </div>
+            // omitted
+        </form>
+    
+
+    login.html:
+
+        <form [formRoot]="credentials">
+            <div class="mb-3">
+                <label for="login" class="form-label" 👉[prFormLabel]="credentials.login">Login</label>
+                // omitted
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label" 👉[prFormLabel]="credentials.password">Password</label>
+                // omitted
+            </div>
+            // omitted
+        </form>
+
+
+    form-label.ts:
+
+        @Directive({
+            selector: 👉'label[prFormLabel]',
+        })
+
+
+
+3️⃣ The 🔥directive must have a single required input that receive the associated FieldTree<unknown>
+    we want to watch. 🔥You can use an alias prFormLabel for that input, which will allow us to write
+    in the template <label [prFormLabel]="userForm.login">. 🔥🔥Then use a host binding(see section 7
+    of this chapter) that adds/removes the text-danger class depending on its touched status and
+    validity.
+    form-label.ts:
+
+        @Directive({
+            selector: 'label[prFormLabel]',
+          👉host: {
+                '[class.text-danger]': 'isInvalidAndTouched()'
+            }
+        })
+        export class FormLabel {
+          👉readonly fieldTree = input.required<FieldTree<unknown>>(👉{ alias: 'prFormLabel' });
+          👉protected readonly isInvalidAndTouched = computed(() => {
+                const fieldTree = this.fieldTree();
+                const state = fieldTree();
+                return state.touched() && state.invalid();
+            })
+        }
+
+
+
+4️⃣ If you want it to be perfect, check that every label has the attribute 'prFormLabel' and every
+    error message has the class 'invalid-feedback' in register.html and login.html.
+    ✅sure we do for ef login.html:
+
+        <form [formRoot]="credentials">
+            <div class="mb-3">
+                <label for="login" class="form-label" 👉[prFormLabel]="credentials.login">Login</label>
+                <input id="login" class="form-control" [formField]="credentials.login" />
+                <!-- error message here -->
+                @let login = credentials.login();
+                @if (login.touched() && !login.valid()) {
+                    @if (login.getError('required')) {
+                        <div 👉class="invalid-feedback">Login is required</div>
+                    }
+                }
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label" 👉[prFormLabel]="credentials.password">Password</label>
+                <input id="password" type="password" class="form-control" [formField]="credentials.password" />
+                <!-- error message here -->
+                @let password = credentials.password();
+                @if (password.touched() && !password.valid()) {
+                    @if (password.getError('required')) {
+                        <div 👉class="invalid-feedback">Password is required</div>
+                    }
+                }
+            </div>
+            // omitted
+        </form>
+    
+    And we’re done!
+
+
+
+5️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.

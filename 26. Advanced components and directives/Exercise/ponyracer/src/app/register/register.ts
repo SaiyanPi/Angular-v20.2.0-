@@ -5,10 +5,11 @@ import { form, FormField, FormRoot, minLength, required, validate, max, min } fr
 import { firstValueFrom } from 'rxjs';
 import { BirthYearInput } from '../birth-year-input/birth-year-input';
 import { Alert } from "../alert/alert";
+import { FormLabel } from '../directives/form-label';
 
 @Component({
   selector: 'pr-register',
-  imports: [FormField, FormRoot, BirthYearInput, Alert],
+  imports: [FormField, FormRoot, BirthYearInput, Alert, FormLabel],
   templateUrl: './register.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './register.css'

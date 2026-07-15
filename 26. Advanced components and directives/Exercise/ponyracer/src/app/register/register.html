@@ -8,7 +8,7 @@
 
     <form [formRoot]="userForm">
       <div class="mb-3">
-        <label for="login" class="form-label">Login</label>
+        <label for="login" class="form-label" [prFormLabel]="userForm.login">Login</label>
         <input id="login" class="form-control" [formField]="userForm.login" />
         <!-- error message here -->
         @let login = userForm.login();
@@ -23,7 +23,7 @@
       </div>
 
       <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
+        <label for="password" class="form-label" [prFormLabel]="userForm.password">Password</label>
         <input id="password" type="password" class="form-control" [formField]="userForm.password" />
         <!-- error message here -->
         @let password = userForm.password();
@@ -35,7 +35,7 @@
       </div>
 
       <div class="mb-3">
-        <label for="confirm" class="form-label">Confirm password</label>
+        <label for="confirm" class="form-label" [prFormLabel]="userForm.confirmPassword">Confirm password</label>
         <input id="confirm" type="password" class="form-control" [formField]="userForm.confirmPassword" />
         <!-- error message here -->
         @let confirmPassword = userForm.confirmPassword();
@@ -50,7 +50,7 @@
       </div>
 
       <div class="mb-3">
-        <label for="birth-year" class="form-label">Birth year</label>
+        <label for="birth-year" class="form-label" [prFormLabel]="userForm.birthYear">Birth year</label>
         <!-- <input id="birth-year" type="number" class="form-control" [formField]="userForm.birthYear" /> -->
         <pr-birth-year-input inputId="birth-year" [formField]="userForm.birthYear" />
 
