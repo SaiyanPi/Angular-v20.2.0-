@@ -4,10 +4,11 @@ import { PrettyDatePipe } from '../shared/pipes/pretty-date-pipe';
 import { PonyModel } from '../models/pony-model';
 import { Pony } from "../pony/pony";
 import { RouterLink } from '@angular/router';
+import { Alert } from "../alert/alert";
 
 @Component({
   selector: 'pr-bet',
-  imports: [PrettyDatePipe, Pony, RouterLink],
+  imports: [PrettyDatePipe, Pony, RouterLink, Alert],
   templateUrl: './bet.html',
   styleUrl: './bet.css'
 })

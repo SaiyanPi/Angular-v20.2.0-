@@ -1,0 +1,156 @@
+---------------------------------- Building advanced components -------------------------------------
+
+- BUILD A REUSABLE ALERT COMPONENT WITH ng-content, INPUTS, OUTPUTS, AND DYNAMIC CLASSES.
+
+- Instruction: Angular Prerequisite "Advanced components" chapter
+
+    Our application has grown, and we start to feel the need to introduce a few UI components.
+    For example, we display warnings and alerts in different parts of the application, but we never
+    really tried to have a common component for them.
+
+1️⃣ Let’s build an Alert!
+
+        ng g c alert
+
+
+2️⃣ The component’s template looks like the code we copy/pasted in several components:
+    alert.html:
+
+        <div role="alert">
+            <button type="button" class="btn-close" aria-label="Close"></button>
+        </div>
+
+    🔥But this component will be slightly different from the other components we have built until
+    now. This time we want to use our component to "wrap" the content that the alert should
+    display, like this:
+
+        <pr-alert>
+            I'm an <strong>alert content</strong>
+        </pr-alert>
+    
+    🔥The Alert should then use ng-content in its template, to display the wrapped content inside
+    the div in its template…​
+
+        <div class="alert" role="alert" >
+            <button type="button" class="btn-close" aria-label="Close"></button>
+            <ng-content />
+        </div>
+
+
+
+3️⃣ Now let’s add a few features. First we want to emit a closed event if our user clicks on the
+    button. To do so, 🔥add a closeHandler method in your component, that emits a void event on an
+    output named closed. 🔥This method should of course be called by a click on the button in our
+    template.
+    alert.ts:
+
+        readonly closed = output<void>();
+     👉protected closeHandler(): void {
+            this.closed.emit();
+        }
+    
+    alert.html:
+
+        <div class="alert" role="alert">
+            <button type="button" class="btn-close" aria-label="Close" 👉(click)="closeHandler()"></button>
+            <ng-content />
+        </div>
+
+
+
+4️⃣ Then we need to style it a little. According to the official Bootstrap documentation, we need
+    to add the CSS classes alert alert-danger for a "danger" alert, alert alert-success for a
+    "success" alert, alert alert-warning for a "warning", etc. 🔥Let’s add an input to our component,
+    called type with a default value 'warning': this will allow the other components to do
+    something like:
+
+        <pr-alert type="success">
+            I'm a success alert content
+        </pr-alert>
+
+    You can type it as string, or to be more accurate, as a union type of the possible
+    values: 'success' | 'danger' | 'warning'.
+    alert.ts:
+
+        readonly closed = output<void>();
+        protected closeHandler(): void {
+            this.closed.emit();
+        }
+     👉 readonly type = input<'success' | 'danger' | 'warning'>('warning');
+    
+
+    🔥Then add a computed field in the Alert class, called alertClasses, which returns
+    'alert alert-danger' (as a dynamic string, or an array of strings) if the type is 'danger'
+    for example. 🔥To finish, bind alertClasses to the class property of the root div in the template.
+    alert.ts:
+
+        readonly closed = output<void>();
+        protected closeHandler(): void {
+            this.closed.emit();
+        }
+        readonly type = input<'success' | 'danger' | 'warning'>('warning');
+     👉 protected readonly alertClasses = computed(() => `alert-${this.type()}`)
+
+
+    alert.html:
+
+        <div class="alert" role="alert" 👉 [class]="alertClasses()">
+            <button type="button" class="btn-close" aria-label="Close" (click)="closeHandler()"></button>
+            <ng-content />
+        </div>
+ 
+ 
+
+ 5️⃣ We’re almost feature complete! Some of the alerts we added in our app aren’t dismissible:
+    we can’t close them. 🔥Let’s add another input called dismissible, with a default value true.
+    🔥Use this signal in the template to display the closing button, only if the input has a true
+    value. 🔥alertClasses must also include 'alert-dismissible' if the alert is dismissible.
+    As a bonus, you can use the booleanAttribute transform for this input!
+    alert.ts:
+
+        readonly closed = output<void>();
+        protected closeHandler(): void {
+            this.closed.emit();
+        }
+        readonly type = input<'success' | 'danger' | 'warning'>('warning');
+        protected readonly alertClasses = computed(() => 
+         👉 [this.dismissible() ? 'alert-dismissible' : '', `alert-${this.type()}`] as const)
+     👉 readonly dismissible = input(true, { transform: booleanAttribute });
+
+
+    alert.html:
+
+        <div class="alert" role="alert" [class]="alertClasses()">
+         👉 @if (dismissible()) {
+                <button type="button" class="btn-close" aria-label="Close" (click)="closeHandler()"></button>
+            }
+            <ng-content />
+        </div>
+    
+    All right, our component is ready! Let’s now use it!
+
+
+
+6️⃣ You can replace the alerts with our new component in Login, Register, Bet, Live, PendingRaces,
+    and FinishedRaces. Remember to add to the imports it as well. 🔥Be careful to add the correct
+    inputs (type of the alert, dismissible or not), and to listen to the closed event if necessary.
+    bet.html:
+
+        @if (betFailed()) {
+            <!-- <div class="alert alert-danger alert-dismissible mb-3" role="alert">
+            <button type="button" class="btn-close" aria-label="Close" (click)="betFailed.set(false)"></button>
+            The race is already started or finished
+            </div> -->
+            <pr-alert class="mb-3" type="danger" ⚠️(closed)="betFailed.set(false)">
+            The race is already started or finished
+            </pr-alert>
+        }
+            // omitted
+        @else if (raceModel.error()) {
+            <!-- <div class="alert alert-danger" role="alert">An error occurred while loading the race.</div> -->
+            <pr-alert type="danger" dismissible="false">An error occurred while loading the race.</pr-alert>
+        }
+
+
+
+7️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK.

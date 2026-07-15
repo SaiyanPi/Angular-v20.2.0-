@@ -3,10 +3,11 @@ import { UserService } from '../services/user-service';
 import { Router } from '@angular/router';
 import { form, required, FormField, FormRoot } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
+import { Alert } from "../alert/alert";
 
 @Component({
   selector: 'pr-login',
-  imports: [FormField, FormRoot],
+  imports: [FormField, FormRoot, Alert],
   templateUrl: './login.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './login.css'

@@ -2,7 +2,8 @@
   <h1>{{ raceModel.name }}</h1>
 
   @if (raceModel.liveError) {
-    <div class="alert alert-danger" role="alert">A problem occurred during the live.</div>
+    <!-- <div class="alert alert-danger" role="alert">A problem occurred during the live.</div> -->
+    <pr-alert type="danger" dismissible="false">A problem occurred during the live.</pr-alert>
   }
 
   @switch (raceModel.status) {

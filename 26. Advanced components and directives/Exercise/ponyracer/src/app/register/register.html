@@ -2,7 +2,8 @@
   <div class="col-md-6 offset-md-3">
     <h1>Sign up</h1>
     @if (registrationFailed()) {
-      <div class="alert alert-danger" role="alert">Try again with another login.</div>
+      <!-- <div class="alert alert-danger" role="alert">Try again with another login.</div> -->
+      <pr-alert type="danger" dismissible="false">Try again with another login.</pr-alert>
     }
 
     <form [formRoot]="userForm">
