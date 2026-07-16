@@ -6,7 +6,8 @@ import { catchError, EMPTY, filter, map, of, scan, startWith, Subject, switchMap
 import { Pony } from "../pony/pony";
 import { PonyWithPositionModel } from '../models/pony-model';
 import { PrettyDatePipe } from "../shared/pipes/pretty-date-pipe";
-import { Alert } from "../alert/alert";
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+
 
 interface RaceModelWithPositions extends RaceModel {
   poniesWithPosition: Array<PonyWithPositionModel>;
@@ -15,7 +16,7 @@ interface RaceModelWithPositions extends RaceModel {
 
 @Component({
   selector: 'pr-live',
-  imports: [Pony, PrettyDatePipe, Alert],
+  imports: [Pony, PrettyDatePipe, NgbAlert],
   templateUrl: './live.html',
   styleUrl: './live.css'
 })

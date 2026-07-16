@@ -9,5 +9,6 @@
   }
 } @else if (races.error()) {
   <!-- <div class="alert alert-danger" role="alert">An error occurred while loading races.</div> -->
-  <pr-alert type="danger" dismissible="false">An error occurred while loading races.</pr-alert>
+  <!-- <pr-alert type="danger" [dismissible]="false">An error occurred while loading races.</pr-alert> -->
+  <ngb-alert type="danger" [dismissible]="false">An error occurred while loading races.</ngb-alert>
 }

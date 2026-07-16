@@ -1,12 +1,18 @@
 @if (races.isLoading()) {
   <div role="status">Loading...</div>
-} @else if (races.hasValue()) {
+}
+<!-- @else if (races.hasValue()) {
   @for (race of races.value(); track race.id) {
-    <div>
-      <pr-race [raceModel]="race" />
-    </div>
+    <pr-race [raceModel]="race" />
+  }
+} -->
+@else if (vm(); as vm) {
+  <ngb-pagination [collectionSize]="vm.total" [page]="vm.page" (pageChange)="changePage($event)" size="lg" />
+  @for (race of vm.races; track race.id) {
+    <pr-race [raceModel]="race" />
   }
 } @else if (races.error()) {
   <!-- <div class="alert alert-danger" role="alert">An error occurred while loading races.</div> -->
-  <pr-alert type="danger" dismissible="false">An error occurred while loading races.</pr-alert>
+  <!-- <pr-alert type="danger" [dismissible]="false">An error occurred while loading races.</pr-alert> -->
+  <ngb-alert type="danger" [dismissible]="false">An error occurred while loading races.</ngb-alert>
 }

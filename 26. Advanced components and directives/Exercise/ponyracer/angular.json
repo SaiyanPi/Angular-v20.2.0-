@@ -25,7 +25,8 @@
               }
             ],
             "styles": ["src/styles.css"],
-            "allowedCommonJsDependencies": ["chart.js", "webstomp-client"]
+            "allowedCommonJsDependencies": ["chart.js", "webstomp-client"],
+            "polyfills": ["@angular/localize/init"]
           },
           "configurations": {
             "production": {

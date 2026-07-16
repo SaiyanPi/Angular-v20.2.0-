@@ -3,7 +3,8 @@
 
   @if (raceModel.liveError) {
     <!-- <div class="alert alert-danger" role="alert">A problem occurred during the live.</div> -->
-    <pr-alert type="danger" dismissible="false">A problem occurred during the live.</pr-alert>
+    <!-- <pr-alert type="danger" [dismissible]="false">A problem occurred during the live.</pr-alert> -->
+    <ngb-alert type="danger" [dismissible]="false">A problem occurred during the live.</ngb-alert>
   }
 
   @switch (raceModel.status) {

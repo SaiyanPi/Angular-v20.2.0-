@@ -1,17 +1,17 @@
-import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { UserService } from '../services/user-service';
 import { Router } from '@angular/router';
 import { form, FormField, FormRoot, minLength, required, validate, max, min } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
 import { BirthYearInput } from '../birth-year-input/birth-year-input';
-import { Alert } from "../alert/alert";
 import { FormLabel } from '../directives/form-label';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+
 
 @Component({
   selector: 'pr-register',
-  imports: [FormField, FormRoot, BirthYearInput, Alert, FormLabel],
+  imports: [FormField, FormRoot, BirthYearInput, NgbAlert, FormLabel],
   templateUrl: './register.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './register.css'
 })
 export class Register {

@@ -3,7 +3,8 @@
     <h1>Log in</h1>
     @if (authenticationFailed()) {
       <!-- <div class="alert alert-danger" role="alert">Nope, Try again.</div> -->
-      <pr-alert type="danger" dismissible="false">Nope, Try again.</pr-alert>
+      <!-- <pr-alert type="danger" dismissible="false">Nope, Try again.</pr-alert> -->
+      <ngb-alert type="danger" [dismissible]="false">Nope, Try again.</ngb-alert>
     }
 
     <form [formRoot]="credentials">

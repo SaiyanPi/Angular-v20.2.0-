@@ -8,9 +8,12 @@
       <button type="button" class="btn-close" aria-label="Close" (click)="betFailed.set(false)"></button>
       The race is already started or finished
     </div> -->
-    <pr-alert class="mb-3" type="danger" (closed)="betFailed.set(false)">
+    <!-- <pr-alert class="mb-3" type="danger" (closed)="betFailed.set(false)">
       The race is already started or finished
-    </pr-alert>
+    </pr-alert> -->
+    <ngb-alert class="mb-3" type="danger" (closed)="betFailed.set(false)">
+      The race is already started or finished
+    </ngb-alert>
   }
 
   <h1>{{ race.name }}</h1>
@@ -26,5 +29,6 @@
   </div>
 }@else if (raceModel.error()) {
   <!-- <div class="alert alert-danger" role="alert">An error occurred while loading the race.</div> -->
-  <pr-alert type="danger" dismissible="false">An error occurred while loading the race.</pr-alert>
+  <!-- <pr-alert type="danger" [dismissible]="false">An error occurred while loading the race.</pr-alert> -->
+  <ngb-alert type="danger" [dismissible]="false">An error occurred while loading the race.</ngb-alert>
 }

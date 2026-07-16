@@ -4,10 +4,11 @@ import { UserService } from '../services/user-service';
 import { DecimalPipe } from '@angular/common';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { catchError, EMPTY, of, startWith } from 'rxjs';
+import { NgbCollapse } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'pr-menu',
-  imports: [RouterLink, DecimalPipe],
+  imports: [RouterLink, DecimalPipe, NgbCollapse],
   templateUrl: './menu.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './menu.css'

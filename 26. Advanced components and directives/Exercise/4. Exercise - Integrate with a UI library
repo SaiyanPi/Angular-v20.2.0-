@@ -1,0 +1,144 @@
+------------------------------------ Integrate with a UI library -----------------------------------
+
+- REPLACE CUSTOM ALERTS WITH NG-BOOTSTRAP COMPONENTS AND ADD PAGINATED FINISHED RACES.
+
+- Instructions: Angular Prerequisite "Advanced components" chapter
+
+- 😶‍🌫️I’ve got to be honest with you: what we did with our Alert…​ has already been done by others
+    before :). 🔥Indeed, ng-bootstrap is a popular component library which offers some very cool
+    components, and among them: NgbAlert.
+    Take the time to look at the source code
+    (https://github.com/ng-bootstrap/ng-bootstrap/blob/master/src/alert/alert.ts) doesn’t it look
+    familiar? :) So let’s use this component instead of ours.
+
+
+1️⃣ Install ng-bootstrap:
+
+        npm install --save-exact @ng-bootstrap/ng-bootstrap@20.0.0 @popperjs/core@2.11.8
+    
+    or
+        npm install @ng-bootstrap/ng-bootstrap @popperjs/core
+    
+    🔥🔥As ng-bootstrap offers some internationalization support, we need to add the Angular package
+    for i18n, introduced in Angular 9 (even if we won’t be using it, it is just for compilation
+    purpose).
+    Run:
+
+        ng add @angular/localize
+    
+    OK, we’re ready to use it!
+
+
+
+2️⃣ Replace every <pr-alert></pr-alert> by a <ngb-alert></ngb-alert> (and replace the import
+    by NgbAlert).
+    When that’s done, you can remove the Alert files (don’t forget to clean the imports in other
+    files too).
+
+
+
+3️⃣ Now that we have this library at hand, maybe we can use some of the components offered. Let’s
+    add a pagination to the FinishedRaces. I don’t know if you noticed, but this tab displays a
+    lot of races! Let’s add a pagination component(https://ng-bootstrap.github.io/#/components/pagination/overview)
+    at the top of template.
+    🔥We are going to store the selected page in a query parameter, so the URL will be updated
+    when the user clicks on a new page. For example, if the user clicks on page 3, the URL will be
+    updated to /races/finished?page=3.
+
+    🔥We are going to refactor the component to have a ViewModel object containing all the data
+    we need to display. Add an interface ViewModel in finished-races.ts
+
+    🔥Then, in the FinishedRaces class, add a vm computed signal containing ViewModel | undefined
+    (and replace the races field by a resource).
+
+    Keep the resource returned by raceService.list('FINISHED') in a races field. 🔥Add another
+    signal for the current page using an input named page, with 1 as the default value and
+    transformed with numberAttribute, so the router can bind the page query parameter to it.
+    You can use the following code:
+
+        readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+    
+    🔥Then create a computed() producing a new ViewModel object, with the page extracted from the
+    query parameter, the total as the length of the array returned by the resource, and races as
+    the races to display (you can use races.slice((page - 1) * 10, page * 10) to display the 10
+    races corresponding to the page). If the resource does not have a value yet, the computed
+    should return undefined.
+    finished-races.ts:
+
+     👉 interface ViewModel {
+            page: number;
+            total: number;
+            races: Array<RaceModel>;
+        }
+        // omitted
+        export class FinishedRaces {
+            private readonly router = inject(Router);
+            protected readonly races = inject(RaceService).list('FINISHED');
+        👉 readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) }); 
+
+        👉 readonly vm = computed<ViewModel | undefined>(() => {
+                if(!this.races.hasValue()) {
+                    return undefined;
+                }
+                const allRaces = this.races.value();
+                const page = this.page();
+                return {
+                    total: allRaces.length,
+                    page,
+                    races: allRaces.slice((page - 1) * 10, page * 10)
+                }
+            })
+
+            protected changePage(page: number): void {
+                this.router.navigate([], { queryParams: { page } });
+            }
+        }
+
+
+
+4️⃣ Let’s use our new vm signal in the template (wrap the whole template with an if to check that
+    vm is defined). Add the pagination component at the top of the template:
+
+     👉 @if (vm(); as vm) {
+        👉 <ngb-pagination [collectionSize]="vm.total" [page]="vm.page" (pageChange)="changePage($event)" size="lg" />
+            @for (race of vm.races; track race.id) {
+                <pr-race [raceModel]="race" />
+            }
+        } @else if (races.isLoading()) {
+            <div role="status">Loading.</div>
+        } @else if (races.error()) {
+            <ngb-alert [dismissible]="false" type="danger">An error occurred while loading races.</ngb-alert>
+        }
+
+
+
+5️⃣ Keep the loading and error states in the template too: - display Loading. while the resource is
+    loading - display an ngb-alert containing An error occurred while loading races. if loading
+    fails
+
+
+
+6️⃣ Add a changePage method to the component that navigates to the current route but with a page
+    query parameter with the new page number (🔥that will be emitted by the pageChange event). You
+    should now have a nice pagination on your tab, and the page should change when you click!
+
+        private readonly router = inject(Router);
+        protected changePage(page: number): void {
+            this.router.navigate([], { queryParams: { page } });
+        }
+
+
+
+7️⃣ We can add a nice final touch to the application by 🔥replacing class.collapse by ngbCollapse in
+    menu.html. This directive, introduced in ng-bootstrap v8, will do the same but with animations!
+    Of course, 🔥we need to add NgbCollapse into the imports of the component to make the directive
+    available. Enjoy the smooth transition when you open/collapse the navbar.
+    menu.html:
+
+        <div id="navbar" class="navbar-collapse" 👉[ngbCollapse]="navbarCollapsed()">
+            // omitted
+        </div>
+    
+    menu.ts:
+
+        imports: [RouterLink, DecimalPipe, 👉NgbCollapse],

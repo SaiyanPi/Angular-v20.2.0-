@@ -1,16 +1,16 @@
-import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { UserService } from '../services/user-service';
 import { Router } from '@angular/router';
 import { form, required, FormField, FormRoot } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
-import { Alert } from "../alert/alert";
 import { FormLabel } from '../directives/form-label';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+
 
 @Component({
   selector: 'pr-login',
-  imports: [FormField, FormRoot, Alert, FormLabel],
+  imports: [FormField, FormRoot, NgbAlert, FormLabel],
   templateUrl: './login.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './login.css'
 })
 export class Login {
