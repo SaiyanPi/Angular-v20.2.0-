@@ -1,0 +1,188 @@
+Marking text with i18n and extracting:
+
+
+- Let’s start with an example template:
+    
+        <h1>Welcome to Ponyracer</h1>
+        <p>Welcome to Ponyracer {{ user.firstName }} {{ user.lastName }}!</p>
+        <img src="/img/pony.gif" alt="running pony" title="Ponies are cool, aren't they?" />
+        Let's start playing.
+
+    There are 5 text snippets that need to be translated in this template. 🔥Of course, you could
+    imagine translating everything at once, ⚠️but in a more realistic example, that would expose a
+    lot of HTML boilerplate to the translators, and you don’t want them to translate everything
+    again when the HTML structure changes. 🔥So you should translate the 5 snippets separately.
+
+    👉 One of them, the body of the h1 element, is purely static text. 
+    👉 One of them is a text containing two interpolated expressions.
+    👉 Two are attributes(alt and title) of an HTML element.
+    👉 The last one is static text that is not embedded in any element.
+
+
+
+- ✅Here’s how you would mark them. 
+
+1️⃣Let’s start with the first snippet, simplest one:
+
+        <h1 i18n👈>Welcome to Ponyracer</h1>
+
+    Now let’s extract our very first messages file, using the extract-i18n command provided by
+    Angular CLI:
+
+        ng extract-i18n --output-path src/locale/
+    
+    🔥This will create the file messages.xlf in the src/locale directory. Here’s what it contains:
+        
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+            <file source-language="en-US" datatype="plaintext" original="ng2.template">
+                <body>
+                 🏷️<trans-unit id="7627914200888412251" datatype="html">
+                        <source>Welcome to Ponyracer</source>
+                        <context-group purpose="location">
+                            <context context-type="sourcefile">src/app/app.html</context>
+                            <context context-type="linenumber">2,3</context>
+                        </context-group>
+                    </trans-unit>
+                </body>
+            </file>
+        </xliff>
+    
+    🔥As you can see, it generates a 🏷️trans-unit containing, as the source, our static text.
+    🔥The role of the French translator will be to provide a messages.fr.xlf file looking like the
+    following:
+
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+            <file source-language="en" datatype="plaintext" original="ng2.template" targetlanguage="fr">
+                <body>
+                    <trans-unit id="7627914200888412251" datatype="html">
+                        <source>Welcome to Ponyracer</source>
+                        <target>Bienvenue dans Ponyracer</target> 👈
+                    </trans-unit>
+                </body>
+            </file>
+        </xliff>
+
+    This is easy enough, because the source message is easy to understand. You don’t need too much
+    context to know what it is about, and how to translate it. ⚠️But this way of doing things has
+    a big disadvantage. ⚠️⚠️If you change the source code of the template and introduce meaningless
+    white spaces for example, or a dot at the end of the title, here’s what happens when extracting
+    the file again:
+
+        <h1 i18n>
+            Welcome to Ponyracer.
+        </h1>
+
+        <trans-unit id="6888363845978110110"👈 datatype="html">
+            <source> Welcome to Ponyracer.
+            </source>
+            <context-group purpose="location">
+                <context context-type="sourcefile">src/app/app.html</context>
+                <context context-type="linenumber">6,8</context>
+            </context-group>
+        </trans-
+    
+    ⚠️⚠️Not only does the source change, which is expected, but the id also does. That really makes
+    maintaining the translated messages files more difficult than it should. 🔥🔥Fortunately, there’s a
+    better way. You can provide a unique ID by yourself:
+
+        <h1 i18n="@@home.title"👈>Welcome to Ponyracer</h1>
+    
+    ✅Which generates:
+
+        <trans-unit id="home.title"👈 datatype="html">
+            <source>Welcome to Ponyracer</source>
+            <context-group purpose="location">
+                <context context-type="sourcefile">src/app/app.html</context>
+                <context context-type="linenumber">10,11</context>
+            </context-group>
+        </trans-unit>
+
+
+    🔥🔥And in fact, in order to provide more context to your translators, you can provide a
+    meaning and a description in addition to the message ID:
+
+        <h1 i18n="welcome title|the title of the home page@@home.fullTitle"👈>Welcome to Ponyracer</h1>
+
+    ✅Which generates:
+
+        <trans-unit id="home.fullTitle" datatype="html">
+            <source>Welcome to Ponyracer</source>
+            <context-group purpose="location">
+                <context context-type="sourcefile">src/app/app.html</context>
+                <context context-type="linenumber">13,15</context>
+            </context-group>
+            <note priority="1" from="description">the title of the home page</note> 👈
+            <note priority="1" from="meaning">welcome title</note> 👈
+        </trans-unit>
+
+
+
+2️⃣ Let’s move to the second snippet now:
+
+        <p i18n="@@home.welcome">Welcome to Ponyracer {{ user().firstName }} {{ user().lastName }}!</p>
+    
+    Here is what it generates:
+        
+        <trans-unit id="home.welcome" datatype="html">
+            <source>Welcome to Ponyracer <x id="INTERPOLATION" equiv-text="{{ user().firstName }}"/> 
+                <x id="INTERPOLATION_1" equiv-text="{{ user().lastName }}"/>!</source>
+            <context-group purpose="location">
+                <context context-type="sourcefile">src/app/app.html</context>
+                <context context-type="linenumber">16,17</context>
+            </context-group>
+        </trans-unit>
+
+
+    As you can see, 🔥this format has several interesting features:
+
+    • there is no way a translator could mess up the content of the angular expressions, since they
+        are clearly indicated in the message;
+
+    • it’s clear that these two interpolations are for the developers but it might also be a good
+        idea to explain that in the description of the message for the translators;
+
+    • if, in some language, the last name should come before the first name, the translator is free
+        to reorder the interpolations;
+
+    • if the developer chooses to rename the attributes of the component or of the user, nothing
+        will have to be re-translated.
+
+
+
+3️⃣ Let’s proceed with the two attributes in the img element. The syntax to translate attributes is
+    the following:
+
+        <img
+            src="/img/pony.gif"
+            alt="running pony"
+            i18n-alt="@@home.ponyImage.alt" 👈
+            title="Ponies are cool, aren't they?"
+            i18n-title="@@home.ponyImage.title" 👈
+        />
+
+    That generates the following translation units:
+        
+        <trans-unit id="home.ponyImage.alt" datatype="html">
+            <source>running pony</source>
+            <context-group purpose="location">
+                <context context-type="sourcefile">src/app/app.html</context>
+                <context context-type="linenumber">21,22</context>
+            </context-group>
+        </trans-unit>
+        <trans-unit id="home.ponyImage.title" datatype="html">
+            <source>Ponies are cool, aren&apos;t they?</source>
+            <context-group purpose="location">
+                <context context-type="sourcefile">src/app/app.html</context>
+                <context context-type="linenumber">23,24</context>
+            </context-group>
+        </trans-unit>
+
+
+
+4️⃣ Finally, ⁉️how to translate the last snippet? There is no element where we could place an i18n
+    attribute. 🔥🔥There is a way to solve the problem: use an ng-container element, which won’t be
+    rendered in the DOM at runtime:
+
+        <ng-container i18n="@@home.startMessage">Let's start playing.</ng-container>

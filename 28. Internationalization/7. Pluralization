@@ -1,0 +1,78 @@
+Pluralization:
+
+
+- Sometimes, the message you want to display depends on the number of elements in a collection, or
+    on a count of elements.
+    💡For example, let’s say our home page displayed the number of planned races for the day. You
+    could simply show "Number of planned race(s): 4". But a friendlier message would be "No race is
+    planned" if there is none, or "Only one race is planned" if there is just one, or "N races are
+    planned" in the other cases.
+
+    🔥🔥Angular actually has a special template syntax to do that. It’s hard to read, except maybe
+    for LISP programmers, but it does the job and is fairly easy to understand with the following
+    example. Suppose our component has a property racesPlanned, containing the number of races that
+    are planned for today. You can display it as:
+
+        <p>
+            Hello,
+            {racesPlanned(), plural,
+            =0 {no race is planned}
+            =1 {only one race is planned}
+            other {{{ racesPlanned() }} races are planned}
+            }.
+        </p>
+
+    🔥🔥To internationalize this message, you would just use the i18n attribute as usual:
+
+        <p i18n="@@home.racesPlanned">
+            Hello, {racesPlanned(), plural, =0 {no race is planned} =1 {only one race is
+            planned} other
+            {{{ racesPlanned() }} races are planned}}.
+        </p>
+    
+
+    Extracting this generates two translation units, one for the message itself, and one for the
+    expression bundled in the message:
+
+        <trans-unit 👉id="home.racesPlanned" datatype="html">
+            <source> Hello, <x id="ICU" equiv-text="{racesPlanned(), plural, =0 {no race
+                is planned} =1 {only one race is planned} other
+                {{{ racesPlanned() }} races are planned}}" xid="2482273160942454889"/>.
+            </source>
+            <context-group purpose="location">
+                <context context-type="sourcefile">src/app/app.html</context>
+                <context context-type="linenumber">32,35</context>
+            </context-group>
+        </trans-unit>
+        <trans-unit 🏷️id="5232470321856793506" datatype="html">
+            <source>{VAR_PLURAL, plural, =0 {no race is planned} =1 {only one race is
+                planned} other {<x id="INTERPOLATION"/> races are planned}}
+            </source>
+            <context-group purpose="location">
+                <context context-type="sourcefile">src/app/app.html</context>
+                <context context-type="linenumber">32,33</context>
+            </context-group>
+        </trans-unit>
+
+
+    ⚠️⚠️Unfortunately, 🏷️the second translation unit has an auto-generated ID, and the pluralization
+    syntax must be understood and respected by the translator. It’s possible to translate those two
+    translation units, though, and the translation works as expected:
+
+        <trans-unit id="home.racesPlanned" datatype="html">
+            <source>
+                Hello, <x id="ICU" equiv-text="{racesPlanned, plural, =0 {...} =1 {...} other
+                {...}}"/>..
+            </source>
+            <target>Bonjour, <x id="ICU" equiv-text="{racesPlanned, plural, =0 {...} =1
+                {...} other {...}}"/>.</target>
+        </trans-unit>
+        <trans-unit id="5232470321856793506" datatype="html">
+            <source>{VAR_PLURAL, plural, =0 {no race is planned} =1 {only one race is
+                planned} other {<x id="INTERPOLATION" equiv-text="{{ racesPlanned }}"/> races are
+                planned} }
+                </source>
+            <target>{VAR_PLURAL, plural, =0 {aucune course n'est planifiée} =1 {seule une
+                course est planifiée} other {<x id="INTERPOLATION" equiv-text="{{ racesPlanned }}"/>
+                courses sont planifiées} }</target>
+        </trans-unit>

@@ -1,0 +1,43 @@
+Translating text:
+
+
+- If you have used AngularJS 1.x before, and have internationalized your AngularJS application,
+    you probably know that there is nothing built-in to display translated text based on the
+    preferred language of the user.
+
+- One of the popular libraries to achieve that with AngularJS is angular-translate
+    (https://angular-translate.github.io/). 🔥The strategy it uses is fairly common: you use a
+    directive or a pipe to translate a key (for example 'home.welcome'). This key identifies a
+    message, and you provide the translations for all the languages you want to support
+    (for example: 'Welcome' and 'Bienvenue'). 🔥At runtime, the directive or pipe uses the preferred
+    language to get the appropriate translation, and updates the DOM with the translated message. You
+    can change the preferred language at runtime, and all the messages on the page are immediately
+    translated to the new language.
+
+
+- 🔥Internationalization is now provided by Angular directly, although it was hardly usable before
+    version 4.0, and was completely rewritten in version 9.0. No need for an external dependency
+    anymore. And it uses basically the same strategy based on keys, but with a big difference:
+    🔥🔥it happens at compile-time.
+
+
+- With the compilation time strategy, you prepare one version of your application per locale. When
+    you build your app, Angular parses all the HTML templates of your components, and transforms
+    them to JavaScript code that, basically, analyzes the changes in the model and modifies the DOM
+    accordingly. 🔥The translation happens at the end of this compilation phase. That has important
+    consequences:
+    • you can’t change the locale and the translated messages at runtime. The whole application
+        needs to be reloaded and restarted to do that;
+
+    • once started, the application is faster, since it doesn’t have to dynamically translate the keys
+        again and again;
+
+    • if you use the AOT(Ahead-Of-Time) compiler (and you should, at least in production), you must
+        build and serve as many applications as locales that you want to support.   
+
+
+- 🔥Starting with version 9.0, the Angular team introduced a new @angular/localize package. 🔥If you
+    use the CLI, you can just run ng add @angular/localize and the CLI adds it for you in the proper
+    place.
+    🔥🔥This new package introduces a $localize global function, that is used under the hood for
+    the localization, and that we’ll be able to use in the future to translate messages in your code.

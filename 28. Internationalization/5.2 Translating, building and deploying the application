@@ -1,0 +1,87 @@
+Translating, building and deploying the application:
+
+
+- 🤔Now that you generated a complete messages.xlf file, someone needs to translate it.
+
+    🔥🔥A common mistake is to just replace the original source text (in English in our
+    case) with its translation. That won’t work. The translation must be written inside
+    the <target> element of each translation unit. The <source> element should be kept
+    untouched: it provides the original message that must be translated. For example:
+
+        <trans-unit id="home.welcome" datatype="html">
+            <source>Welcome to Ponyracer <x id="INTERPOLATION" equiv-text="{{ user.firstName}}"/>
+            <x id="INTERPOLATION_1" equiv-text="{{ user.lastName }}"/>!</source>
+            <target>Bienvenue dans Ponyracer <x id="INTERPOLATION" equiv-text="{{ user.firstName
+            }}"/> <x id="INTERPOLATION_1" equiv-text="{{ user.lastName }}"/>&nbsp;!</target>
+        </trans-unit>
+    
+
+
+- To run or build the application in French, you need to specify the locale, and the location of
+    the messages file, to ng serve or ng build in angular.json by using the i18n property:
+
+    ⚠️In versions before 9, to run or build the application in French, you had to pass various options
+    to ng serve and ng build.
+
+    🔥Since version 9, you must specify the locales you want to support, and their associated
+    messages file, in the angular.json configuration file by using the i18n property:
+
+        "prefix": "ns",
+        "i18n": {
+            "locales": {
+                "fr": "src/locale/messages.fr.xlf"
+            }
+        },
+
+    🔥🔥You can add as many locales as you want, each one linked to its translations.
+    You can then run:
+        
+        ng build --localize
+    
+    and the CLI builds the app, and generates as many versions as there are locales defined. In our
+    case, it generates one version for the default locale en-US, in the directory dist/i18n/en-US
+    (if your project is named i18n), and another one for the fr locale in the directory dist/i18n/fr.
+
+
+
+- 🔥If you want to run ng serve, you have to specify one locale, as you can only serve one version.
+    🔥🔥The easiest way to do so is to define a build configuration for this locale in angular.json,
+    just like the production configuration, but much simpler:
+
+        "fr": {
+            "localize": ["fr"]
+        }
+    
+    and add a serve configuration:
+        
+        "fr": {
+            "buildTarget": "i18n:build:fr"
+        }
+    
+    you can then run:
+        
+        ng serve --configuration=fr
+
+    or build for a specific locale with:
+        
+        ng build --configuration=production,fr
+
+
+- The AOT compiler will locate all the i18n-marked snippets in the templates, find the corresponding
+    translations in the XLF file, and transform the snippets in the template using the translations.
+    It will then proceed as usual to generate JavaScript code from the templates and bundle your
+    application.
+
+
+- 🔥🔥If you want to support English, French and Spanish, for example, you’ll have to build only
+    once, and then the localization tool will generate 3 versions (once for each locale) of the
+    application (this is very fast). 
+    🔥🔥Then, you need to deploy the 3 built applications to your production web server. You will
+    also need to decide which application to serve to which user. This can be done at server-side, by
+    detecting the preferred locale from the request header and serving the appropriate index.html
+    page. Or by getting the preferred locale of the authenticated user from the database and serving
+    the appropriate index.html page.
+    🔥🔥You could also do it at client-side, by serving your three applications on three different
+    URLs (ponyracer.com, ponyracer.fr and ponyracer.es, or ponyracer.com/en, ponyracer.com/fr and
+    ponyracer.com/es), and by redirecting from ponyracer.com to the correct URL based on the browser
+    locale.

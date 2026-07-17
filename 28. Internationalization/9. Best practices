@@ -1,0 +1,46 @@
+Best practices:
+
+
+- These best practices, acquired in years of development of i18ned applications, are not
+    necessarily related to Angular, but to i18n in general.
+
+- 🔥Always specify an explicit unique ID for your messages. If you choose a meaningful ID, you
+    often don’t need to specify a meaning and a description for your message, because the ID is
+    sufficient.
+    🔥Prefixing the IDs with the name of the component where they are used (like I did in all the
+    examples with the home. prefix) allows you to know where they are used, and to find them in the
+    code easily.
+    ⚠️Relying on auto-generated IDs doesn’t allow you to have different translations for two
+    identical messages in your source language. It also makes it very hard to figure out what needs
+    to be changed between two releases of your application.
+
+
+- 🔥Even if the translators are not always developers, store your message files in your version
+    control system. This makes sure a branch can have its own additions, which can be merged to
+    the main branch when ready. It makes it easy to spot differences between branches and releases.
+
+
+- 🔥Duplication isn’t necessarily bad. You might think that two pages sharing a label "Save" or "OK"
+    should use the same key, but maybe you will want to label them "OK, I’ll do it" and "OK, I accept"
+    later. Or maybe they need to be differentiated in some foreign language. It’s even more important
+    to use two separate keys for words that are identical in English, but not in other languages,
+    like "free", which can mean "free as in beer" or "free as in speech". Other languages use
+    different words for these two concepts.
+
+
+- ⚠️Don’t confuse languages with countries. Don’t use country flags to represent languages. Some
+    languages (like English) are spoken in several countries. And some countries use several
+    languages (like Belgium, which uses French, Dutch and German).
+
+
+- Avoid concatenation to translate text with parameters. For example, ⚠️to translate "Hello, my name
+    is X and I’m Y years old", don’t use a first key for "Hello, my name is ", a second key for "
+    and I’m " and a third key for " years old". ✅Use a single key, containing interpolated
+    expressions.
+
+    💪You should now be ready to conquer the world with your shiny i18ned Angular application.
+
+
+
+🤩🤩Try our exercise I18n to learn how to configure and use Transloco, the LOCALE_ID, and date-fns
+to internationalize your applications.

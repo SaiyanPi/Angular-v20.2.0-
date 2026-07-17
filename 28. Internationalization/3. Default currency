@@ -1,0 +1,34 @@
+Default currency:
+
+
+- The currency pipe allows you to specify which currency you want to use by providing an ISO string
+    like USD, EUR… If you don’t provide one, it 🔥uses USD by default. 🔥🔥So it is a bit cumbersome
+    to have to specify the currency every time, if your application only uses EUR for example.
+
+    Angular 9 introduced the possibility of configuring the default currency globally using the token
+    DEFAULT_CURRENCY_CODE.
+
+        bootstrapApplication(App, {
+            providers: [
+                { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' },
+                { provide: LOCALE_ID, useValue: 'fr-FR' }
+            ]
+        }).catch(err => console.error(err));
+    
+    And you can 🔥then use currency without specifying EUR in a component. You can also get the
+    currency via dependency injection of course:
+
+        @Component({
+            selector: 'ns-currency',
+            template: `
+                <p>The currency is {{ currency }}</p>
+                <!-- will display 'EUR' --> 👈
+
+                <p>{{ 1234.56 | currency }}</p>
+                <!-- will display '1 234,56 €' --> 👈
+            `,
+            imports: [CurrencyPipe]
+        })
+        class DefaultCurrencyOverridden {
+            protected readonly currency = inject(DEFAULT_CURRENCY_CODE);
+        }

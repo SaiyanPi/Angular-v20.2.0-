@@ -142,3 +142,7 @@
     menu.ts:
 
         imports: [RouterLink, DecimalPipe, 👉NgbCollapse],
+
+
+
+8️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK. 

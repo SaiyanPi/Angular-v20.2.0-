@@ -1,0 +1,28 @@
+Process and tooling:
+
+
+- 🫡In the remaining parts of this chapter, we will assume that you use Angular CLI to build your
+    application. The tools are actually available and usable outside of Angular CLI. But since
+    they’re well integrated and simple to use in Angular CLI, and since it’s the recommended way
+    to build your applications anyway, we will use that.
+
+
+- That said, how do we proceed? You already know how to create components and write their
+    templates. ⁉️Will you have to rewrite everything to internationalize them? Thankfully, no.
+
+    🔥🔥The process is the following one:
+
+    1️⃣ you mark the parts of the templates that need to be translated using the i18n attribute;
+
+    2️⃣ You run a tool to extract all those marked parts into a file, for example messages.xlf. Two
+        file formats, both xml-based and industry-standard, are supported;
+
+    3️⃣ You ask a competent translator to create a translated version of this file, for example
+        messages.fr.xlf
+
+    4️⃣ You build your application by providing the locale ID ('fr' for example) and the 🔥file
+        containing the translations (messages.fr.xlf). The angular compiler and the CLI replace all
+        the i18n-marked parts of the templates with the translations found in the file, and
+        configures your application to use the provided locale ID.
+
+    Let’s examine each of those steps in more details🤩.

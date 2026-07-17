@@ -1,0 +1,37 @@
+Translating messages in the code:
+
+
+- ⚠️Sometimes, the text you need to translate is not in the templates, but is in the TypeScript code
+    itself. 🔥For example, the three states of a pony race PENDING, RUNNING and FINISHED should be
+    translated somehow. Since Angular 9.0, you can use $localize to do so. $localize is a tag
+    function that can be applied to a template string (check the ECMAScript 2015 chapter 1 if you
+    need a refresher).
+
+        protected status = $localize`PENDING`;
+    
+    ✅Then, when you build your application with the CLI, the $localize calls are replaced with
+    their translations!
+
+
+- 🔥🔥You can also define an ID with the syntax we have in templates, and have dynamic parts in the
+    string:
+
+        protected greetings = $localize`:@@home.greetings:Welcome ${this.user().firstName}!`;
+    
+    🔥ng extract-i18n supports the message extraction from $localize calls in the code since CLI
+    v10.1, and it generates:
+
+        <trans-unit id="home.greetings" datatype="html">
+            <source>Welcome <x id="PH" equiv-text="this.user().firstName"/>!</source>
+            <context-group purpose="location">
+                <context context-type="sourcefile">src/app/app.ts</context>
+                <context context-type="linenumber">17</context>
+            </context-group>
+        </trans-unit>
+    
+    🔥It can then be translated as usual (with PH the placeholder for the dynamic part):
+        
+        <trans-unit id="home.greetings" datatype="html">
+            <source>Welcome <x id="PH" equiv-text="{{ this.user.firstName }}"/>!</source>
+            <target>Bonjour <x id="PH" equiv-text="{{ this.user.firstName }}"/>&nbsp;!</target>
+        </trans-unit>

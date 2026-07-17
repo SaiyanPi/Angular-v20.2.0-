@@ -1,0 +1,103 @@
+The locale:
+
+- We already mentioned internationalization before, in the chapter about pipes. 🔥Four of the
+    built-in Angular pipes deal with internationalization. Those are the number, percent, currency
+    and date pipes.
+    🔥Until Angular 5, they used to rely on the standard JavaScript Internationalization API, which
+    is supposed to be provided by the browser. But as that was not always the case, and there were
+    numerous bugs and inconsistencies between browsers, the pipes have been completely overhauled
+    in Angular 5.0.
+
+- What we don’t know yet is how these three pipes decide how to format the numbers and dates.
+    Should they use a dot or a comma as decimal separator? Should they use January or Janvier for
+    the first month of the year? You might think that this is decided based on the preferred
+    language configured in the browser, but actually, it’s not. 🔥This depends on an injectable
+    value named LOCALE_ID. And the default value of LOCALE_ID is 'en-US'.
+
+- 🔥Here is an example showing how to get the value of LOCALE_ID. As you can see, it’s a simple   
+    string value. 🔥To inject it into your components or services, you can’t just rely on its type.
+    You need to tell Angular which token identifies the value, using @Inject(LOCALE_ID). 🔥This can
+    be useful if your logic needs to know which locale the application is using.
+
+        @Component({
+            selector: 'ns-locale',
+            template: `
+                <p>The locale is {{ locale }}</p>
+                <!-- will display 'en-US' --> 👈
+
+                <p>{{ 1234.56 | number }}</p>
+                <!-- will display '1,234.56' -->
+            `,
+            imports: [DecimalPipe]
+        })
+        class DefaultLocale {
+         👉 protected readonly locale = inject(LOCALE_ID);
+        }
+
+
+    🤔This is good. But how can we change the locale? 🔥Actually, you can’t. The locale is a constant,
+    that you can’t change once the application has started. 🔥But that doesn’t mean you can’t set it
+    to another value before the application starts. 🔥🔥This is possible, simply by providing another
+    value for the LOCALE_ID token in the providers of the application. ⚠️⚠️Beware though: this changes
+    the locale, but another step is required to bundle the locale-specific data (month translations,
+    number formatting rules, etc.) with your application. 🔥Angular only bundles the en-US data by
+    default.
+
+        import '@angular/common/locales/global/fr';
+    
+    Here’s an example showing its effect on our component:
+
+        bootstrapApplication(App, {
+            providers: [
+             👉 { provide: LOCALE_ID, useValue: 'fr-FR' }
+            ]
+        }).catch(err => console.error(err));
+
+        @Component({
+            selector: 'ns-locale',
+            template: `
+                <p>The locale is {{ locale }}</p>
+                <!-- will display 'fr-FR' --> 👈
+
+                <p>{{ 1234.56 | number }}</p>
+                <!-- will display '1 234,56' -->
+            `,
+            imports: [DecimalPipe]
+        })
+        export class CustomLocale {
+            protected readonly locale = inject(LOCALE_ID);
+        }
+    
+
+    All the pipes that handle internationalization can also take a locale as their last parameter.
+    You can then change it dynamically if needed:
+
+        @Component({
+            selector: 'ns-locale',
+            template: `
+                <p>The locale is {{ locale }}</p>
+                <!-- will display 'en-US' -->
+
+                <p>{{ 1234.56 | 👉number: '1.0-3' : 'fr-FR' }}</p>
+                <!-- will display '1 234,56' --> 👈
+            `,
+            imports: [DecimalPipe]
+        })
+        class DefaultLocaleOverridden {
+            protected readonly locale = inject(LOCALE_ID);
+        }
+    
+                🧠🧠 
+                '1.0-3' means:  1 → Minimum 1 integer digit
+                                0 → Minimum 0 decimal (fraction) digits
+                                3 → Maximum 3 decimal (fraction) digits
+                
+                for example, if '1.2-3' then,
+                
+                    12.34567	->      12.346
+                    1234	    ->      1,234.00
+
+
+    ✅If you want to create an application that uses only one locale, but different from 'en-US',
+    then setting the locale as explained above is all you need to do. ⚠️⚠️But often, this is not
+    enough, and you want to really internationalize your application.
