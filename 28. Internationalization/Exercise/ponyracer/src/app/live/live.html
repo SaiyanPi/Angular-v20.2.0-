@@ -1,0 +1,130 @@
+<!-- @if (raceModel(); as raceModel) {
+  <h1>{{ raceModel.name }}</h1>
+
+  @if (raceModel.liveError) {
+    <ngb-alert type="danger" [dismissible]="false">A problem occurred during the live.</ngb-alert>
+  }
+
+  @switch (raceModel.status) {
+    @case ('FINISHED') {
+      <div>
+        @if (winners()?.length === 0) {
+          <div>The race is over.</div>
+        } @else {
+          @if (betWon()) {
+            <ngb-alert [dismissible]="false" type="success">You won your bet!</ngb-alert>
+          } @else if (raceModel.betPonyId) {
+            <ngb-alert [dismissible]="false" type="warning">You lost your bet.</ngb-alert>
+          }
+          <div>Most Valuable Ponies</div>
+          <div class="row">
+            @for (winner of winners(); track winner.id) {
+              <div class="col-12 col-md-2" [class.selected]="winner.id === raceModel.betPonyId">
+                <pr-pony [ponyModel]="winner" />
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+    @case ('PENDING') {
+      <div>
+        <div>The race will start {{ raceModel.startInstant | prettyDate }}</div>
+        <div class="row">
+          @for (pony of raceModel.ponies; track pony.id) {
+            <div class="col-sm-2" [class.selected]="pony.id === raceModel.betPonyId">
+              <pr-pony [ponyModel]="pony" />
+            </div>
+          }
+        </div>
+      </div>
+    }
+    @case ('RUNNING') {
+      <div>
+        <div style="margin-left: 95%; margin-bottom: 5px">
+          <span class="fa fa-flag" style="font-size: x-large"></span>
+        </div>
+        <div style="width: 95%; border-right: 3px dotted lightgray">
+          @for (pony of raceModel.poniesWithPosition; track pony.id) {
+            <div
+              class="pony-wrapper"
+              [class.selected]="pony.id === raceModel.betPonyId"
+              [style.marginLeft.%]="pony.position - 5"
+              style="transition: margin-left 1s linear"
+            >
+              <pr-pony [ponyModel]="pony" [isRunning]="true" [isBoosted]="pony.boosted" (ponySelected)="onSelection(pony)"/>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+}
+ -->
+
+
+<ng-container *transloco="let t">
+  @if (raceModel(); as raceModel) {
+    <h1>{{ raceModel.name }}</h1>
+
+    @if (raceModel.liveError) {
+      <ngb-alert type="danger" [dismissible]="false">{{ t('live.error') }}</ngb-alert>
+    }
+
+    @switch (raceModel.status) {
+      @case ('FINISHED') {
+        <div>
+          @if (winners()?.length === 0) {
+            <div>{{ t('live.done') }}</div>
+          } @else {
+            @if (betWon()) {
+              <ngb-alert [dismissible]="false" type="success">{{ t('live.won') }}</ngb-alert>
+            } @else if (raceModel.betPonyId) {
+              <ngb-alert [dismissible]="false" type="warning">{{ t('live.lost') }}</ngb-alert>
+            }
+            <div>{{ t('live.winners') }}</div>
+            <div class="row">
+              @for (winner of winners(); track winner.id) {
+                <div class="col-12 col-md-2" [class.selected]="winner.id === raceModel.betPonyId">
+                  <pr-pony [ponyModel]="winner" />
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+      @case ('PENDING') {
+        <div>
+          <div>{{ t('live.pending', { when: raceModel.startInstant | prettyDate } ) }}</div>
+          <div class="row">
+            @for (pony of raceModel.ponies; track pony.id) {
+              <div class="col-sm-2" [class.selected]="pony.id === raceModel.betPonyId">
+                <pr-pony [ponyModel]="pony" />
+              </div>
+            }
+          </div>
+        </div>
+      }
+      @case ('RUNNING') {
+        <div>
+          <div style="margin-left: 95%; margin-bottom: 5px">
+            <span class="fa fa-flag" style="font-size: x-large"></span>
+          </div>
+          <div style="width: 95%; border-right: 3px dotted lightgray">
+            @for (pony of raceModel.poniesWithPosition; track pony.id) {
+              <div
+                class="pony-wrapper"
+                [class.selected]="pony.id === raceModel.betPonyId"
+                [style.marginLeft.%]="pony.position - 5"
+                style="transition: margin-left 1s linear"
+              >
+                <pr-pony [ponyModel]="pony" [isRunning]="true" [isBoosted]="pony.boosted" (ponySelected)="onSelection(pony)"/>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  }
+
+</ng-container>

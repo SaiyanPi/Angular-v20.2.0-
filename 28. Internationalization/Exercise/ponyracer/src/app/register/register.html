@@ -1,0 +1,135 @@
+<!-- <div class="row">
+  <div class="col-md-6 offset-md-3">
+    <h1>Sign up</h1>
+    @if (registrationFailed()) {
+      <ngb-alert type="danger" [dismissible]="false">Try again with another login.</ngb-alert>
+    }
+
+    <form [formRoot]="userForm">
+      <div class="mb-3">
+        <label for="login" class="form-label" [prFormLabel]="userForm.login">Login</label>
+        <input id="login" class="form-control" [formField]="userForm.login" />
+        @let login = userForm.login();
+        @if (login.touched() && login.invalid()) {
+          @if (login.getError('required')) {
+            <div class="invalid-feedback">Login is required</div>
+          }
+          @if (login.getError('minLength')) {
+            <div class="invalid-feedback">Your login should be at least 3 characters</div>
+          }
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label" [prFormLabel]="userForm.password">Password</label>
+        <input id="password" type="password" class="form-control" [formField]="userForm.password" />
+        @let password = userForm.password();
+        @if (password.touched() && password.invalid()) {
+          @if (password.getError('required')) {
+            <div class="invalid-feedback">Password is required</div>
+          }
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="confirm" class="form-label" [prFormLabel]="userForm.confirmPassword">Confirm password</label>
+        <input id="confirm" type="password" class="form-control" [formField]="userForm.confirmPassword" />
+        @let confirmPassword = userForm.confirmPassword();
+        @if (confirmPassword.touched() && confirmPassword.invalid()) {
+          @if (confirmPassword.getError('required')) {
+            <div class="invalid-feedback">Password confirmation is required</div>
+          }
+          @if (confirmPassword.getError('matchingError')) {
+            <div class="invalid-feedback">Your password does not match</div>
+          }
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="birth-year" class="form-label" [prFormLabel]="userForm.birthYear">Birth year</label>
+        <pr-birth-year-input inputId="birth-year" [formField]="userForm.birthYear" />
+
+        @let birthYear = userForm.birthYear();
+        @if (birthYear.touched() && birthYear.invalid()) {
+          @if (birthYear.getError('required')) {
+            <div class="invalid-feedback">Birth year is required</div>
+          }
+          @if (birthYear.getError('min') || birthYear.getError('max')) {
+            <div class="invalid-feedback">This is not a valid year</div>
+          }
+        }
+      </div>
+
+      <button class="btn btn-primary" type="submit">Let's go!</button>
+    </form>
+  </div>
+</div> -->
+
+<ng-container *transloco="let t">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <h1>{{ t('register.title') }}</h1>
+      @if (registrationFailed()) {
+        <ngb-alert type="danger" [dismissible]="false">{{ t('register.failed') }}</ngb-alert>
+      }
+
+      <form [formRoot]="userForm">
+        <div class="mb-3">
+          <label for="login" class="form-label" [prFormLabel]="userForm.login">{{ t('register.login') }}</label>
+          <input id="login" class="form-control" [formField]="userForm.login" />
+          @let login = userForm.login();
+          @if (login.touched() && login.invalid()) {
+            @if (login.getError('required')) {
+              <div class="invalid-feedback">{{ t('register.login-required') }}</div>
+            }
+            @if (login.getError('minLength'); as minLengthError) {
+              <div class="invalid-feedback">{{ t('register.login-too-short', { length: $any(minLengthError).minLength }) }}</div>
+            }
+          }
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label" [prFormLabel]="userForm.password">{{ t('register.password') }}</label>
+          <input id="password" type="password" class="form-control" [formField]="userForm.password" />
+          @let password = userForm.password();
+          @if (password.touched() && password.invalid()) {
+            @if (password.getError('required')) {
+              <div class="invalid-feedback">{{ t('register.password-required') }}</div>
+            }
+          }
+        </div>
+
+        <div class="mb-3">
+          <label for="confirm" class="form-label" [prFormLabel]="userForm.confirmPassword">{{ t('register.confirm') }}</label>
+          <input id="confirm" type="password" class="form-control" [formField]="userForm.confirmPassword" />
+          @let confirmPassword = userForm.confirmPassword();
+          @if (confirmPassword.touched() && confirmPassword.invalid()) {
+            @if (confirmPassword.getError('required')) {
+              <div class="invalid-feedback">{{ t('register.confirm-required') }}</div>
+            }
+            @if (confirmPassword.getError('matchingError')) {
+              <div class="invalid-feedback">{{ t('register.matching-error') }}</div>
+            }
+          }
+        </div>
+
+        <div class="mb-3">
+          <label for="birth-year" class="form-label" [prFormLabel]="userForm.birthYear">{{ t('register.birth-year') }}</label>
+          <pr-birth-year-input inputId="birth-year" [formField]="userForm.birthYear" />
+
+          @let birthYear = userForm.birthYear();
+          @if (birthYear.touched() && birthYear.invalid()) {
+            @if (birthYear.getError('required')) {
+              <div class="invalid-feedback">{{ t('register.birth-year-required') }}</div>
+            }
+            @if (birthYear.getError('min') || birthYear.getError('max')) {
+              <div class="invalid-feedback">{{ t('register.birth-year-invalid') }}</div>
+            }
+          }
+        </div>
+
+        <button class="btn btn-primary" type="submit">{{ t('register.submit') }}</button>
+      </form>
+    </div>
+  </div>
+</ng-container>

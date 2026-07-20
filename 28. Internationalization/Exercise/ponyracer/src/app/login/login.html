@@ -1,0 +1,70 @@
+<!-- <div class="row">
+  <div class="col-md-6 offset-md-3">
+    <h1>Log in</h1>
+    @if (authenticationFailed()) {
+      <ngb-alert type="danger" [dismissible]="false">Nope, Try again.</ngb-alert>
+    }
+
+    <form [formRoot]="credentials">
+      <div class="mb-3">
+        <label for="login" class="form-label" [prFormLabel]="credentials.login">Login</label>
+        <input id="login" class="form-control" [formField]="credentials.login" />
+        @let login = credentials.login();
+        @if (login.touched() && !login.valid()) {
+          @if (login.getError('required')) {
+            <div class="invalid-feedback">Login is required</div>
+          }
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label" [prFormLabel]="credentials.password">Password</label>
+        <input id="password" type="password" class="form-control" [formField]="credentials.password" />
+        @let password = credentials.password();
+        @if (password.touched() && !password.valid()) {
+          @if (password.getError('required')) {
+            <div class="invalid-feedback">Password is required</div>
+          }
+        }
+      </div>
+      <button class="btn btn-primary" type="submit">Log me in!</button>
+    </form>
+  </div>
+</div> -->
+
+<ng-container *transloco="let t">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <h1>{{ t('login.title') }}</h1>
+      @if (authenticationFailed()) {
+        <ngb-alert type="danger" [dismissible]="false">{{ t('login.failed') }}</ngb-alert>
+      }
+
+      <form [formRoot]="credentials">
+        <div class="mb-3">
+          <label for="login" class="form-label" [prFormLabel]="credentials.login">{{ t('login.login') }}</label>
+          <input id="login" class="form-control" [formField]="credentials.login" />
+          @let login = credentials.login();
+          @if (login.touched() && !login.valid()) {
+            @if (login.getError('required')) {
+              <div class="invalid-feedback">{{ t('login.login-required') }}</div>
+            }
+          }
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label" [prFormLabel]="credentials.password">{{ t('login.password') }}</label>
+          <input id="password" type="password" class="form-control" [formField]="credentials.password" />
+          @let password = credentials.password();
+          @if (password.touched() && !password.valid()) {
+            @if (password.getError('required')) {
+              <div class="invalid-feedback">{{ t('login.password-required') }}</div>
+            }
+          }
+        </div>
+        <button class="btn btn-primary" type="submit">{{ t('login.submit') }}</button>
+      </form>
+    </div>
+  </div>
+
+</ng-container>

@@ -1,0 +1,448 @@
+⚠️ we will be using ponyracer from the chapter 26: Advanced components and directives.
+
+------------------------------------- Internationalization ------------------------------------------
+
+- LOCALIZE THE APPLICATION WITH TRANSLOCO, LOCALE-AWARE FORMATTING, AND A PERSISTED LANGUAGE SWITCHER.
+
+- Instructions: Angular Prerequisite "Dependency injection and services" chapter, "Forms" chapter, 
+    "I18n" chapter.
+
+- We’ve coded all our application in English, but let’s face it: a large part of our audience lives
+    in France, and French people are not well-known for their English skills.
+    🤩Let’s internationalize our application.
+
+- It’s a small app, managed by a small team, supporting only English and French. ⚠️So instead of using
+    Angular’s native i18n support, we’ll choose a lighter way, where everything is done at runtime,
+    using a popular external library: Transloco.
+
+
+1️⃣ 🔥🔥Translating texts using Transloco simply consists in configuring the application to load a
+    JSON file containing translations for the configured language, and then using Angular directives,
+    pipes and services, and pass them an i18n key to get the corresponding message from the JSON
+    file.
+    Let’s start by adding Transloco and its persist-lang plugin to the dependencies of the
+    application:
+
+        npm install --save-exact @jsverse/transloco@8.3.0 @jsverse/transloco-persist-lang@8.3.0
+    
+    or just:
+
+        npm install @jsverse/transloco
+        npm install @jsverse/transloco-persist-lang
+
+
+
+2️⃣ 🔥We can now configure the application to use it. 🔥We’ll need to define a loader to load the JSON
+    file for a given language, 🔥and add the Transloco provider to the application. 💡A traditional
+    approach is to simply load the JSON file using the HttpClient and to store the files in the
+    assets of the application. An issue with this approach is that the content of these files tends
+    to change at each version of the application, so those files may not be cached reliably by the
+    browser. Instead of using an HTTP loader, we’ll load the JSON files using a dynamic JavaScript
+    import (the same ones we use to lazy-load components and routes). The JSON files will then be
+    transformed into JavaScript bundles by the CLI.
+    Add the following loader to the app.config.ts file:
+
+        @Service()
+        export class TranslocoModuleLoader implements TranslocoLoader {
+            getTranslation(lang: string): Promise<Translation> {
+                return import(`./i18n/${lang}.json`).then((m: { default: Translation }) => m.default);
+            }
+        }
+    
+    Then add the following provider to the app configuration:
+
+        provideTransloco({
+            config: {
+                availableLangs: ['en', 'ne'],
+                defaultLang: 'en',
+                prodMode: !isDevMode()
+            },
+            loader: TranslocoModuleLoader
+        })
+    
+    ❓What have we done?
+    ✅We have configured Transloco to support two languages (en and ne), and to use our module
+    loader which will locate the JSON files in src/app/i18n/en.json and src/app/i18n/ne.json
+    respectively.
+
+
+
+3️⃣ Let’s translate our home page. We have only a few texts to translate on this page: the
+    subtitle, and the text of the various links. Let’s extract the English texts to the
+    i18n/en.json file:
+
+        {
+            "home": {
+                "subtitle": "Always a pleasure to bet on ponies",
+                "login": "Login",
+                "register": "Register",
+                "races": "Races"
+            }
+        }
+
+    And let’s play the role of the translator by also providing the French translations in i18n/fr.json file:
+    i18n/fr.json:
+
+        {
+            "home": {
+                "subtitle": "घोडा दौडमा बाजी लगाउन सधैं रमाइलो लाग्छ।",
+                "login": "लगइन",
+                "register": "दर्ता गर्नुहोस्",
+                "races": "दौडहरू"
+            }
+        }
+
+
+
+4️⃣ It’s now time to replace the hard-coded texts in the home component template with
+    internationalized keys. To do that, Transloco provides a structural directive, which allows
+    exposing a function (traditionally named t()) to the template. Here’s how it’s used:
+
+        <ng-container *transloco="let t">
+            The whole template goes here.
+            It can use {{ t('the.i18n.key') }} to get an i18n message.
+        </ng-container>
+    
+    home.html:
+
+        <ng-container *transloco="let t">
+            <div class="text-center" style="margin-top: 100px">
+                <h1>Ponyracer <small>{{ t('home.subtitle') }}</small></h1>
+            </div>
+
+            <div class="text-center">
+                @if (!user()) {
+                    <a class="btn btn-large btn-primary me-2" routerLink="/login">{{ t('home.login') }}</a>
+                    <a class="btn btn-large btn-primary" routerLink="/register">{{ t('home.register') }}</a>
+                } @else {
+                    <div class="text-center">
+                        <a class="btn btn-large btn-primary" routerLink="/races">{{ t('home.races') }}</a>
+                    </div>
+                }
+            </div>
+        </ng-container>
+
+    🔥Use it to translate the home page (⚠️don’t forget to import the TranslocoDirective), and check
+    that everything is fine.
+
+
+
+5️⃣ This is good, ❓but how can we see the page in French rather than the default English? There are
+    various possible strategies. We’ll choose a 🔥simple one: configure the default language based
+    on the browser preferred language. Transloco provides a helper function to get the preferred
+    language of the browser: getBrowserLang(). If it is 'fr', we’ll use 'fr'. Otherwise we’ll use
+    'en'. Change the code in app.config.ts to achieve that. Once it’s done, you can configure your
+    browser to use French as a preferred language and reload the home page. It should now display
+    its messages in French.
+
+    You should now have a basic understanding of how it works to translate messages using Transloco.
+    Of course, there is more: parameterized messages, translating from the TypeScript code, etc.
+    Check the Transloco documentation(https://jsverse.github.io/transloco/home) to know all about it.
+
+    🔥Internationalization isn’t limited to just translating text. It also has to do with formatting
+    numbers and dates for example. In fact, we already do that with our fromNow pipe, but it’s
+    hard-coded to use English for now. Transloco provides number and date formatting pipes, but
+    what if we want to keep using the native Angular pipes? Those of course do not use the default
+    language configured for Transloco. They use the LOCALE_ID injection token. And date-fns, that
+    we use in the fromNow pipe, uses yet another source to get its locale. So we need to keep
+    everything consistent.
+
+    Let’s start by configuring the LOCALE_ID. In app.config.ts, add a provider for the LOCALE_ID
+    token, using useValue for now. And use the default language that we’ve told Transloco to use
+    before.
+
+    🔥Also, don’t forget to load the locale data that Angular needs to format numbers and dates in
+    French. To do that, add the following import at the beginning of the app.config.ts file:
+
+        import '@angular/common/locales/global/fr';
+    
+    Let’s now use the appropriate locale in the fromNow pipe. You’ll need to pass an additional
+    option named locale to the formatDistanceToNowStrict function. The value of this option is a
+    Locale object that needs to be imported from 'date-fns/locale'. Inject the LOCALE_ID in the
+    pipe, and depending on its value, pass the locale enUS or fr as the locale option of
+    formatDistanceToNowStrict (locale is an option like addSuffix).
+    from-now-pipe.ts:
+
+        import { enUS, ne } from 'date-fns/locale';
+
+        const locales: Record<string, Locale> = {
+            en: enUS,
+            ne: ne
+        };
+
+        @Pipe({
+            name: 'prettyDate'
+        })
+        export class FromNowPipe implements PipeTransform {
+            localeId = inject(LOCALE_ID);
+            transform(value: string): string {
+                const date = parseISO(value);
+                return formatDistanceToNowStrict(date, { addSuffix: true, locale: locales[this.localeId] });
+            }
+        }
+
+    ⚠️⚠️date-fns does not include nepali language support. It's just for the clarity. you can
+    add other language support in the same way
+
+    🔥🔥We could also have configured date-fns to use the configured locale by default, and leave
+    the fromNow pipe as it was. This would have been a better solution, but we wanted to show you
+    how to get the value of LOCALE_ID in case you need it.
+
+
+
+
+6️⃣ Final step: we would like to let the users choose the language instead of relying on the browser
+    default language. ⚠️The main issue with this feature is that Angular doesn’t allow changing the
+    locale at runtime. The LOCALE_ID must be provided when the application is bootstrapped.
+
+    In the menu component, just before the <ul> displaying the user information, add a
+    <div class="navbar-nav"> , containing a select box displaying the available languages.
+    Of course, the current language must be selected:
+
+        <div class="navbar-nav">
+            <select class="form-select" [formField]="languageForm.lang" aria-label="Language">
+                @for (lang of availableLangs; track lang) {
+                    <option [value]="lang">{{ lang }}</option>
+                }
+            </select>
+        </div>
+    
+    menu.ts:
+
+        @Component({
+            imports: [RouterLink, DecimalPipe, NgbCollapse, FormField],
+            // omitted
+        })
+
+        export class Menu {
+            private readonly i18nService = inject(I18nService);
+            protected readonly availableLangs = this.i18nService.availableLangs;
+            protected readonly languageForm = form(
+                signal({
+                    lang: this.i18nService.lang
+                })
+            );
+
+            constructor() {
+                effect(() => {
+                    this.i18nService.changeLanguage(this.languageForm.lang().value());
+                });
+            }
+            // omitted
+        }
+    
+
+    🔥🔥When the user chooses another language using that select box, we will ask Transloco to
+    change the active language and reload the page. The persist-lang plugin will store the selected
+    language in local storage under its default key and use it again when the application starts.
+    In order to keep the code testable and to avoid duplicating the list of available languages,
+    we will create a service. Create it with: ng generate service i18n-service.
+
+    The file should have two exported constants in addition to the service class:
+    👉 an exported injection token WINDOW that returns the browser window, so that we can easily
+        test the service;
+    👉 an exported readonly constant AVAILABLE_LANGS containing the array of available languages
+        ('en' and 'fr');
+
+    i18n-service.ts:
+
+        export const AVAILABLE_LANGS: ReadonlyArray<string> = ['en', 'fr'];
+            export const WINDOW = new InjectionToken<Window>('Window', {
+            factory: () => window
+        });
+
+    This service should have:
+    👉 a private translocoService field initialized with inject(TranslocoService);
+    👉 a private window field initialized with inject(WINDOW);
+    👉 a readonly property lang containing the language of the application. This property should
+        be initialized when the service is constructed, using the active language from TranslocoService.
+    👉 a method changeLanguage(lang: string), which does nothing if the given language is already
+        the current language, and otherwise sets the active language in TranslocoService and then
+        reloads the page, using this.window.location.reload().
+
+    In addition, when the service is constructed, it should also set the lang property of
+    this.window.document.documentElement, so that the browser knows that the page is using that
+    language.
+
+    Once the service is created, we can use it in the menu component.
+    i18n-service.ts:
+
+        export class I18nService {
+            private readonly translocoService = inject(TranslocoService);
+            private readonly window = inject(WINDOW);
+
+            readonly availableLangs = AVAILABLE_LANGS;
+            readonly lang = this.translocoService.getActiveLang();
+
+            constructor() {
+                this.window.document.documentElement.lang = this.lang;
+            }
+
+            changeLanguage(lang: string) {
+                if (lang === this.lang) {
+                    return;
+                }
+                this.translocoService.setActiveLang(lang);
+                this.window.location.reload();
+            }
+        }
+
+
+
+7️⃣ We can now replace the earlier browser-language default logic with provideTranslocoPersistLang().
+    Use the AVAILABLE_LANGS constant to configure Transloco, add provideTranslocoPersistLang() to
+    choose the cached language or browser language when the application starts, and provide the
+    LOCALE_ID with a factory that reads the active language from TranslocoService:
+    app.config.ts:
+
+        provideTransloco({
+            config: {
+                availableLangs: [...AVAILABLE_LANGS],
+                defaultLang: 'en',
+                prodMode: !isDevMode()
+            },
+            loader: TranslocoModuleLoader
+        }),
+        provideTranslocoPersistLang({
+            getLangFn: ({ cachedLang, browserLang, defaultLang }) => {
+                const lang = cachedLang ?? browserLang ?? defaultLang;
+                return AVAILABLE_LANGS.includes(lang) ? lang : defaultLang;
+            },
+            storage: {
+                useValue: localStorage
+            }
+        }),
+        { 
+            provide: LOCALE_ID,
+            useFactory: () => inject(TranslocoService).getActiveLang()
+        }
+    
+
+    That’s it! Of course in the real world we would need to translate everything, but we’ve covered
+    the most important aspects in this exercise:
+    👉 integrate and configure Transloco to translate messages;
+    👉 configure the LOCALE_ID to tell Angular which locale to use;
+    👉 inject the LOCALE_ID where needed to configure other external libraries needing a locale.
+
+
+
+8️⃣ Transloco has great support for testing as well. You can have a look at the tests provided with
+    this exercise to see how we can test things in several languages, especially the
+    i18n-test-utils.ts file. We also translated all the components in the solution, so you can
+    learn a few more tricks, for example how to configure chartjs.
+
+
+9️⃣ Do not forget to copy all the test files and run ng test to be sure that everything is OK. 
+
+
+-------------------------------------------------------------------------------------------------------
+
+✅app.config.ts:
+
+    @Service()
+    export class TranslocoModuleLoader implements TranslocoLoader {
+        getTranslation(lang: string): Promise<Translation> {
+            return import(`./i18n/${lang}.json`).then((m: { default: Translation }) => m.default);
+        }
+    }
+
+    export const appConfig: ApplicationConfig = {
+    providers: [
+        // omitted
+        provideTransloco({
+            config: {
+                availableLangs: [...AVAILABLE_LANGS],
+                defaultLang: 'en',
+                prodMode: !isDevMode()
+            },
+            loader: TranslocoModuleLoader
+        }),
+        provideTranslocoPersistLang({
+            getLangFn: ({ cachedLang, browserLang, defaultLang }) => {
+                const lang = cachedLang ?? browserLang ?? defaultLang;
+                return AVAILABLE_LANGS.includes(lang) ? lang : defaultLang;
+            },
+            storage: {
+                useValue: localStorage
+            }
+        }),
+        {
+            provide: LOCALE_ID,
+            useFactory: () => inject(TranslocoService).getActiveLang()
+        }
+    ]
+    };
+
+
+✅i18n-service.ts:
+
+    export const AVAILABLE_LANGS: ReadonlyArray<string> = ['en', 'ne'];
+    export const WINDOW = new InjectionToken<Window>('Window', {
+        factory: () => window
+    });
+
+    @Service()
+    export class I18nService {
+        private readonly translocoService = inject(TranslocoService);
+        private readonly window = inject(WINDOW);
+
+        readonly availableLangs = AVAILABLE_LANGS;
+        readonly lang = this.translocoService.getActiveLang();
+
+        constructor() {
+            this.window.document.documentElement.lang = this.lang;
+        }
+
+        changeLanguage(lang: string) {
+            if (lang === this.lang) {
+            return;
+            }
+            this.translocoService.setActiveLang(lang);
+            this.window.location.reload();
+        }
+    }
+
+
+✅menu.ts:
+
+    @Component({
+        imports: [RouterLink, DecimalPipe, NgbCollapse, FormField],
+        // omitted
+    })
+
+    export class Menu {
+        private readonly i18nService = inject(I18nService);
+        protected readonly availableLangs = this.i18nService.availableLangs;
+        protected readonly languageForm = form(
+            signal({
+                lang: this.i18nService.lang
+            })
+        );
+
+        constructor() {
+            effect(() => {
+                this.i18nService.changeLanguage(this.languageForm.lang().value());
+            });
+        }
+        // omitted
+    }
+
+
+✅menu.html:
+
+    <div id="navbar" class="navbar-collapse" [ngbCollapse]="navbarCollapsed()">
+        <ul class="navbar-nav me-auto">
+            // omitted
+        </ul>
+        <div class="navbar-nav">
+            <select class="form-select" [formField]="languageForm.lang" aria-label="Language">
+            @for (lang of availableLangs; track lang) {
+                <option [value]="lang">{{ lang }}</option>
+            }
+            </select>
+        </div>
+
+        @if (user.value(); as user) {
+            // omitted
+        }
+    </div>

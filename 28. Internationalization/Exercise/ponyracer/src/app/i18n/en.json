@@ -1,0 +1,71 @@
+{
+  "home": {
+    "subtitle": "Always a pleasure to bet on ponies",
+    "login": "Login",
+    "register": "Register",
+    "races": "Races"
+  },
+  "bet": {
+    "watch-live": "Watch live!",
+    "started-or-finished": "The race is already started or finished",
+    "click-to-bet": "Click to bet on your favorite pony",
+    "loading": "Loading.",
+    "error": "An error occurred while loading the race."
+  },
+  "live": {
+    "error": "A problem occurred during the live.",
+    "done": "The race is over.",
+    "won": "You won your bet!",
+    "lost": "You lost your bet.",
+    "winners": "Most Valuable Ponies",
+    "pending": "The race will start {{ when }}",
+    "boost": "Click really fast on your favorite pony to support it"
+  },
+  "menu": {
+    "toggle": "Toggle",
+    "races": "Races",
+    "about": "About",
+    "propack": "Check our Angular Pro Pack",
+    "logout": "Logout",
+    "language": "Language"
+  },
+   "login": {
+    "title": "Log in",
+    "failed": "Nope, try again.",
+    "login": "Login",
+    "login-required": "Login is required",
+    "password": "Password",
+    "password-required": "Password is required",
+    "submit": "Log me in!"
+  },
+  "register": {
+    "title": "Sign up",
+    "failed": "Try again with another login.",
+    "login": "Login",
+    "login-required": "Login is required",
+    "login-too-short": "Your login should be at least {{ length }} characters",
+    "password": "Password",
+    "password-required": "Password is required",
+    "confirm": "Confirm password",
+    "confirm-required": "Password confirmation is required",
+    "matching-error": "Your password does not match",
+    "birth-year": "Birth year",
+    "birth-year-required": "Birth year is required",
+    "birth-year-invalid": "This is not a valid year",
+    "birth-year-not-a-number": "Birth year must be a number",
+    "submit": "Let's go!"
+  },
+  "races": {
+    "title": "Races",
+    "pending": "Pending races",
+    "finished": "Finished races",
+    "loading": "Loading.",
+    "error": "An error occurred while loading races."
+  },
+   "pending-races": {
+    "bet": "Bet on {{ name }}"
+  },
+  "score-history": {
+    "title": "Score history"
+  }
+}

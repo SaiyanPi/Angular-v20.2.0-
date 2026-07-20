@@ -1,0 +1,24 @@
+<!-- @if (races.isLoading()) {
+  <div role="status">Loading...</div>
+}
+@else if (vm(); as vm) {
+  <ngb-pagination [collectionSize]="vm.total" [page]="vm.page" (pageChange)="changePage($event)" size="lg" />
+  @for (race of vm.races; track race.id) {
+    <pr-race [raceModel]="race" />
+  }
+} @else if (races.error()) {
+  <ngb-alert type="danger" [dismissible]="false">An error occurred while loading races.</ngb-alert>
+} -->
+
+<ng-container *transloco="let t">
+  @if (races.isLoading()) {
+    <div role="status">{{ t('races.loading') }}</div>
+  }@else if (vm(); as vm) {
+    <ngb-pagination [collectionSize]="vm.total" [page]="vm.page" (pageChange)="changePage($event)" size="lg" />
+    @for (race of vm.races; track race.id) {
+      <pr-race [raceModel]="race" />
+    }
+  } @else if (races.error()) {
+    <ngb-alert type="danger" [dismissible]="false">{{ t('races.error') }}</ngb-alert>
+  }
+</ng-container>

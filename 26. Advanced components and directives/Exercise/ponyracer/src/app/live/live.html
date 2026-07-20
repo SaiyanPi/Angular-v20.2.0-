@@ -14,9 +14,13 @@
           <div>The race is over.</div>
         } @else {
           @if (betWon()) {
-            <div class="alert alert-success" role="alert">You won your bet!</div>
+            <!-- <div class="alert alert-success" role="alert">You won your bet!</div> -->
+            <!-- <pr-alert type="success" dismissible="false">You won your bet!</pr-alert> -->
+            <ngb-alert [dismissible]="false" type="success">You won your bet!</ngb-alert>
           } @else if (raceModel.betPonyId) {
-            <div class="alert alert-warning" role="alert">You lost your bet.</div>
+            <!-- <div class="alert alert-warning" role="alert">You lost your bet.</div> -->
+            <!-- <pr-alert type="warning" dismissible="false">You lost your bet.</pr-alert> -->
+            <ngb-alert [dismissible]="false" type="warning">You lost your bet.</ngb-alert>
           }
           <div>Most Valuable Ponies</div>
           <div class="row">
