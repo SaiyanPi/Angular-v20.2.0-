@@ -1,0 +1,82 @@
+untracked:
+
+
+- computed and effect both take a function as argument. Angular calls this function at least once.
+    This allows computing the initial value of the computed signal, or triggering the initial
+    side-effect. But it’s also necessary for Angular to know which signals are read inside the
+    function, in order to update the dependency graph.
+    For example,
+        
+        readonly price = signal(42);
+        readonly quantity = signal(2);
+        readonly total = computed(() => this.price() * this.quantity());
+    
+    🔥creates a dependency between total and the two other signals: 🔥when price or quantity change,
+    Angular knows that total must be recomputed.
+
+
+- ⚠️The dependencies on the above example are obvious. But that’s not always the case, especially in
+    effects.
+    Let’s take the following example:
+        
+        protected readonly visitedUrl = signal<string | undefined>(undefined);
+        constructor() {
+            const analyticsService = inject(AnalyticsService);
+            effect(() => {
+                const url = this.visitedUrl();
+                if (url) {
+                    analyticsService.sendHitForUrl(url).subscribe();
+                }
+            });
+        }
+    
+    It sends a new hit, using HTTP, every time the visitedUrl signal changes. The dependency looks
+    obvious: this effect only depends on visitedUrl. ❓But does it, really?
+
+    ⚠️⚠️If an interceptor has been configured for the HTTP client, and if this interceptor reads a
+    token signal for example, then subscribing to the observable inside the effect indirectly reads
+    the token signal. The effect is thus also dependent on the token signal, and a new hit will
+    thus also be sent when the token changes.
+
+    🔥🔥To avoid such undesired dependencies, use untracked. A good rule of thumb to avoid
+    surprises is to start by reading the signals you really want to depend on, and then run the
+    code inside an untracked block:
+
+        protected readonly visitedUrl = signal<string | undefined>(undefined);
+        constructor() {
+            const analyticsService = inject(AnalyticsService);
+            effect(() => {
+                const url = this.visitedUrl();
+              👉untracked(() => {
+                    if (url) {
+                        analyticsService.sendHitForUrl(url).subscribe();
+                    }
+                });
+            });
+        }
+
+
+-----------------------------------------------------------------------------------------------------
+
+effect():
+
+🧠 In Angular Signals, effect() lets you run some code automatically whenever THE SIGNALS THAT CODE
+READS CHANGE.
+Think of it as "Run this function now, and run it again whenever any signal I read inside changes."
+
+    const count = signal(0);
+    effect(() => {
+        console.log('Count is:', count());
+    });
+
+when the effect() is created:
+
+    Count is: 0
+
+If we change the signal count that the effect code uses as: 
+    
+    count.set(1);
+
+Then Angular automatically runs the effect again:
+
+    Count is: 1

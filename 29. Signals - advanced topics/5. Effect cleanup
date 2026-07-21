@@ -1,0 +1,14 @@
+Effect cleanup:
+
+
+- 🔥🔥Effects can also receive a cleanup function. This function is run when the effect runs again.
+    This can be handy when you need to cancel a previous action before starting a new one.
+    In the example below, we start an interval that runs every count seconds, and we want to stop
+    it and start a new one when the count changes:
+        
+        this.intervalEffect = effect(onCleanup => {
+            const intervalId = setInterval(() => 
+                console.log(`count in intervalEffect ${this.count()}`), this.count() * 1000);
+                
+            return onCleanup(() => clearInterval(intervalId));
+        });

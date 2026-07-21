@@ -1,0 +1,10 @@
+afterRenderEffect:
+
+
+- 🔥🔥Since regular component effects run before the change detection, they’re not a good fit to
+    read or modify the DOM of the component: the DOM has not been rendered yet by Angular when the
+    effect is run.
+    
+- 🔥🔥If you want to read or modify the DOM inside an effect, you can use a different kind of
+    effect, created by the function afterRenderEffect. Such an effect, as its name indicates, runs
+    after the rendering.

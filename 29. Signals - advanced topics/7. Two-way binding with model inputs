@@ -1,0 +1,84 @@
+Two-way binding with model inputs:
+
+
+- Signals also allow a fresh take on existing patterns. As you probably know, Angular allows a
+    "banana in a box" syntax for two-way binding. This is mostly used with ngModel to bind a form
+    control to a component property(see section 3 of chapter 20: Forms):
+    login.html:
+
+        <input name="login" [(ngModel)]="user.login" />
+    
+    🧠Under the hood, this is because the ngModel directive has a ngModel input and a ngModelChange
+    output. So the banana in a box syntax is just syntactic sugar for the following:
+    login.html:
+
+        <input name="login" [ngModel]="user.login" (ngModelChange)="user.login = $event" />
+
+    🔥🔥The syntax is, in fact, general and can be used with any component or directive that has an
+    input named something and an output named somethingChange.
+
+    You can leverage this in your own components and directives, for example to build a pagination
+    component:
+    pagination.ts: 
+
+        readonly collectionSize = input.required<number>();
+        readonly pageSize = input.required<number>();
+        readonly page = input.required<number>();
+        readonly pageChange = output<number>();
+
+        protected readonly pages = computed(() => this.computePages());
+
+        protected goToPage(page: number) {
+            this.pageChange.emit(page);
+        }
+        private computePages() {
+            return Array.from({ length: Math.ceil(this.collectionSize() / this.pageSize()) }, (
+                _, i) => i + 1);
+        }
+    
+    🔥The component receives the collection, the page size, and the current page as inputs, and
+    emits the new page when the user clicks on a button.
+    🔥Every time an input changes, the component recomputes the buttons to display. The template
+    uses a for loop to display the buttons:
+    pagination.html:
+
+        @for (pageNumber of pages(); track pageNumber) {
+            <button [class.active]="page() === pageNumber" (click)="goToPage(pageNumber)">
+                {{ pageNumber }}
+            </button>
+        }
+
+    🔥The component can then be used like:
+
+        <ns-pagination [(page)]="page" [collectionSize]="collectionSize()" [pageSize]="pageSize()" />
+
+    🔥In the parent component, page can be a number, but it can also be a WritableSignal<number>.
+    In the latter case, the framework will automatically pass the value of the signal as input to
+    the pagination component, and will set the signal value to the new page when the pagination
+    component emits one.
+        pagination.ts:
+
+        readonly collectionSize = input.required<number>();
+        readonly pageSize = input.required<number>();
+
+        protected readonly pages = computed(() => this.computePages());
+
+        readonly page = model.required<number>();
+        // ^? ModelSignal<number>;
+
+        protected goToPage(page: number) {
+            this.page.set(page);
+        }
+
+        private computePages() {
+            return Array.from({ length: Math.ceil(this.collectionSize() / this.pageSize()) }, (
+             _, i) => i + 1);
+        }
+    
+    🔥🔥As you can see, model() is used to define the input/output pair, and the output emission
+    is done using the set() method of the signal (ModelSignal extends both WritableSignal and
+    OutputRef).
+
+    🔥🔥A model can be required, or can have a default value, or can be aliased, as we saw for
+    inputs. It can’t be transformed though. If you use an alias, the output will be aliased as well.
+    (💡for alias see section 5 and 6 of chapter 10)

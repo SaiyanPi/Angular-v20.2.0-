@@ -1,0 +1,91 @@
+Value equality:
+
+
+- Signals are used to hold state, and you can react to their change. ❓But how do they decide that
+    they have changed? Calling set or update on a signal doesn’t necessarily make it change: 🔥🔥if
+    you set a value that is equal to the value it already has, then the signal will consider that
+    it hasn’t changed.
+
+
+- 🔥🔥This equality of two values, by default, is decided by calling Object.is. For objects, if
+    the new value is === to the current value, no change happens. 🔥🔥But you can define a custom
+    equality in case referential equality is not what you want.
+
+    for example:
+    1️⃣
+
+        const count = signal(10);
+    
+    when you do:
+
+        count.set(10); 
+    
+    🧠Angular compares the old value (10) with the new value (10) using Object.is() by default.
+
+        Object.is(10, 10); // true
+    
+    🧠🧠Since they're considered equal, Angular says: "Nothing changed. I don't need to notify
+    anything depending on this signal."
+
+    -------------------------------------------------------
+
+    2️⃣
+        const user = signal({
+            name: 'John'
+        });
+
+    Now, when you do:
+
+        user.set({
+            name: 'John'
+        });
+
+    Although the objects look identical, they are actually two different objects in memory.
+
+        const user1 = { name: 'John' };
+        const user2 = { name: 'John' };
+
+        console.log(user1 === user2); // false
+    
+    🧠🧠So Angular considers the value changed.
+
+    ⚠️⚠️Note that set() used here is not a JS setter. It's signal's .set().
+    🧠🧠Signal is holding the reference to object { name: 'John' }. and when we replace the signal's
+    value with .set(), signal changes from holding a reference to new value/object. That's why
+    with set() we get two different objects.
+
+    ------------------------------------------------------
+
+    3️⃣ custom equality:
+    🔥BUT if we don't want referential equality.
+    Referential equality means asking:"Are these two variables pointing to the exact same object
+    in memory?"
+
+        const status = signal(
+            {
+                dirty: false,
+                touched: false
+            },
+            {
+            equal: (previousStatus, newStatus) =>
+                previousStatus.dirty === newStatus.dirty && previousStatus.touched ===
+                newStatus.touched
+            }
+        );
+
+        // 🔥errorDisplayed will not re-evaluated if both values stay the same
+        const errorDisplayed = computed(() => status().dirty || status().touched);
+    
+    OR
+
+        const user = signal(
+            { name: 'John', age: 20 },
+            {
+                equal: (a, b) => a.name === b.name && a.age === b.age
+            }
+        );
+
+        user.set({ name: 'John', age: 20 });
+
+    🧠🧠The objects have different references, but your custom equality function returns: true
+    So Angular considers them equal and doesn't trigger updates.

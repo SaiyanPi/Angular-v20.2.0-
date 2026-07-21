@@ -1,0 +1,53 @@
+Debouncing signals with debounced:
+
+
+- 🔥Angular v22 introduced a new experimental function called debounced. 🔥🔥It creates a debounced
+    version of a signal, but it does not return another signal. 🔥🔥IT RETURNS A Resource, BECAUSE A
+    DEBOUNCED VALUE HAS A STATE: IT CAN BE SETTLED, WAITING FOR A PENDING VALUE, OR IN ERROR IF
+    THE SOURCE SIGNAL THROWS. As we saw in the chapter about resources, a Resource is the
+    read-only version of the ResourceRef returned by the resource() function.
+
+    For example, if we want to debounce a search query, we can write:
+
+        @Component({
+            imports: [FormField],
+            template: `
+                <input type="search" placeholder="Filter ponies" [formField]="queryForm" />
+                <p>Debounced query: {{ debouncedQuery.value() }}</p>
+                @if (debouncedQuery.isLoading()) {
+                <p role="status">Waiting for stable query...</p>
+                }
+                @if (filteredPonies.hasValue()) {
+                    <ul>
+                        @for (pony of filteredPonies.value(); track pony.id) {
+                            <li>{{ pony.name }}</li>
+                        }
+                    </ul>
+                }
+            `
+        })
+
+        class SearchComponent {
+            protected readonly query = signal('');
+            protected readonly queryForm = form(this.query);
+            protected readonly debouncedQuery = debounced(() => this.query(), 300);
+            protected readonly filteredPonies = inject(PonyService).search(this.debouncedQuery.value);
+        }
+
+
+    🧠🧠Here debouncedQuery.value() initially returns the current value of query. When query
+    changes, debouncedQuery switches to a loading state, but its value still stays the previous
+    settled value. 🧠🧠If no new change happens during the next 300 milliseconds, the resource
+    resolves with the new value.
+    (💡see section 11 of chapter 21: Signal forms)
+
+
+    🔥🔥This makes it a good fit when you want to drive another asynchronous operation from a
+    stabilized value. For example, a resource or an HTTP resource can use debouncedQuery.value()
+    as its request parameter, and the template can use debouncedQuery.isLoading() to display that
+    the user input has not settled yet.
+
+
+    The second parameter can also be a function instead of a number. In that case, the function
+    receives the new value and the previous resource snapshot, and must return a Promise that
+    resolves when the new value should be published.

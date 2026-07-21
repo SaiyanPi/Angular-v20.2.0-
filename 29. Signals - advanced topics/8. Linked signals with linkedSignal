@@ -1,0 +1,117 @@
+Linked signals with linkedSignal:
+
+
+- 🔥Angular v19 introduced a new (developer preview) concept called "linked signals".
+    🔥🔥A linked signal is a writable signal, but it is also a computed signal, as its content
+    can be reset thanks to a computation that depends on another signal (or several ones).
+
+
+- 💡💡Imagine we have a component that displays a list of items received via an input, and we want
+    our users to select one of them. By default, let’s say we want to select the first item of
+    the list. But every time the list of items changes, the selected item may no longer be valid,
+    so we want to reset the selected item to the first one.
+
+    We can imagine a component like this:
+        
+        export class ItemList {
+            readonly items = input.required<Array<ItemModel>>();
+            protected readonly selectedItem = signal<ItemModel | undefined>(undefined);
+            protected pickItem(item: ItemModel) {
+                this.selectedItem.set(item);
+            }
+        }
+    
+    ⚠️Using an effect may come to mind to solve the selection problem:
+        
+        constructor() {
+            // ⚠️ This is not recommended
+            effect(() => {
+                this.selectedItem.set(this.items()[0]);
+            });
+        }
+
+    Every time the list of items changes, the effect will be triggered and the first item will be
+    selected. ✔️ This works, but using effects is generally not recommended ❌, except for some
+    specific cases, like ✅synchronizing something outside the application (like the local storage
+    for example)
+
+    -------------------------------------------------------
+
+    🔥✅There is a nice trick that I can show you before we dive into the now-recommended solution:
+    we can use a computed value that returns… a signal!
+        
+        export class ItemList {
+            readonly items = input.required<Array<ItemModel>>();
+
+         👉 protected readonly selectedItem = computed<WritableSignal<ItemModel | undefined>>(() =>
+                signal(this.items()[0]));
+
+            protected pickItem(item: ItemModel) {
+                this.selectedItem().set(item);
+            }
+        }
+
+    As you can see, 🧠the computed value returns a signal that represents the selected item (whereas
+    they usually return a value directly). 🧠Every time the list of items changes, the computed
+    function is reevaluated, and returns a new signal that represents the selected item.
+    ⚠️⚠️The downside of this solution is that we have to use selectedItem()() to read the value, or
+    selectedItem().set() to update it, which is a bit ugly.
+
+    --------------------------------------------------------
+
+    🔥🔥✅This is where we can use a linkedSignal:
+
+        export class ItemList {
+            readonly items = input.required<Array<ItemModel>>();
+            // ✅ This is recommended
+            protected readonly selectedItem: 👉WritableSignal<ItemModel> = 👉linkedSignal(() =>
+                this.items()[0]);
+    
+    🔥🔥A linkedSignal is a WritableSignal, but its value can be reset thanks to a computation. If
+    the items change, then the computation will be re-executed and the value of the signal will be
+    updated with the result.
+
+
+
+- 💪This is a powerful concept, as it allows us to define a signal that depends on another signal,
+    like a computed, but with the ability to write to it (a sort of "writable computed").
+
+
+- 💡💡The computation can of course depend on several signals. Here selectedItem is reset when the
+    items input changes, but also when the enabled input changes.
+
+        export class ItemList {
+            readonly items = input.required<Array<ItemModel>>();
+            readonly enabled = input.required<boolean>();
+
+            // 👇recomputes if `enabled` or `items` change
+            protected readonly selectedItem = linkedSignal(() => (this.enabled() ? this.items()[0] 
+                : undefined));
+    
+    
+    🔥🔥Note that you can use the previous value of the source signal in the computation function
+    if you need to. For example, if you want to access the previous items value to compare it with
+    the new one, YOU CAN DECLARE THE linkedSignal WITH THE source and computation OPTIONS. IN THAT
+    CASE, THE COMPUTATION FUNCTION RECEIVES THE CURRENT AND PREVIOUS VALUES OF THE SOURCE AS
+    PARAMETERS.
+
+        export class ItemList {
+            readonly items = input.required<Array<ItemModel>>();
+
+            protected readonly selectedItem = linkedSignal</* source */ Array<ItemModel>,
+            /* value */ ItemModel>({
+                source: this.items,
+                computation: (items, previous) => {
+                    // pick the item the user selected if it's still in the new item list
+                    if (previous !== undefined) {
+                        const previousChoice = previous.value; // previous.source contains the previous items
+                        if (items.map(item => item.name).includes(previousChoice.name)) {
+                            return previousChoice;
+                        }
+                    }
+                    return items[0];
+                }
+            });
+    
+    You can also define a custom equality function to decide if the signal has changed with the
+    equal option.

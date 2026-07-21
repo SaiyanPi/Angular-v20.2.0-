@@ -1,0 +1,24 @@
+Root and component effects:
+
+
+- 🔥We learnt that effect needs an injection context. An effect can be created while constructing
+    a component, directive, or service. Otherwise, an Injector must be passed as option.
+    (💡to know the term 'injection context see section 8 of chapter 26 and then to learn about
+    effect() go to section 3 of chapter 11)
+
+    🔥But all effects aren’t handled the same way. Angular distinguishes two kinds of effects:
+    1️⃣ component effects, which are created using the injector of a component or directive;
+    2️⃣ root effects, which are created in root services
+
+    🔥🔥Component effects run just before the change detection of their owning component. They are
+    destroyed when their owning component is destroyed.
+
+    🔥🔥Root effects on the other hand are never destroyed (since their owning service is never
+    destroyed). They run as a micro task (i.e. at the same time a resolved promise would run).
+    ⚠️⚠️In unit tests, you must call TestBed.tick() to make them run.
+
+
+
+- 🔥🔥If you want an effect, whatever its type, to stop running at a certain point, you’re
+    always free to destroy it yourself, by calling the destroy method of the EffectRef returned by
+    effect
