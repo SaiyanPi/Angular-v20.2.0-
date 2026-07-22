@@ -1,0 +1,85 @@
+Lazy-loading with the router:
+
+
+
+- 🔥Lazy loading consists in splitting the application into several JavaScript bundles, by loading child
+    routes lazily. The application routes array, instead of defining all the routes of the application,
+    only contains the main, eagerly-loaded routes, as well as parent routes with lazy-loaded children,
+    which are thus unknown initially.
+
+- 🔥When the user navigates to the path of an unknown child route, then the Angular router loads the
+    JavaScript bundle containing the child routes (and their associated components and services), and
+    adds the child routes, components and services to the application.
+
+             _______________________________
+            | main.bundle.js    -   100KB   |
+            |_______________________________|               ____________________________
+            | app.routes.ts                 |  --------->   | 0.chunk.js    -   50KB    |
+            |_______________________________|               |___________________________|               
+                                                            | admin.routes.ts           |
+                                                            |___________________________|     
+
+- 📝it’s actually possible to load the lazy-loading bundles in the background, after the main bundle
+    has been loaded and the application has started, without waiting for the user to navigate to the
+    child routes, thanks to an alternative preloadingStrategy.
+
+
+- 🔥🔥To illustrate how we can configure lazy loading, we will assume that you want to define an admin
+    section in your application, that should be lazy loaded
+
+    1️⃣The first step is to define an admin component, and at least one route for this component in a file
+    named admin.routes.ts:
+
+        export const adminRoutes: Routes = [{ path: '', component: Admin }];
+    
+    2️⃣The final step (yes, that’s all it takes) is to add a parent route in the main app.routes.ts file,
+    and tell the router to lazy-load the admin routes when navigating to that route (or any child route
+    it might have):
+
+        { path: 'admin', loadChildren: () => import('./admin/admin.routes').then(m => m.adminRoutes) }
+    
+
+    (💡Explanation)
+        1️⃣ means, inside the admin section, the empty path ('') maps to Admin component but angular
+        does nothing with it. it's just an exported array sitting in a file.
+
+        2️⃣ is saying: “When the user navigates to /admin, dynamically load another route configuration
+        file, and continue route matching from there.” 🧠🧠So Angular is not rendering a component at
+        this level. It is loading more routes.
+
+        🧠🧠After 2️⃣ admin.routes.ts becomes the child route configurations of the admin route. 
+        and Angular combines 1 and 2 conceptually like this:
+
+            {
+                path: 'admin',
+                children: [
+                    { path: '', component: Admin }
+                ]
+            }
+        so navigating to /admin (admin + '') finally renders the Admin component
+
+
+- As you can see, this is achieved by using the loadChildren property of the route definition and the
+    dynamic import function from TypeScript.
+    💡When building this application, Angular CLI parses the route configurations and detects that the
+    admin child module is lazy-loaded. Without any more work on your part, it generates an additional
+    JavaScript bundle for the admin module (named 0.chunk.js), and generates the necessary JavaScript
+    to load this bundle when the router requires './admin/admin.routes'
+
+
+- 🔥🔥You can even simplify the import if you use a default export(Chapter1, section 15 Modules) for
+    the module:
+        
+        const defaultAdminRoutes: Routes = [{ path: '', component: Admin }];
+        export default defaultAdminRoutes;
+    
+    🔥🔥Then the router will automatically "unwrap" the import:
+        
+        { path: 'admin', loadChildren: () => import('./admin/admin.routes') }
+
+
+- 🔥🔥Finally, if (as above) all you want to do is to lazy-load a single component for a given route,
+    then it’s even easier: you don’t even have to define an additional routes file. The component can
+    be lazyloaded directly:
+
+        { path: 'admin', loadComponent: () => import('./admin/admin').then(m => m.Admin) }

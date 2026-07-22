@@ -1,0 +1,8 @@
+Lazy loading:
+
+
+- When the application grows in size and features, loading the whole application at once can become
+    a problem: the application bundle is too large and takes too much time to load and parse.
+    Moreover, some parts of the application are only used by some users of the application, or are
+    used rarely, and loading them eagerly is a waste of time and bandwidth. This is where
+    lazy-loading is useful.

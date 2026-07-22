@@ -1,0 +1,55 @@
+Lazy-loading services with injectAsync():
+
+
+-  🔥Angular v22 adds another lazy-loading API: injectAsync. 🔥🔥It lets you lazy-load a service
+    only when you actually need it, while still creating the service instance with Angular dependency
+    injection.
+ 
+- 🔥This can be useful for heavy services that are only needed after a user action, for example a
+    reporting service used when exporting a PDF. 🔥🔥The service must be auto-provided, either with
+    @Service() or with @Injectable({ providedIn: 'root' }).
+
+- 🔥🔥Then, instead of injecting it eagerly with inject(ReportService), you can use injectAsync
+    with a dynamic import:
+
+        import { Component, injectAsync } from '@angular/core';
+        @Component({
+            selector: 'ns-admin',
+            template: `<button (click)="exportPdf()">Export PDF</button>`
+        })
+        export class Admin {
+            private readonly reportService = injectAsync(() => import('./report.service')
+            .then(m => m.ReportService));
+            async exportPdf() {
+                const reportService = await this.reportService();
+                await reportService.exportPdf();
+            }
+        }
+
+    You still need to call injectAsync from an injection context, for example in a component or
+    service field initializer, just like inject.
+
+
+- 🔥🔥You can also ask Angular to prefetch the service before it is requested. For example, onIdle
+    starts loading the service when the browser is idle:
+        
+        import { Component, injectAsync, onIdle } from '@angular/core';
+
+        @Component({
+            selector: 'ns-admin-prefetch',
+            template: `<button (click)="exportPdf()">Export PDF</button>`
+        })
+        export class AdminWithPrefetch {
+            private reportService = injectAsync(() => import('./report.service')
+            .then(m => m.ReportService), {
+                👉 prefetch: onIdle
+            });
+            
+            async exportPdf() {
+                const reportService = await this.reportService();
+                await reportService.exportPdf();
+            }
+        }
+
+    🔥🔥In that case, the bundle can be downloaded in the background after the application starts,
+    but the service is still only used by the component when this.reportService() is called.
