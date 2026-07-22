@@ -1,0 +1,89 @@
+Conditions:
+
+
+- 🔥Several conditions can be used with @defer, let’s see them one by one.
+
+1️⃣ No condition or on idle:
+    - The simplest condition is to not specify any condition at all: in this case, 🔥the block will
+    be loaded when the browser is idle (the loading is scheduled using requestIdleCallback).
+        
+        @defer {
+            <ns-chart />
+        }
+    
+    This is equivalent to using the on idle condition:
+        
+        @defer (on idle 👈) {
+            <ns-chart />
+        }
+
+
+
+2️⃣  Simple boolean condition with when:
+    - 🔥You can also use a boolean condition to load a block of the template with when. 🔥Here, we
+    display the defer block only when the show property of the component is true:
+        
+        @defer (when show() 👈) {
+            <ns-chart />
+        }
+
+    ⚠️⚠️Note that this is not the same as using *ngIf on the block, as the block will not be
+    removed even if the condition becomes false later.
+
+
+3️⃣ on immediate:
+    - The on immediate condition triggers the loading of the block immediately. It does not display
+    a placeholder, even if one is defined.
+
+
+4️⃣ on timer:
+    - 🔥The on timer condition triggers the loading of the block after a given duration, using
+    setTimeout under the hood.
+        
+        @defer (on timer(2s)) {
+            <ns-chart />
+        }
+
+
+5️⃣ on hover:
+    - Other conditions are based on user interactions. 🔥These conditions can specify the element of
+    the interaction using a template reference variable, or none to use the placeholder element.
+    In the latter case, the placeholder element must exist and have a single child element that
+    will be used as the element of the interaction.
+    
+    - The on hover condition triggers the loading of the block when the user hovers the element.
+    Under the hood, it listens to the mouseenter and focusin events.
+        
+        <span 👉#trigger>Hover me</span>
+        @defer (on hover(trigger👈)) {
+            <ns-chart />
+        }
+
+    or using the placeholder element:
+
+        @defer (on hover) {
+            <ns-chart />
+        } @placeholder {
+            <span>Hover me</span> 👈
+        }
+
+
+6️⃣ on interaction:
+    - 🔥The on interaction condition triggers the loading of the block when the user interacts with
+    the element. Under the hood, it listens to the click and keydown events.
+
+
+7️⃣ on viewport:
+    - 🔥The on viewport condition triggers the loading of the block when the element becomes visible
+    in the viewport. Under the hood, it uses an intersection observer.
+
+
+8️⃣ Multiple conditions:
+    - 🔥🔥You can also combine multiple conditions using a comma-separated list:
+        
+        <!-- Loads if the user hovers the placeholder, or after 1 minute -->
+        @defer (on hover, timer(60s)) {
+            <ns-chart />
+        } @placeholder {
+            <span>Something until the loading starts</span>
+        }

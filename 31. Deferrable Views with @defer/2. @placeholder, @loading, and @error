@@ -1,0 +1,63 @@
+@placeholder, @loading, and @error:
+
+
+- 🔥🔥You can define a placeholder template with @placeholder that will be displayed until the
+    loading condition is met.🔥🔥Then, while the block is loading, you can display a loading
+    template with @loading.
+    🔥🔥If no @loading block is defined, the placeholder stays there until the block is loaded.
+    🔥🔥You can also define an error template with @error that will be displayed if the block fails
+    to load.
+
+        @defer (when show()) {
+            <ns-chart />
+        } @placeholder {
+            <div>Something until the loading starts</div>
+        } @loading {
+            <div>Loading...</div>
+        } @error {
+            <div>Something went wrong</div>
+        }
+    
+    ⚠️⚠️When using server-side rendering, only the placeholder will be rendered on the server (the
+    defer conditions will never trigger).
+
+
+--------------------------------------------------------------------------------------------------
+
+
+after and minimum:
+
+- ⚠️⚠️As the @defer block loading can be quite fast, there is a risk that the loading block is
+    displayed and hidden too quickly, causing a "flickering" effect.
+    🔥🔥To avoid this, you can use the after option to specify after how many milliseconds the
+    loading should be displayed.
+    ⚠️⚠️If the block takes less than this delay to load, then the @loading block is never
+    displayed.
+
+- 🔥🔥You can also use the minimum option to specify a minimum duration for the loading.
+    🔥🔥If the loading is faster than the minimum duration, then the loading will be displayed
+    for the minimum duration(this only applies if the loading is ever displayed).
+
+    You can of course combine all these options:
+        
+        @defer (when show()) {
+            <ns-chart />
+        } @placeholder {
+            <div>Something until the loading starts</div>
+        } @loading (👉after 500ms; minimum 500ms) {
+            <div>Loading...</div>
+        }
+
+
+- 🔥🔥You can also specify a minimum duration for the placeholder. It can be useful when the loading
+    condition is immediate (🧠🧠for example, when no condition is specified). In that case, the
+    placeholder will be displayed for the minimum duration, even if the block is loaded immediately,
+    to avoid a "flickering" effect.
+        
+        @defer (when show()) {
+            <ns-chart />
+        } @placeholder (👉minimum 500ms) {
+            <div>Something until the loading starts</div>
+        } @loading (after 500ms; minimum 500ms) {
+            <div>Loading...</div>
+        }

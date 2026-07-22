@@ -1,0 +1,16 @@
+Prefetching:
+
+
+- @defer allows you to separate the loading of a component from its display. You can use the same
+    conditions we previously saw to load a component using prefetch(chapter 30 section 3), and then
+    display it with anothercondition.
+    For example, you can prefetch the lazy-loaded content on idle and then display it on interaction:
+        
+        @defer (👉on interaction; prefetch on idle) {
+            <ns-chart />
+        } @placeholder {
+            <button>Show me</button>
+        }
+
+    ⚠️⚠️Note that the @loading block will not be displayed if the deferred block is already
+    prefetched when the loading condition is met.

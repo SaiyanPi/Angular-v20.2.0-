@@ -1,0 +1,97 @@
+Deferrable Views with @defer:
+
+
+- 🔥With the introduction of the Control flow syntax, the Angular team has also introduced a
+    new way to load components lazily (as a developer preview for now). We already have
+    lazy-loading in Angular, but it is mainly based on the router.
+
+- 🔥Angular v17 adds a new way to load components lazily, using the @defer syntax in your
+    templates.
+
+- 🔥🔥@defer lets you define a block of template that will be loaded lazily when a condition is
+    met (with all the components, pipes, directives and libraries used in this block lazily loaded
+    as well). Several conditions can be used. For example, it can be "as soon as possible (no
+    condition)", "when the user scrolls to that section", "when the user clicks on that button"
+    or "after 2 seconds".
+
+    💡Let’s say your home page displays a "heavy" Chart that uses a charting library and some
+    other dependencies, like a FromNow pipe:
+    chart.ts:
+        
+        @Component({
+            selector: 'ns-chart',
+            template: '...',
+            imports: [FromNowPipe],
+        })
+        export class Chart{
+            // uses chart.js
+        }
+    
+    home.ts:
+
+        import { Chart} from './chart';
+        @Component({
+            selector: 'ns-home',
+            template: `
+                <!-- some content -->
+                <ns-chart />
+            `,
+            imports: [Chart]
+        })
+        export class Home{
+            // ...
+        }
+
+    When the application is packaged, the Chart will be included in the main bundle:
+
+            -----------------------------------------
+            |    main-XXXX.js            -   300KB  |
+            -----------------------------------------
+            |    home.ts                            |
+            |    chart.ts                           |
+            |    from-now-pipe.ts                   |
+            |    chart.js                           |
+            -----------------------------------------
+    
+    💡Let’s say that the component is not visible at first on the home page, maybe because it is
+    at the bottom of the page, or because it is in a tab that is not active. It makes sense to
+    avoid loading this component eagerly because it would slow down the initial loading of the page.
+
+    🔥🔥With @defer, you can load this component only when the user really needs it. Just wrapping
+    the Chart in a @defer block will do the trick:
+    home.ts:
+
+        import { Chart} from './chart';
+        @Component({
+            selector: 'ns-home',
+            template: `
+                <!-- some content -->
+             👉 @defer (when isVisible) {
+                    <ns-chart />
+                }
+            `,
+            imports: [Chart]
+        })
+    
+    🔥The Angular compiler will rewrite the static import of the Chart to a dynamic import (() ⇒
+    import('./chart')), and the component will be loaded only when the condition is met. 🔥🔥As the
+    component is now imported dynamically, it will not be included in the main bundle. The bundler
+    will create a new chunk for it:
+
+        -----------------------------------------
+        |    main¬xxxx.js            -   100KB  |
+        -----------------------------------------____________________
+        |    home.ts                            |                   |
+        -----------------------------------------                   v
+                                                        -----------------------------------------
+                                                        |    chunk¬xxxx.js           -   200KB  |
+                                                        -----------------------------------------
+                                                        |    chart.ts                           |
+                                                        |    from now pipe.ts                   |
+                                                        |    chart.js                           |
+                                                        -----------------------------------------
+    
+    The chunk-xxxx.js file will only be loaded when the condition is met, and the Chart will be
+    displayed. Before talking about the various kinds of conditions that can be used with @defer,
+    let’s see how to use another interesting feature: displaying a placeholder until the deferred
+    block is loaded.

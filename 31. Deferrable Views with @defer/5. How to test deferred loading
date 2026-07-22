@@ -1,0 +1,65 @@
+How to test deferred loading?:
+
+
+- When a component uses defer blocks in its template, you’ll have to do some extra work to test it.
+
+- The TestBed API has been extended to help you with that. 🔥The configureTestingModule method now
+    accepts a deferBlockBehavior option. 🔥By default, this option is set to 
+    DeferBlockBehavior.Playthrough, which means that the defer blocks will be displayed
+    automatically when a condition is met, as they would when the application runs in the browser.
+
+    🔥You can change this behavior by using DeferBlockBehavior.Manual. Manual means that you’ll
+    have to manually trigger the display of the defer blocks. But let’s start with the default
+    option, Playthrough.
+
+    1️⃣
+    🔥In that case, the defer blocks will be displayed automatically when a condition is met, after
+    calling await fixture.whenStable().
+    
+    So if we test a component with a deferred block that is visible after clicking on a button,
+    we can use:
+
+        // Click the button to trigger the deferred block
+        (fixture.nativeElement as HTMLElement).querySelector('button')!.click();
+
+        // Wait for the deferred block to render
+        await fixture.whenStable();
+
+        // Check its content
+        const loadedBlock = (fixture.nativeElement as HTMLElement).querySelector('div')!;
+        expect(loadedBlock.textContent).toContain('Some lazy-loaded content');
+    
+
+    2️⃣
+    🔥If you want to use the DeferBlockBehavior.Manual behavior, you’ll have to manually trigger the
+    display of the defer blocks.
+
+        TestBed.configureTestingModule({
+            deferBlockBehavior: DeferBlockBehavior.Manual
+        });
+
+    🔥To do so, the fixture returned by TestBed.createComponent now has an async getDeferBlocks
+    method that returns an array of DeferBlockFixture objects. Each of these fixtures has a
+    render method that you can call to display the block in a specific state, by providing a
+    DeferBlockState parameter.
+
+    🔥DeferBlockState is an enum with the following values:
+    • DeferBlockState.Placeholder: display the placeholder state of the block
+    • DeferBlockState.Loading: display the loading state of the block
+    • DeferBlockState.Error: display the error state of the block
+    • DeferBlockState.Complete: display the defer block as if the loading was complete
+
+    This allows a fine-grained control of the state of the defer blocks. If we want to test the
+    same component as before, we can do:
+
+        const deferBlocks = await fixture.getDeferBlocks();
+
+        // only one defer block should be found
+        expect(deferBlocks.length).toBe(1);
+
+        // Render the defer block
+        await deferBlocks[0].render(DeferBlockState.Complete);
+        
+        // Check its content
+        const loadedBlock = (fixture.nativeElement as HTMLElement).querySelector('div')!;
+        expect(loadedBlock.textContent).toContain('Some lazy-loaded content');
