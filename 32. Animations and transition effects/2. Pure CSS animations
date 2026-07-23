@@ -1,0 +1,59 @@
+Pure CSS animations:
+
+
+- Before digging into the transitions effects, let’s start with "basic" CSS animations. 🔥You’ll
+    often encounter a situation where you want to focus the user’s attention on a part of the
+    screen. Animations are a very good way to do that! We are going to let our user know that the
+    form they submitted is invalid, for example by adding a shaking effect on the submit button.
+
+    🔥The process to add an animation is fairly simple. An animation style relies on the animation
+    CSS property. It usually triggers an animation that you can define using @keyframes.
+    
+    A "shaking" animation would look like:
+
+        .shaking {
+            animation: shake 300ms ease;
+        }
+        @keyframes shake {
+            10%,
+            50%,
+            90% {
+                transform: translateX(0.5rem);
+            }
+            30%,
+            70% {
+                transform: translateX(-0.5rem);
+            }
+        }
+    
+    @keyframes can be disconcerting at first. Here we build a shake animation, by defining steps:
+    1. At the beginning of the animation (0%), the element is on its initial position.
+    2. Then (10%), we want to translate a bit on the right using translateX.
+    3. Then (30%), we want to translate a bit on the left. Note that we don’t need to define where
+        the element is at 20%, the browser will figure it out.
+    4. Then (50%), we move on the right.
+    5. Then (70%), we move on the left.
+    6. Then (90%), we move on the right.
+    7. At the end (100%), the element goes back to its initial position.
+
+    🔥This shake animation will be applied on an element that has the shaking CSS class, for
+    300ms, with an easing effect (slower, then faster, then slower). You can of course choose other
+    effects (linear, ease-in, ease-out, etc.).
+
+    🔥🔥We’re now going to add/remove the shaking CSS class on the submit button, depending on
+    the submission validity:
+
+        <button [class.shaking]="invalidSubmission()"
+        (animationend)="invalidSubmission.set(false)">Save</button>
+
+
+    When the submission is invalid, the browser shakes the button for 300 milliseconds:
+        
+        protected submit() {
+            if (this.form.invalid) {
+                this.invalidSubmission.set(true);
+                return;
+            }
+        }
+        
+    Let’s now see what Angular gives us to animate transitions.

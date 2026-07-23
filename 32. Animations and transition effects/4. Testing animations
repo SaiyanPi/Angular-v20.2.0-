@@ -1,0 +1,12 @@
+Testing animations:
+
+
+- In tests, the animations are turned off by default, so you don’t have to worry about them.
+    If you want to test animations, you can configure the TestBed to enable animations with the
+    animationsEnabled option:
+        
+        TestBed.configureTestingModule({
+            animationsEnabled: true
+        });
+
+    🔥🔥With this option enabled, elements won’t be removed until the animations are done.

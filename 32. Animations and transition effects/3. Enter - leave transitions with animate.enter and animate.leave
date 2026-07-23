@@ -1,0 +1,88 @@
+Enter/leave transitions with animate.enter/animate.leave:
+
+
+- 🔥Transitions are another way that CSS offers to animate elements. They are somewhat simpler than
+    animations. With CSS transitions, you can specify that a change in one or several CSS properties
+    of an element will happen in a progressive way.
+
+    For example, if you define the following CSS rules:
+        
+        .pill {
+            transition: transform 300ms ease-out;
+        }
+        .pill.pill-selected {
+            transform: scale(1.1);
+        }
+
+    🔥You’re saying that, for elements with the class pill, every change in the value of the
+    transform property will be done in a progressive way, over 300 milliseconds.
+    😲😲So if you dynamically add the pill-selected class to a .pill, it will become slightly
+    bigger over 300 milliseconds. And if you remove the class pill-selected from a .pill, then it
+    will get back to its normal size over 300 milliseconds.
+
+    ⚠️The problem however is that what we often want is to apply a transition effect when an element
+    appears in the DOM or disappears from the DOM. But @if and @for don’t change the style of an
+    element: they simply add or remove elements from the DOM. So we need something more to, for
+    example, have fade-in and fade-out transitions when elements appear and disappear.
+
+
+- 🔥🔥Angular lets you animate elements with the animate.enter/animate.leave syntax, introduced
+    in v20.2, allowing you to add classes to an element when it enters or leaves the DOM. These
+    classes are then removed by Angular when the associated animation is done.
+
+        @if (display()) {
+            <div data-testid="content" animate.enter="fade-in" animate.leave="fade-out">Content</div>
+        }
+
+    🔥🔥So here the animated classes are going to be fade-in and fade-out. Let’s define a "fading"
+    effect in CSS using these classes:
+        
+        .fade-in {
+            /* initial state */
+            @starting-style {
+            opacity: 0;
+        }
+        transition: opacity 300ms;
+            opacity: 1;
+        }
+        .fade-out {
+            transition: opacity 300ms;
+            opacity: 0;
+        }
+
+    ✅The transition will last one second, and will progressively change the opacity from 0 to 1
+    when the element enters the DOM, and from 1 to 0 when it leaves the DOM.
+    Every time the condition of the @if changes, the element fades in or fades out over a second,
+    instead of appearing or disappearing brutally.
+    Your imagination (and CSS skills) is the limit here: you can apply whatever effect you want!
+
+
+- 🔥🔥You can use bindings with animate.enter and animate.leave, to bind a signal value, a method
+    result or an array of classes for example:
+        
+        @if (display()) {
+            <div data-testid="with-binding" [animate.enter]="enterClasses()">Content</div>
+        }
+    
+    
+    🔥🔥If you don’t want to rely on CSS animations and prefer to use JavaScript animations, with
+    the power of libraries like GSAP, then you can use animate.enter and animate.leave with the
+    event binding syntax to call a method when the element enters or leaves:
+
+        @if (display()) {
+            <div data-testid="with-function" class="flex-grow-0"
+                (animate.leave)="rotate($event)">Content</div>
+        }
+    
+    🔥🔥The method is called with an AnimationCallbackEvent parameter, containing the target that is
+    entering or leaving and a completeAnimation method that you must call when the animation is done:
+        
+        protected rotate(event: AnimationCallbackEvent) {
+            gsap.to(event.target, {
+                    rotation: 360,
+                    duration: 0.3,
+                    onComplete() {
+                        event.animationComplete();
+                    }
+            });
+        }

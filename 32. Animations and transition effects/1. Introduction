@@ -1,0 +1,15 @@
+Animations and transition effects:
+
+
+- Animations are a very nice addition to an application. It’s not the first thing you do, of course,
+    but it can really improve the user experience.
+
+- 🔥Angular doesn’t offer much regarding animations and transitions. It assumes that you will use
+    plain CSS to define them. But animating the removal of an element in pure CSS is not the easiest
+    thing to do, so Angular offers some help in that area. And to be symmetric, it also offers some
+    help to animate the appearance of an element.
+
+        ⚠️Angular had a @angular/animations package for a long time that covered much
+        more than the support for animating the appearance and removal of elements. But
+        this package doesn’t rely on CSS, which makes it quite inefficient. It is now
+        deprecated since v20.2.
