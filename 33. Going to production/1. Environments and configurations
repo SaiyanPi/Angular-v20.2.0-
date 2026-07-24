@@ -1,0 +1,107 @@
+Environments and configurations:
+
+
+- If you use Angular CLI, you can define several environments. To do this, the CLI offers a
+    schematic called environment:
+        
+        ng generate environments
+    
+    This generates files named environment.ts and environment.development.ts.
+
+
+- These files contain an empty object called environment, in which you can add as many properties as
+    you want.
+    environment.ts:
+
+        export const environment = {};
+
+
+- 🔥You’ll then only import environment.ts in your application. It’s a bit weird, but the CLI will
+    then use the right file according to the environment.
+
+- 🔥When serving (with ng serve) your application, the CLI will use environment.development.ts.
+    🔥But you can also serve your application with a specified configuration. By default, the CLI
+    has another configuration named production.
+    So you can also run 
+        
+        ng serve --configuration=production.
+    
+    The difference between these configurations can be found in the angular.json files:
+    angular.json:
+
+        "configurations": {
+            "production": {
+                "budgets": [
+                    {
+                        "type": "initial",
+                        "maximumWarning": "500kB",
+                        "maximumError": "1MB"
+                    },
+                    {
+                        "type": "anyComponentStyle",
+                        "maximumWarning": "4kB",
+                        "maximumError": "8kB"
+                    }
+                ],
+                "outputHashing": "all"
+            },
+
+            "development": {
+                "optimization": false,
+                "extractLicenses": false,
+                "sourceMap": true,
+                "fileReplacements": [
+                    {
+                        "replace": "src/environments/environment.ts",
+                        "with": "src/environments/environment.development.ts"
+                    }
+                ]
+            },
+            
+    As you can see, there is a production configuration with a few properties.
+    🔥🔥The budgets one, for example, checks that your initial loading and component styles are
+    not too heavy.
+
+
+- 🔥There is a super useful property in the development configuration that the schematic added:
+    fileReplacements.
+    angular.json:
+
+        "fileReplacements": [
+            {
+                "replace": "src/environments/environment.ts",
+                "with": "src/environments/environment.development.ts"
+            }
+        ]
+    
+    🔥🔥You can see that the environment.ts file is replaced by environment.development.ts: this
+    is how the CLI knows which file to use.
+
+    🔥You then always import from environment.ts in your code, and, during the build, the CLI will
+    pick the proper environment file for the configuration.
+
+    🔥This means that you can define as many configurations as you want. For example, you could
+    add a preprod configuration with a dedicated environment.preprod.ts file.
+
+    🔥It also means that you can replace as many files as you want in your application. You can
+    imagine doing crazy things like replacing pony.ts with a different version (I don’t see why you
+    would do that though ^^).
+    An environment file can contain whatever you want. But as its name indicates, it’s supposed to
+    contain code that is specific to a given environment (development, production, pre-production,
+    etc.). For example, you may have a different API location in development than in the live
+    version.
+
+
+- 🔥🔥As the production environment is often the one you want when you build the application with
+    ng build, the CLI uses it by default since version 12.0 (instead of having to specify
+    --configuration=production).
+    
+    🔥Since the CLI version 9.0, it is now possible to specify several configurations at once:
+        
+        ng build --configuration=production,preprod
+    
+    🔥🔥The command then uses the production configuration, merged with the preprod configuration.
+    The preprod configuration can re-declare a property of the production configuration, to
+    overwrite it.
+    🔥🔥Note that this replacement mechanism is also available for assets and styles in the CLI,
+    giving you the possibility to theme your applications differently by just using configurations.

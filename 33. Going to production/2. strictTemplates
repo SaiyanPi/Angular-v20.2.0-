@@ -1,0 +1,34 @@
+strictTemplates:
+
+
+- 🔥When you compile your application in AoT (aot: true, the default value since Angular 9.0), the
+    templates are checked by the Angular compiler.
+    🔥By default, only a light check is run. To go further, you can use the strictTemplates
+    compiler option:
+    tsconfig.json:
+
+        "angularCompilerOptions": {
+            "strictTemplates": true,
+        }
+    
+    🔥🔥With this option, the compiler checks that the input values, DOM events used, references in
+    templates, etc. are all of the correct type. For example, trying to feed a number into an input
+    that expects a boolean, results in a compilation error.
+
+
+- 🔥🔥Angular 13.2 introduced a new option called extendedDiagnostics, which runs additional
+    checks on your application. For example, it checks that you use the two-way binding syntax
+    correctly (the "banana syntax" [(ngModel)], and not ([ngModel])). This option logs warnings by
+    default, but you can configure it to throw errors:
+    tsconfig.json:
+
+        "angularCompilerOptions": {
+            "strictTemplates": true,
+            "extendedDiagnostics": {
+                "defaultCategory": "error"
+            }
+        }
+
+
+- 🔥🔥Angular 20 also introduced a new option called typeCheckHostBindings which checks that
+    the expressions in your host bindings are correct (enabled by default in v21).

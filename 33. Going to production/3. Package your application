@@ -1,0 +1,34 @@
+Package your application:
+
+
+- I slightly spoiled the next step in the previous sections. If you want to package your
+    application for production using the CLI, you simply have to run:
+
+        ng build
+
+    🔥That will create a dist folder containing the result of the build. The prod flag uses the
+    file replacement we just talked about, but also adds a bunch of other options. Some of them
+    are really interesting.
+
+    🔥🔥It also activates tree-shaking and dead code elimination thanks to optimization: true.
+    To make this process even more efficient, the Angular CLI team has written a tool named
+    "build optimizer", which is activated by the buildOptimizer: true option.
+
+    🔥🔥To further reduce the volume of JavaScript code generated, the third party libraries
+    are not bundled in a separate file (vendorChunk: false) - the licences are removed
+    (extractLicences: true).
+
+    ⚠️⚠️You typically don’t want to debug in production. And you probably don’t want to provide
+    the nonminified source code to any visitor of your application either. So sourceMap: false
+    disables the timeconsuming generation of the source maps.
+
+    🔥🔥A last interesting option is outputHashing: it tells the build system that the generated
+    files should not be called main.js but main.xxxxxx.js where xxxxxx is a cryptographic hash of
+    the content of the file. This is done to be sure that you can cache these files without worrying
+    about it: see the section about "cache busting" SECTION 3 in the chapter 27: Performances just
+    above
+
+
+- As you can see, the CLI does plenty of nice optimizations for you. If you choose not to use the
+    CLI, you’ll have to figure out a way to do the same things by using Vite, Webpack or another
+    tool.

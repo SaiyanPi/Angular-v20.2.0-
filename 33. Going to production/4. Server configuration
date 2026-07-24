@@ -1,0 +1,44 @@
+Server configuration:
+
+
+- The last thing to do is to take the result of the packaging step (in the dist folder) and to
+    deploy it on your favorite server. That can be a static server like Apache or Nginx for
+    example.
+
+        ⚠️⚠️Do not use ng serve in production, even with the --configuration=production
+        option. It’s only a development tool, and is neither optimized nor secured for
+        production.
+
+    You still have a few things to do though. The precise way to do these things depends on your
+    web server.
+
+
+- 🔥🔥First you’ll want to make sure you are serving all your assets compressed (probably using gzip).
+    Then you want the assets to be cached for a long time. Don’t worry about potential cache issues,
+    as we generated the assets with a hash in their names.
+
+
+- 🔥🔥The last step is less obvious and often forgotten (been there, done that…): you need to
+    configure your server in a way that ensures that each route will serve index.html
+
+    Think about it: you deployed your application on https://ng-ponyracer.ninja-squad.com, tweeted
+    it to the world, and people are starting to visit it. Your server will serve the index.html
+    file to them and everything is fine. They are navigating in the application, maybe going to
+    the list of races at https://ng-ponyracer.ninja-squad.com/races.
+
+    ⁉️But what happens if someone hits F5 / Cmd + R ? The next request to the server will be for
+    /races, and if you did not plan for it, your server will return a 404…
+    
+    🔥So you have to make sure that, one way or another, all requests to routes of your application
+    will serve index.html. The Angular application will restart from scratch, the router will
+    analyze the URL, and it will navigate to the proper route immediately.
+
+
+
+-----------------------------------------------------------------------------------------------------
+
+- I think we covered the important parts of going to production. As you can see this is fairly easy
+    if you use Angular CLI, so I strongly encourage you to do so.
+
+    ✅Try our exercise Going to production ! You’ll learn a few tricks that’ll be useful in the
+    future.
