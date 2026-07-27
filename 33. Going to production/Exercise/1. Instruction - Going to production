@@ -1,0 +1,97 @@
+-------------------------------------- Going to production -----------------------------------------
+
+- FINAL STEP TO DELIVER OUR APP! WHAT DO WE NEED TO DO TO LAUNCH OUR PRODUCT?
+
+- Instructions: Angular Prerequisite "Going to production" chapter
+
+1️⃣ Now that the application is full-featured and optimized, we are seriously thinking about
+    deploying it to production.
+    🔥The first step is to package our application in production mode, using ng build.
+    This triggers the Ahead of Time compilation, which will compile the HTML templates to
+    TypeScript and then to JavaScript. The compilation produces a main.js bundle containing the
+    application and the necessary third-party dependencies.
+
+    🔥This AoT compilation can find problems in your templates, that you wouldn’t catch in Just in
+    Time mode without navigating to the problematic template. 🔥The AoT compilation is now enabled by
+    default since Angular CLI 9.0.0.
+
+    💡For example, modify pony.html to display {{ ponyModel.nam }} in the figcaption, instead of
+    {{ ponyModel.name }}. 🔥If you build the application with the AoT compilation disabled
+    (with ng build --no-aot), you will see no error in the terminal, despite the fact that the
+    name is not displayed if we use the application!
+
+    ⚠️Now run ng serve or ng build, and you should have an error in your terminal looking like:
+        ERROR in src/app/pony/pony.html(3,15): : Property 'nam' does not exist on type 'PonyModel'.
+        Did you mean 'name'?
+    
+    💪This is one of the biggest strengths of Angular. If you compile your application with AoT
+    compilation enabled (which is the case by default, as the configurations include aot: true by
+    default) you can catch many errors in your templates that would otherwise only be found at
+    runtime, or even not noticed at all.
+
+    🔥You can go even further. The Angular compiler offers a few options that you can activate in
+    your tsconfig.json file, for example extendedDiagnostics to generate additional warnings since
+    Angular 13.2.0. If you check the tsconfig.json file, we switched them to errors in Ponyracer.
+
+    There are other options available(https://angular.dev/tools/cli/aot-compiler), but few are
+    really useful.
+
+    🔥Another that is worth knowing is preserveWhitespaces, which is now false by default since
+    Angular 6. This option removes extra whitespaces. 🔥If you really want a whitespace to be kept,
+    you can use a special entity called &ngsp;. It looks like &nbsp; with a typo, but it is not:
+    it is a special character that the Angular compiler will transform in a whitespace.
+    ⚠️Note that it will only keep one whitespace, even if you add several consecutive ones, like
+    &ngsp;&ngsp;. 🔥If you really want to preserve the whitespaces in a template, you can use
+    ngPreserveWhitespaces:
+
+        <div ngPreserveWhitespaces>hello     there</div>
+    
+    🔥But the production configuration also does a bunch of other things. Check out the angular.json
+    file, and look for the production configuration. This is where you can tweak what ng build does.
+
+    🔥🔥By default, the CLI targets only modern browsers, but you can configure it by adding a
+    .browserslistrc file at the root of the project (ng generate config browserslist). browserslist
+    allows defining the targeted browsers thanks to queries like last 2 versions.
+    😉Tip: to know which browsers are targeted by your configuration, you can run: npx browserslist.
+
+
+
+2️⃣ When you run ng build, the command creates a dist/ponyracer/browser directory in the project,
+    containing all the assets resulting from the build phase.
+
+    You can grab all these and deploy them on your favorite HTTP server, and you’re good to go!
+    🔥To give it a try quickly, install http-server on your machine using:
+
+        npm i -g http-server
+    
+    http-server is a simple NodeJS server, ideal to serve a static application on your machine.
+    🔥Inside the project directory:
+
+        http-server dist/ponyracer/browser
+    
+    And then open your browser on http://localhost:8080. Here is our Ponyracer application! You
+    can see that everything works without too much trouble.
+
+
+
+3️⃣ ⚠️⚠️There is one thing though…​If you go to http://localhost:8080/races, and then reload the page,
+    you end up…​ on a 404 error! This is because /races is a route on the client side, but the HTTP
+    server doesn’t know that it needs to serve index.html for this request too! When you’ll deploy
+    your application to production, you’ll need to think about that as well, and configure your
+    HTTP server to properly handle all the routes of your application.
+
+    🔥🔥Another thing you’ll want to enable on your server is the compression of the assets served.
+    This can make a huge difference! As I’m writing these lines, running gzip on the main bundle
+    makes it shrink to 25% of its original size. This is usually a simple configuration available
+    on most HTTP server, so it’s a quick and easy win.
+
+    🔥As we are talking about sizes, a last thing you can do is to add a budget to your assets. By
+    default, the CLI adds a budget to the initial load (which regroups all the main JS bundles
+    generated that will be loaded initially). You can adjust the warning and error thresholds to
+    play with it, or even add new budgets. You can add a budget on all for the whole application
+    (https://angular.dev/tools/cli/build#configuring-size-budgets), or for a specific bundle if
+    you want. Check out the official documentation for more info. That can be really useful to
+    track the size of your application.
+
+    Now you can deploy your application to production. And congratulations! You’re now a ninja with
+    Angular 🥷.
