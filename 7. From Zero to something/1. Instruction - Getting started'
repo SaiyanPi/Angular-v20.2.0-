@@ -1,0 +1,199 @@
+--------------------------------------- Getting started ----------------------------------------------
+
+- LET'S GENERATE THE PROJECT SKELETON, AND BEGIN OUR ADVENTURE!
+
+- Instructions: Angular Prerequisite Chapter 'From zero to something'
+
+- In this first step, we will generate our project skeleton. The simplest way to do that is to use
+    Angular CLI. ⚠️Note: If you already have installed Angular CLI, uninstall it with 
+        
+        npm uninstall -g @angular/cli.
+
+1️⃣ Let’s start by installing this tool with:
+
+        npm install -g @angular/cli@22.0.0
+    
+    his adds a new binary on your path named ng. You can check the version with:
+
+        ng version
+    
+    This should display the same version as the one specified after the @ in the install command.
+    If that’s not the case, check the FAQ section about installing and upgrading Angular CLI.
+
+
+
+2️⃣ Generate the project
+    Then go to a new empty folder and type:
+
+        ng new ponyracer --defaults --no-routing --prefix pr --skip-install
+    
+    to generate a new project. After a few seconds (or even minutes), you should see a new folder
+    named ponyracer (you may have a few warnings depending on your platform, nothing important).
+
+    Run npm install to fetch the dependencies.
+
+        npm install
+
+    NPM might ask you if you want to run an audit command at the end of the installation: even if
+    it’s tempting, don’t run it, because it may fetch incompatible versions with our project.
+    If the installation fails because of an incompatible peer dependency, run the following
+    configuration command:
+
+        npm config set legacy-peer-deps=true --location=project
+    
+    then try the npm install command again.
+    The Angular CLI generates a default Prettier configuration file (.prettierrc) when creating a
+    new project. Replace it with the one provided in the resources to use our custom formatting
+    rules.
+
+    🔥The CLI used to come with e2e tests already configured with Protractor. Since Angular CLI v12,
+    this is no longer the case. We need to pick the end-to-end testing library we want, and add it
+    to our project.
+
+    🔥We are going to use Playwright. We could set it up by hand, but the easiest way is to use a
+    schematic. The Angular CLI is a very powerful tool. It allows third-party developers to build
+    their own "extensions" of the CLI called "builders", and their own generators called "schematics".
+    🔥This Playwright schematic is a schematic provided by the community that we’re going to use to
+    add Playwright to our project:
+
+        cd ponyracer
+        ng add playwright-ng-schematics@21.1.0 --install-browsers --skip-confirmation
+
+    If the installation fails because of an incompatible peer dependency, run:
+
+        cd ponyracer
+        npm config set legacy-peer-deps=true --location=project
+
+    And try the ng add command again.
+
+    🔥For a long time, the CLI included TSLint as well out of the box to check our code quality. But
+    TSLint is now deprecated, so this is no longer the case since CLI v12. But no worries, we’re
+    going to use ESLint instead.
+
+        ng add angular-eslint@21.4.0 --skip-confirmation
+
+    Everything is now installed, let’s go to the next step. Serve the application
+   
+        ng serve
+
+    Then open your favorite browser and go to http://localhost:4200 You should see the home page
+    displayed.
+
+
+
+3️⃣ Add some styles
+    Now let’s have a look at the code.
+    Open the project with your favorite IDE or text editor. Visual Studio Code for example is free,
+    available for all operating systems, and offers a very good TypeScript support. You can add the
+    Angular Language Service plugin for the Angular support, and the ESLint plugin as well.
+
+    Let’s start by making this application a bit prettier. I have poor CSS skills, so most of the
+    time, I use the excellent Bootstrap framework to style my applications.
+
+    First, 🔥let’s install bootstrap and fontawesome:
+
+        npm install --save-exact bootstrap@5.3.8 @fortawesome/fontawesome-free@7.2.0
+
+    🔥We now need to use these styles in our application. Open the file styles.css and add the
+    following:
+    styles.css:
+        
+        @import 'bootstrap/dist/css/bootstrap.css';
+        @import '@fortawesome/fontawesome-free/css/all.css';
+    
+    Then, in the template of the root component, app.html, let’s replace the content with:
+    app.html:
+
+        <main class="container" style="margin-top: 70px;">
+            <h1>Ponyracer</h1>
+        </main>
+
+    Restart the ng serve task, and your browser should refresh automatically and display our new
+    template.
+    The TypeScript configuration lives in tsconfig.json, and, as we saw, the compiler will help us
+    to write good code. We can add a few options to make the compiler a bit stricter and catch more
+    potential mistakes. So let’s replace the file generated by the CLI with the one in the resources.
+
+
+
+4️⃣ Unit tests
+    Now we just need to add the necessary to validate our exercises!
+    🔥Let’s customize Vitest by adding a configuration file:
+
+        ng generate config vitest
+    
+    🔥Then replace the generated vitest-base.config.ts file in the root of your application with the
+    one provided in the resources.
+    🔥Copy the tsconfig.spec.json file into the root of your application, 🔥and the setup-test.ts file
+    into the src directory as well. This file configures the Vitest test environment: it adds a
+    check to ensure that no console errors occur during tests, and extends Vitest locators with a
+    utility method.
+    
+    🔥Let’s first check if the unit tests are OK. Create a results directory at the root of your
+    application. Then replace app.spec.ts in your project (src/app) with the one provided, then run:
+
+        ng test
+
+    🔥By default, the tests are in "watch" mode, which means they will re-run on each file change. To
+    launch the tests only once, you can run:
+
+        ng test --no-watch
+    
+    🔥You can also display a UI with the --ui option.
+    🔥The tests will also check the code coverage of your application. To run the tests with coverage,
+        use the --coverage flag:
+
+        ng test --coverage --no-watch
+
+    🔥The coverage results are displayed in the terminal (text summary), and an HTML report is
+    generated in the coverage/ directory. Open coverage/ponyracer/index.html in your browser to
+    explore the detailed report.
+
+
+
+5️⃣ End-to-end tests
+    Now let’s see if the end-to-end tests are OK. Copy home.e2e-spec.ts in the e2e directory, and
+    remove the default test example.spec.ts. Playwright has its own configuration file, replace
+    playwright.config.ts (in the root directory) with the one provided. Also add the tsconfig.json
+    file in the e2e directory provided in the resources.
+    Then launch the tests with:
+
+        ng e2e
+    
+    ⚠️Note:
+    On some systems, you may need to run npx playwright install-deps to install missing system
+    dependencies. You should have an explicit error message if this is the case.
+
+    🔥If you want to have a UI to see the tests running, you can run the tests with:
+
+        ng e2e --ui
+
+
+
+6️⃣ Lint
+    Last step, check the code quality. The packages are already installed, we just need to update
+    the configuration file. Let’s replace the eslint.config.js file at the root of the project
+    with the provided eslint.config.mjs file (note the different extension .mjs) and check the
+    code quality with:
+
+        ng lint
+
+    Fix any error found (if any) to achieve 100%.
+
+    🔥Note that you can run:
+
+        ng lint --fix
+    
+    at any moment to automatically format your code, and get rid of annoying errors like missing
+    whitespaces, semi-colons, etc.
+
+
+
+⚠️⚠️⚠️ DO NOT FORGET TO COPY PASTE THE playwright.config.ts AND angular.json FILES
+        ALSO INSTALL THE FOLLOWING PACKAGES: 
+        @vitest/browser-playwright
+        @vitest/coverage-v8
+        @vitest/ui
+
+        CMD:
+        npm install --save-dev @vitest/browser-playwright @vitest/coverage-v8 @vitest/eslint-plugin @vitest/ui
