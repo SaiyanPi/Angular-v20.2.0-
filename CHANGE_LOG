@@ -1,0 +1,23 @@
+--------------------- (next change will be added ona top of existing logs) -------------------------
+
+Current versions:
+    • Angular: 22.1.0
+    • Angular CLI: 22.1.0
+
+
+🔥 v22.1.0 - 2026-07-30
+
+    - Signal forms
+        • Add a dedicated example about hiding fields with the hidden() function. (2026-06-12)
+            ✅added in chapter 21, section 10
+    - Resources
+        • New section about resource chaining as introduced in Angular v22. (2026-06-30)
+            ✅added in Chapter 18, new section 7
+
+    - Router
+        • Show how to use router component input binding with resource-based services. (2026-06-12)
+            ✅added in Chapter 19, section 11
+
+    - Artificial Intelligence-assisted development
+        • New chapter about AI-assisted development. (2026-07-13)
+            ✅added new chapter 33 Artificial Intelligence-assisted development 
